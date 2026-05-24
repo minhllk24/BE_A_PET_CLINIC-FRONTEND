@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
-import { AuthShell } from '../../components/AuthShell';
-import { Field, TextInput, PasswordInput, PrimaryButton, SocialButton, Divider } from '../../components/AuthFields';
+import { AuthShell } from '../../components/Auth/AuthShell';
+import { Field, TextInput, PasswordInput, PrimaryButton, SocialButton, Divider } from '../../components/Auth/AuthFields';
 import { loginApi } from '../../services/authService';
+import { loginSuccess } from '../../redux/slices/authSlice';
 
 export default function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,9 +21,14 @@ export default function Login() {
       const data = await loginApi(loginId, password);
       if (data.EC === 0) {
         toast.success('Đăng nhập thành công!');
-        // Save access token to local storage or state
-        localStorage.setItem('access_token', data.DT.access_token);
-        localStorage.setItem('user', JSON.stringify(data.DT.user));
+        
+        // Dispatch to Redux Store (handles token, user info and sets isAuthenticated to true)
+        dispatch(
+          loginSuccess({
+            user: data.DT.user,
+            access_token: data.DT.access_token,
+          })
+        );
         
         // Navigate to home or dashboard
         navigate('/');

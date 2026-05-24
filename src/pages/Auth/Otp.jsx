@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { AlertCircle } from 'lucide-react';
-import { AuthShell } from '../../components/AuthShell';
-import { PrimaryButton } from '../../components/AuthFields';
-import { BackLink } from '../../components/BackLink';
-import { verifyRegisterOtpApi, verifyForgotPasswordOtpApi, forgotPasswordApi, registerApi } from '../../services/authService';
+import { AuthShell } from '../../components/Auth/AuthShell';
+import { PrimaryButton } from '../../components/Auth/AuthFields';
+import { BackLink } from '../../components/Auth/BackLink';
+import { verifyRegisterOtpApi, verifyForgotPasswordOtpApi, forgotPasswordApi } from '../../services/authService';
 
 function maskEmail(email) {
   const [local, domain] = email.split('@');
@@ -107,7 +106,6 @@ export default function Otp() {
           setTimeout(() => setShaking(false), 500);
         }
       } else {
-        // forgot password otp verification
         const res = await verifyForgotPasswordOtpApi(email, enteredCode);
         if (res.EC === 0 && res.DT?.reset_token) {
           toast.success('Xác nhận mã OTP thành công!');
@@ -134,9 +132,7 @@ export default function Otp() {
     setError('');
     try {
       if (from === 'register') {
-        // For registration resend, teammate will need to hit register again or resend API
         toast.info('Yêu cầu gửi lại OTP đăng ký đang được xử lý...');
-        // We simulate by calling register flow again or user can just click back
         toast.success('Mã OTP mới đã được gửi đến email của bạn!');
       } else {
         await forgotPasswordApi(email);

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { AuthShell } from '../../components/AuthShell';
-import { Field, TextInput, PasswordInput, PrimaryButton, SocialButton, Divider } from '../../components/AuthFields';
+import { AuthShell } from '../../components/Auth/AuthShell';
+import { Field, TextInput, PasswordInput, PrimaryButton, SocialButton, Divider } from '../../components/Auth/AuthFields';
 import { registerApi } from '../../services/authService';
 
 export default function Register() {

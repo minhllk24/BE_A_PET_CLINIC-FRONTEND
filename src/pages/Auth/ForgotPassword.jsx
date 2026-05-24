@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { AuthShell } from '../../components/AuthShell';
-import { Field, TextInput, PrimaryButton } from '../../components/AuthFields';
-import { BackLink } from '../../components/BackLink';
+import { AuthShell } from '../../components/Auth/AuthShell';
+import { Field, TextInput, PrimaryButton } from '../../components/Auth/AuthFields';
+import { BackLink } from '../../components/Auth/BackLink';
 import { forgotPasswordApi } from '../../services/authService';
 
 export default function ForgotPassword() {

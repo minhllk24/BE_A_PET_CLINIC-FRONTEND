@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import petHero from '../assets/images/pet-hero.png';
+import petHero from '../../assets/images/pet-hero.png';
 
 /**
  * Shared layout element that animates between homepage hero (right side)
