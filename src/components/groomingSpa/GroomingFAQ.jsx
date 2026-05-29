@@ -1,41 +1,39 @@
 import { useState } from "react";
-import { homeImages } from "../../assets/homeImages";
+import { groomingImages } from "../../assets/groomingImages";
 
 const FAQS = [
   {
     id: 1,
     question: "Bao lâu thì nên tắm cho thú cưng?",
-    answer: (
-      <ul className="list-disc pl-5 space-y-2 text-[#4A5568] text-sm md:text-base leading-relaxed">
-        <li>
-          <strong>Với Chó:</strong> Tắm 1 lần/tháng là tần suất lý tưởng nhất. Tránh tắm quá 1 lần/tuần trừ khi có chỉ định từ bác sĩ, vì lạm dụng sẽ làm khô da và mất đi độ bóng của lông.
-        </li>
-        <li>
-          <strong>Với Mèo:</strong> Mèo là loài tự làm sạch cơ thể rất giỏi. Bạn chỉ nên tắm cho chúng khi thực sự cần thiết (dính bẩn, ve rận hoặc mèo lông dài).
-        </li>
-      </ul>
-    )
+    answer:
+      "Với Chó: Tắm 1 lần/tháng là tần suất lý tưởng nhất. Tránh tắm quá 1 lần/tuần trừ khi có chỉ định từ bác sĩ, vì lạm dụng sẽ làm khô da và mất đi độ bóng của lông.\nVới Mèo: Mèo là loài tự làm sạch cơ thể rất giỏi. Bạn chỉ nên tắm cho chúng khi thực sự cần thiết (dính bẩn, ve rận hoặc mèo lông dài).",
   },
   {
     id: 2,
     question: "Thú cưng chưa tiêm phòng đầy đủ có được làm spa không?",
-    answer: "Để đảm bảo sức khoẻ cho bé và các thú cưng khác, chúng tôi khuyến khích bé nên được tiêm phòng đầy đủ trước khi sử dụng dịch vụ."
+    answer:
+      "Các spa thường từ chối nhận thú cưng chưa tiêm đủ mũi vắc-xin cốt lõi. \r\nĐể bảo vệ sức khỏe cho chính thú cưng của bạn và tránh lây nhiễm chéo cho các bé khác tại cửa hàng.\r\nBạn có thể đặt lịch và sử dụng dịch vụ tiêm phòng của chúng tôi.",
   },
   {
     id: 3,
     question: "Bao lâu thì nên cắt móng cho thú cưng?",
-    answer: "Nên cắt móng cho bé mỗi 2-4 tuần một lần tuỳ thuộc vào mức độ phát triển của móng để tránh tình trạng móng mọc đâm vào đệm chân gây đau đớn."
+    answer:
+      "Bạn nên cắt móng cho chó và mèo định kỳ 2 đến 4 tuần/lần. Tần suất này có thể thay đổi tùy thuộc vào mức độ hoạt động và độ mài mòn tự nhiên của móng. [1, 2]",
   },
   {
     id: 4,
-    question: "Chủ nuôi có được ở lại xem trực tiếp quá trình làm spa không?",
-    answer: "Bạn hoàn toàn có thể quan sát quá trình làm spa từ bên ngoài qua vách kính trong suốt để đảm bảo an tâm nhưng không làm bé bị kích động."
+    question:
+      "Chủ nuôi có được ở lại xem trực tiếp quá trình làm spa không?",
+    answer:
+      "Thường là không nên vì thú cưng thấy chủ sẽ dễ phấn khích, bồn chồn và không đứng yên.\r\nBạn có thể quan sát qua phòng kính cách âm hoặc xem camera giám sát tại phòng chờ của cửa hàng.",
   },
   {
     id: 5,
-    question: "Thú cưng bị nhát, hung dữ hoặc sợ nước thì spa có nhận không?",
-    answer: "Đội ngũ nhân viên giàu kinh nghiệm của chúng tôi luôn có những biện pháp nghiệp vụ nhẹ nhàng để trấn an các bé. Tuy nhiên, nếu bé quá hoảng loạn, chúng tôi sẽ trao đổi thêm với bạn."
-  }
+    question:
+      "Thú cưng bị nhát, hung dữ hoặc sợ nước thì spa có nhận không?",
+    answer:
+      "Spa vẫn nhận nhưng bạn cần thông báo trước với nhân viên để có biện pháp xử lý phù hợp.\nNhân viên sẽ dùng kỹ thuật trấn an, dùng loa che mắt hoặc đeo rọ mõm vải mềm để đảm bảo an toàn cho cả hai bên.",
+  },
 ];
 
 function GroomingFAQ() {
@@ -46,88 +44,239 @@ function GroomingFAQ() {
   };
 
   return (
-    <section className="relative w-full overflow-hidden bg-white py-16">
-      <div className="mx-auto flex w-[95%] max-w-[1200px] flex-col gap-12 lg:flex-row lg:items-start lg:justify-between px-4 md:px-12">
-        
-        {/* Left Side: FAQs */}
-        <div className="flex-1 w-full lg:max-w-[600px]">
-          <div className="flex items-center gap-4 mb-8">
-            <h2 className="font-display text-4xl font-bold text-[#0B0F19]">
-              Câu hỏi thường gặp
-            </h2>
-            {/* Question Mark Icons placeholder */}
-            <div className="flex font-bold text-2xl -mt-4">
-               <span className="text-yellow-400">?</span>
-               <span className="text-blue-400">?</span>
-               <span className="text-green-400">?</span>
-            </div>
-          </div>
+    <section
+      className="relative mx-auto"
+      style={{
+        maxWidth: 1440,
+        height: 908,
+        backgroundColor: "#FFFFFF",
+      }}
+    >
+      {/* Heading */}
+      <h2
+        className="absolute"
+        style={{
+          left: 63,
+          top: 94,
+          width: 661,
+          fontFamily: '"Baloo Tamma", "Baloo 2", cursive',
+          fontWeight: 400,
+          fontSize: 56,
+          lineHeight: "1.214em",
+          color: "#02000F",
+        }}
+      >
+        Câu hỏi thường gặp
+      </h2>
 
-          <div className="flex flex-col gap-4">
-            {FAQS.map((faq) => {
-              const isOpen = openId === faq.id;
-              return (
-                <div 
-                  key={faq.id} 
-                  className={`rounded-lg overflow-hidden transition-all duration-300 ${isOpen ? 'bg-[#EBF8FF]' : 'bg-[#F4F9FB]'}`}
+      {/* FAQ question mark icon */}
+      <img
+        src={groomingImages.faqIcon}
+        alt=""
+        className="absolute"
+        style={{
+          left: 529,
+          top: 36,
+          width: 80,
+          height: 80,
+          objectFit: "cover",
+        }}
+      />
+
+      {/* FAQ items */}
+      <div
+        className="absolute"
+        style={{
+          left: 72,
+          top: 186,
+          width: 639,
+        }}
+      >
+        {FAQS.map((faq) => {
+          const isOpen = openId === faq.id;
+          return (
+            <div
+              key={faq.id}
+              className="overflow-hidden"
+              style={{
+                backgroundColor: "#E5F4FC",
+                borderRadius: 8,
+                marginBottom: 24,
+              }}
+            >
+              {/* Question button */}
+              <button
+                onClick={() => toggleFAQ(faq.id)}
+                className="relative flex items-center w-full"
+                style={{
+                  height: isOpen ? 65 : 65,
+                  padding: 0,
+                  border: "none",
+                  backgroundColor: "transparent",
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+              >
+                {/* Number */}
+                <span
+                  className="absolute"
+                  style={{
+                    left: 30,
+                    top: 27,
+                    fontFamily: "Roboto, sans-serif",
+                    fontWeight: 500,
+                    fontSize: 18,
+                    lineHeight: "1.444em",
+                    color: "#02000F",
+                  }}
                 >
-                  <button
-                    onClick={() => toggleFAQ(faq.id)}
-                    className="flex w-full items-center justify-between p-5 text-left transition-colors hover:bg-blue-50/50"
+                  {faq.id}.
+                </span>
+
+                {/* Question text */}
+                <span
+                  className="absolute"
+                  style={{
+                    left: 59,
+                    top: 14,
+                    width: 548,
+                    fontFamily: "Roboto, sans-serif",
+                    fontWeight: 500,
+                    fontSize: 18,
+                    lineHeight: "1.444em",
+                    color: "#02000F",
+                  }}
+                >
+                  {faq.question}
+                </span>
+
+                {/* Toggle icon */}
+                <span
+                  className="absolute"
+                  style={{
+                    left: 604,
+                    top: isOpen ? 23 : 16,
+                    fontFamily: "Roboto, sans-serif",
+                    fontWeight: 900,
+                    fontSize: 18,
+                    lineHeight: "1em",
+                    color: "#000000",
+                    textAlign: "center",
+                  }}
+                >
+                  {isOpen ? "_" : "+"}
+                </span>
+              </button>
+
+              {/* Answer */}
+              {isOpen && (
+                <div
+                  style={{
+                    padding: "0 59px 24px",
+                  }}
+                >
+                  <p
+                    style={{
+                      fontFamily: "Roboto, sans-serif",
+                      fontWeight: 400,
+                      fontSize: 16,
+                      lineHeight: "1.75em",
+                      color: "#6C6D71",
+                      whiteSpace: "pre-line",
+                    }}
                   >
-                    <div className="flex items-center gap-4">
-                      <span className="font-bold text-lg w-6">{faq.id}</span>
-                      <span className="font-bold text-black text-base">{faq.question}</span>
-                    </div>
-                    <span className="font-bold text-2xl leading-none w-6 text-center">
-                      {isOpen ? '-' : '+'}
-                    </span>
-                  </button>
-                  
-                  {isOpen && (
-                    <div className="p-5 pt-0 pl-[52px]">
-                      {typeof faq.answer === 'string' ? (
-                        <p className="text-[#4A5568] text-sm md:text-base leading-relaxed">
-                          {faq.answer}
-                        </p>
-                      ) : (
-                        faq.answer
-                      )}
-                    </div>
-                  )}
+                    {faq.answer}
+                  </p>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Right Side: Images */}
-        <div className="flex-1 w-full lg:max-w-[500px]">
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            {/* Top Left Image */}
-            <div className="rounded-[40px] overflow-hidden bg-pink-100 aspect-square">
-              <img src={homeImages.category2} alt="" className="w-full h-full object-cover opacity-80" />
+              )}
             </div>
-            {/* Top Right Image */}
-            <div className="rounded-[40px] overflow-hidden bg-teal-100 aspect-square">
-              <img src={homeImages.category3} alt="" className="w-full h-full object-cover opacity-80" />
-            </div>
-          </div>
-          {/* Bottom Image */}
-          <div className="rounded-[40px] overflow-hidden bg-red-100 w-full h-[250px]">
-            <img src={homeImages.category4} alt="" className="w-full h-full object-cover opacity-80" />
-          </div>
-        </div>
-
+          );
+        })}
       </div>
 
-      {/* Blue squiggle decoration at bottom */}
-      <div className="w-full flex justify-center mt-16 opacity-80">
-        <svg width="200" height="24" viewBox="0 0 200 24" fill="none" stroke="#003366" strokeWidth="3" strokeLinecap="round">
-          <path d="M2 12 C20 -4, 30 28, 50 12 C70 -4, 80 28, 100 12 C120 -4, 130 28, 150 12 C170 -4, 180 28, 198 12" />
-        </svg>
+      {/* Right side images */}
+      <div
+        className="absolute"
+        style={{
+          left: 757,
+          top: 88,
+          width: 685,
+          height: 700,
+          borderRadius: 32,
+        }}
+      >
+        {/* Top left image */}
+        <div
+          className="absolute overflow-hidden"
+          style={{
+            left: 31,
+            top: 51,
+            width: 283,
+            height: 266,
+            borderRadius: 52,
+          }}
+        >
+          <img
+            src={groomingImages.faqImg1}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Top right image */}
+        <div
+          className="absolute overflow-hidden"
+          style={{
+            left: 332,
+            top: 51,
+            width: 283,
+            height: 266,
+            borderRadius: 52,
+          }}
+        >
+          <img
+            src={groomingImages.faqImg3}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Bottom large image */}
+        <div
+          className="absolute overflow-hidden"
+          style={{
+            left: 31,
+            top: 342,
+            width: 584,
+            height: 356,
+            borderRadius: 55,
+          }}
+        >
+          <img
+            src={groomingImages.faqImg2}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
       </div>
 
+      {/* Blue ornament at bottom */}
+      <svg
+        className="absolute"
+        style={{
+          left: 679,
+          top: 835,
+          width: 290,
+          height: 29,
+        }}
+        viewBox="0 0 290 29"
+        fill="none"
+        stroke="#0D47A1"
+        strokeWidth="4"
+        strokeLinecap="round"
+      >
+        <path d="M2 14 C20 -4, 35 32, 58 14 C81 -4, 96 32, 119 14 C142 -4, 157 32, 180 14 C203 -4, 218 32, 241 14 C264 -4, 274 32, 288 14" />
+      </svg>
     </section>
   );
 }

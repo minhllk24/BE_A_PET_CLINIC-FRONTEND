@@ -1,91 +1,219 @@
-import { homeImages } from "../../assets/homeImages";
+import { groomingImages } from "../../assets/groomingImages";
 
 const REVIEWS = [
   {
     id: 1,
-    rating: 5,
-    text: "These are the perfect size for our small dog. The design is cute and the rubber on the bottom is great because it makes them more durable. They've held up to being...",
+    text: `"These are the perfect size for our small\ndog. The design is cute and the rubber on\nthe bottom is great because it makes them\nmore durable. They've held up to being..."`,
     author: "Mary Douglas",
     company: "Pet Shop Inc.",
-    avatar: "https://i.pravatar.cc/150?u=mary"
   },
   {
     id: 2,
-    rating: 5,
-    text: "These are the perfect size for our small dog. The design is cute and the rubber on the bottom is great because it makes them more durable. They've held up to being...",
+    text: `"These are the perfect size for our small\ndog. The design is cute and the rubber on\nthe bottom is great because it makes them\nmore durable. They've held up to being..."`,
     author: "Mary Douglas",
     company: "Pet Shop Inc.",
-    avatar: "https://i.pravatar.cc/150?u=mary2"
   },
   {
     id: 3,
-    rating: 5,
-    text: "These are the perfect size for our small dog. The design is cute and the rubber on the bottom is great because it makes them more durable. They've held up to being...",
+    text: `"These are the perfect size for our small\ndog. The design is cute and the rubber on\nthe bottom is great because it makes them\nmore durable. They've held up to being..."`,
     author: "Mary Douglas",
     company: "Pet Shop Inc.",
-    avatar: "https://i.pravatar.cc/150?u=mary3"
-  }
+  },
 ];
 
 function GroomingFeedback() {
   return (
-    <section className="relative w-full overflow-hidden bg-white py-16">
-      {/* Soft Blue Cloud Background Container */}
-      <div className="mx-auto max-w-[1440px] relative px-4 md:px-20 py-20 rounded-[80px] bg-[#E5F6FD] overflow-hidden">
-        
-        {/* Decorative Paws on background */}
-        <img src={homeImages.paw} alt="" className="absolute top-10 left-[20%] w-12 opacity-60 rotate-[30deg]" />
-        <img src={homeImages.paw} alt="" className="absolute top-[15%] right-[15%] w-16 opacity-80 rotate-[-15deg]" />
-        <img src={homeImages.paw} alt="" className="absolute bottom-10 left-[10%] w-10 opacity-70 rotate-[-45deg]" />
-        <img src={homeImages.paw} alt="" className="absolute bottom-[20%] right-[5%] w-20 opacity-90 rotate-[10deg]" />
+    <section
+      className="relative mx-auto flex items-center justify-center"
+      style={{
+        maxWidth: 1440,
+        height: 683,
+        padding: "0 120px",
+      }}
+    >
+      {/* Background */}
+      <div
+        className="absolute"
+        style={{
+          left: 0,
+          top: 0,
+          width: 1440,
+          height: 683,
+        }}
+      >
+        <img
+          src={groomingImages.feedbackBg}
+          alt=""
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-        {/* Title */}
-        <h2 className="relative z-10 text-center font-display text-4xl md:text-5xl font-bold text-[#0B0F19] mb-12">
-          Phản hồi của khách hàng
-        </h2>
-
-        {/* Cards Wrapper */}
-        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:justify-center">
-          {REVIEWS.map((review) => (
-            <article 
-              key={review.id}
-              className="flex-1 rounded-[24px] bg-white p-8 shadow-sm transition hover:shadow-md max-w-[380px]"
+      {/* Content container */}
+      <div
+        className="relative flex flex-col items-end"
+        style={{
+          padding: "34px 12px",
+          height: 603,
+        }}
+      >
+        {/* Inner content */}
+        <div
+          className="flex flex-col items-center"
+          style={{ width: 1416, gap: 58 }}
+        >
+          {/* Title */}
+          <div className="flex flex-col items-center w-full">
+            <h2
+              style={{
+                width: 942,
+                height: 58,
+                fontFamily: '"Baloo Tamma", "Baloo 2", cursive',
+                fontWeight: 400,
+                fontSize: 64,
+                lineHeight: "1.1em",
+                textAlign: "center",
+                color: "#02000F",
+              }}
             >
-              {/* Stars */}
-              <div className="flex gap-1 mb-4 text-[#FFC107] text-xl">
-                {'★'.repeat(review.rating)}
-              </div>
-              
-              <p className="text-[#4A5568] text-sm md:text-base leading-relaxed mb-6 line-clamp-4">
-                "{review.text}"
-              </p>
+              Phản hồi của khách hàng
+            </h2>
+          </div>
 
-              <div className="flex items-center gap-4">
-                <img 
-                  src={review.avatar} 
-                  alt={review.author} 
-                  className="w-12 h-12 rounded-full object-cover bg-gray-200" 
-                />
-                <div>
-                  <h4 className="font-bold text-[#0B0F19] text-base">{review.author}</h4>
-                  <p className="text-sm text-gray-500">{review.company}</p>
+          {/* Cards */}
+          <div
+            className="flex items-center justify-center"
+            style={{ width: 1200, gap: 10 }}
+          >
+            {REVIEWS.map((review) => (
+              <div
+                key={review.id}
+                className="flex flex-col justify-center"
+                style={{
+                  flex: "1 1 0",
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 24,
+                  padding: 40,
+                  gap: 10,
+                }}
+              >
+                {/* Stars */}
+                <div className="flex items-center" style={{ gap: 8 }}>
+                  {[...Array(5)].map((_, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        width: 17,
+                        height: 15,
+                        fontSize: 15,
+                        lineHeight: "1em",
+                        color: "#FF9D00",
+                      }}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+
+                {/* Review text */}
+                <p
+                  style={{
+                    height: 118,
+                    fontFamily: "Roboto, sans-serif",
+                    fontWeight: 400,
+                    fontSize: 16,
+                    lineHeight: "1.75em",
+                    letterSpacing: "0.009em",
+                    textAlign: "justify",
+                    color: "#333333",
+                    whiteSpace: "pre-line",
+                  }}
+                >
+                  {review.text}
+                </p>
+
+                {/* Author */}
+                <div
+                  className="flex items-center w-full"
+                  style={{ gap: 10 }}
+                >
+                  <div className="flex items-center" style={{ gap: 16 }}>
+                    {/* Avatar placeholder */}
+                    <div
+                      className="rounded-full overflow-hidden"
+                      style={{
+                        width: 44,
+                        height: 44,
+                        backgroundColor: "#E0E0E0",
+                      }}
+                    />
+                    <div className="flex flex-col" style={{ width: 150, gap: 2 }}>
+                      <span
+                        style={{
+                          fontFamily: "Fredoka, sans-serif",
+                          fontWeight: 500,
+                          fontSize: 24,
+                          lineHeight: "1em",
+                          color: "#02000F",
+                        }}
+                      >
+                        {review.author}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "Onest, sans-serif",
+                          fontWeight: 400,
+                          fontSize: 16,
+                          lineHeight: "1.75em",
+                          color: "#6C6D71",
+                        }}
+                      >
+                        {review.company}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </article>
+            ))}
+          </div>
+        </div>
+
+        {/* Carousel dots */}
+        <div
+          className="flex items-center justify-center w-full"
+          style={{ gap: 21, marginTop: 20 }}
+        >
+          {/* Left line decoration */}
+          <div
+            style={{
+              width: 271,
+              height: 10,
+              opacity: 0.3,
+            }}
+          />
+
+          {/* Dots */}
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: 9,
+                backgroundColor: i === 1 ? "#F4E11B" : "#FFFFFF",
+                border: i === 1 ? "3px solid #02000F" : "none",
+              }}
+            />
           ))}
-        </div>
 
-        {/* Pagination Dots */}
-        <div className="relative z-10 flex justify-center items-center gap-3 mt-12">
-           <div className="w-12 h-[2px] bg-white/50 rounded" />
-           <button className="w-4 h-4 rounded-full bg-[#FFC107] border-2 border-black" aria-label="Page 1" />
-           <button className="w-4 h-4 rounded-full bg-white" aria-label="Page 2" />
-           <button className="w-4 h-4 rounded-full bg-white" aria-label="Page 3" />
-           <button className="w-4 h-4 rounded-full bg-white" aria-label="Page 4" />
-           <button className="w-4 h-4 rounded-full bg-white" aria-label="Page 5" />
-           <div className="w-12 h-[2px] bg-white/50 rounded" />
+          {/* Right line decoration */}
+          <div
+            style={{
+              width: 271,
+              height: 10,
+              opacity: 0.3,
+            }}
+          />
         </div>
-
       </div>
     </section>
   );
