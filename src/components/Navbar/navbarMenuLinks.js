@@ -5,7 +5,7 @@ export const NAV_LINKS = [
     href: "/services",
     children: [
       { label: "Khám & Điều trị", href: "/services/kham-dieu-tri" },
-      { label: "Grooming & Spa", href: "/services/groomng-spa" },
+      { label: "Grooming & Spa", href: "/services/grooming-spa" },
     ],
   },
   {

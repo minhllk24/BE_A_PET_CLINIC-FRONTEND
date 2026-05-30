@@ -49,7 +49,7 @@ BE_A_PET_CLINIC-FRONTEND
 │  │  │  │  ├─ cart-yellow.svg
 │  │  │  │  ├─ dog-search.png
 │  │  │  │  ├─ notification.svg
-│  │  │  │  └─ search-icon.svg
+│  │  │  │  └─ search-icon.svg 
 │  │  │  └─ pets
 │  │  │     ├─ buddy.jpg
 │  │  │     ├─ luna.jpg
@@ -72,16 +72,13 @@ BE_A_PET_CLINIC-FRONTEND
 │  │  │  ├─ SectionTitle.jsx
 │  │  │  ├─ ServiceSection.jsx
 │  │  │  └─ YellowButton.jsx
-│  │  ├─ layout
-│  │  │  ├─ Footer.jsx
-│  │  │  ├─ NavBar.jsx
-│  │  │  └─ NavBarButton.jsx
 │  │  ├─ Loading
 │  │  │  └─ Loading.jsx
 │  │  ├─ Navbar
 │  │  │  ├─ index.js
 │  │  │  ├─ NavBar.jsx
 │  │  │  ├─ NavBarAuthenticated.jsx
+│  │  │  ├─ NavBarButton.jsx
 │  │  │  ├─ NavBarGuest.jsx
 │  │  │  ├─ navbarMenuLinks.js
 │  │  │  ├─ NavLinks.jsx
@@ -102,11 +99,14 @@ BE_A_PET_CLINIC-FRONTEND
 │  ├─ main.jsx
 │  ├─ modules
 │  ├─ pages
-│  │  ├─ HomePage.jsx
+│  │  ├─ HomePage
+|  |     ├─HomePage.jsx
 │  │  └─ Pet
 │  │     ├─ MyPetPage.jsx
 │  │     ├─ PetDetailPage.jsx
 │  │     └─ PetFormPage.jsx
+│  │  └─CheckoutPage.jsx
+│  │  └─GroomingSpaPage.jsx
 │  ├─ redux
 │  │  └─ slices
 │  ├─ routes

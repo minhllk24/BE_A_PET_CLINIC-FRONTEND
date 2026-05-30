@@ -1,5 +1,5 @@
 import NavBar from "../components/Navbar";
-import Footer from "../components/layout/Footer";
+import Footer from "../components/Footer/Footer";
 import GroomingHero from "../components/groomingSpa/GroomingHero";
 import GroomingServices from "../components/groomingSpa/GroomingServices";
 import GroomingBanner from "../components/groomingSpa/GroomingBanner";
