@@ -24,12 +24,12 @@ const SERVICES = [
 
 function ServiceCard({ image, title, description }) {
   return (
-    <article className="flex flex-1 flex-col items-center">
+    <article className="group flex flex-1 flex-col items-center transition-transform duration-component ease-premium hover:-translate-y-1">
       <div className="relative h-[513px] w-full max-w-[338px] overflow-hidden rounded-t-[189px]">
         <img
           src={image}
           alt={title}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-component ease-premium group-hover:scale-[1.02]"
         />
         <div className="absolute bottom-[30px] left-[33px] h-[244px] w-[272px]">
 
@@ -56,7 +56,7 @@ function ServiceCard({ image, title, description }) {
             </p>
             <button
               type="button"
-              className="mt-2 flex h-12 w-[60px] items-center justify-center rounded-full bg-secondary text-xl font-bold text-black transition hover:scale-105 hover:bg-yellow-100"
+              className="btn-icon mt-2 flex h-12 w-[60px] items-center justify-center bg-secondary text-xl font-bold text-black hover:bg-[#FFEE58]"
               aria-label={`Xem thêm ${title}`}
             >
               →

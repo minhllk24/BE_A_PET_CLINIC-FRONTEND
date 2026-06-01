@@ -1,26 +1,34 @@
 import PropTypes from "prop-types";
 
+const VARIANT_CLASS = {
+  filled: "btn-yellow",
+  outline: "btn-yellow-outline",
+  light: "btn-yellow-light",
+};
+
 function YellowButton({
   children,
   variant = "filled",
   className = "",
   onClick,
   type = "button",
+  disabled = false,
+  loading = false,
+  "aria-label": ariaLabel,
 }) {
-  const base =
-    "inline-flex items-center justify-center gap-2 rounded px-[22px] py-2 text-[15px] font-bold uppercase tracking-wide shadow-elevation transition hover:opacity-90";
-
-  const variants = {
-    filled: "bg-secondary text-black/87",
-    outline: "border border-secondary bg-transparent text-black/87",
-    light: "bg-secondary-light text-black/87",
-  };
-
   return (
     <button
       type={type}
       onClick={onClick}
-      className={`${base} ${variants[variant]} ${className}`}
+      disabled={disabled || loading}
+      aria-label={ariaLabel}
+      aria-busy={loading || undefined}
+      className={[
+        VARIANT_CLASS[variant] ?? VARIANT_CLASS.filled,
+        "focus-ring-brand",
+        loading ? "btn-loading" : "",
+        className,
+      ].join(" ")}
     >
       {children}
     </button>
@@ -33,6 +41,9 @@ YellowButton.propTypes = {
   className: PropTypes.string,
   onClick: PropTypes.func,
   type: PropTypes.string,
+  disabled: PropTypes.bool,
+  loading: PropTypes.bool,
+  "aria-label": PropTypes.string,
 };
 
 export default YellowButton;

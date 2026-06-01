@@ -3,6 +3,7 @@
  * Hiển thị: tìm kiếm, ĐẶT LỊCH, thông báo, giỏ hàng, avatar người dùng.
  */
 import { homeImages } from "../../assets/homeImages";
+import { useCart } from "../../context/CartContext";
 import { navbarImages } from "../../assets/navbarImages";
 import YellowButton from "../home/YellowButton";
 import NavLinks from "./NavLinks";
@@ -10,6 +11,7 @@ import NavSearchBar from "./NavSearchBar";
 import NavUserMenu from "./NavUserMenu";
 
 function NavBarAuthenticated({ avatarSrc, onLogout }) {
+  const { openCart } = useCart();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white">
@@ -35,7 +37,7 @@ function NavBarAuthenticated({ avatarSrc, onLogout }) {
 
           <button
             type="button"
-            className="shrink-0 transition hover:opacity-80"
+            className="btn-icon shrink-0 p-1"
             aria-label="Thông báo"
           >
             <img
@@ -45,9 +47,10 @@ function NavBarAuthenticated({ avatarSrc, onLogout }) {
             />
           </button>
 
-          <a
-            href="/cart"
-            className="shrink-0 transition hover:opacity-80"
+          <button
+            type="button"
+            onClick={openCart}
+            className="btn-icon shrink-0 p-1"
             aria-label="Giỏ hàng"
           >
             <img
@@ -55,7 +58,7 @@ function NavBarAuthenticated({ avatarSrc, onLogout }) {
               alt=""
               className="h-9 w-9"
             />
-          </a>
+          </button>
 
           <NavUserMenu avatarSrc={avatarSrc} onLogout={onLogout} />
         </div>
