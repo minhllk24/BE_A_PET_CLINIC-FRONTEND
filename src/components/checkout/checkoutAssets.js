@@ -1,27 +1,27 @@
 export const checkoutImages = {
   product:
-    "https://www.figma.com/api/mcp/asset/119059f1-03f3-4369-89d5-e045322a2396",
+    "/figma-assets/119059f1-03f3-4369-89d5-e045322a2396.png",
   backArrow:
-    "https://www.figma.com/api/mcp/asset/c0a91732-d6c5-4f5d-8150-0e82cf15bddd",
+    "/figma-assets/c0a91732-d6c5-4f5d-8150-0e82cf15bddd.svg",
   locationPin:
-    "https://www.figma.com/api/mcp/asset/2453da1e-ca37-458b-a7e5-25cfd2463ebe",
-  momo: "https://www.figma.com/api/mcp/asset/964bceb7-c1d0-4002-aab4-ae87caebdd4d",
+    "/figma-assets/2453da1e-ca37-458b-a7e5-25cfd2463ebe.svg",
+  momo: "/figma-assets/964bceb7-c1d0-4002-aab4-ae87caebdd4d.png",
   zalopay:
-    "https://www.figma.com/api/mcp/asset/0cc23b90-c52b-4e76-8b61-29a2b0ea6fab",
+    "/figma-assets/0cc23b90-c52b-4e76-8b61-29a2b0ea6fab.png",
   vnpay:
-    "https://www.figma.com/api/mcp/asset/30e87f5c-1184-4617-9d44-950ce6fdbbe3",
+    "/figma-assets/30e87f5c-1184-4617-9d44-950ce6fdbbe3.png",
   radioUnchecked:
-    "https://www.figma.com/api/mcp/asset/377bd4ad-9b21-4ccc-838e-c2597e272c3b",
+    "/figma-assets/377bd4ad-9b21-4ccc-838e-c2597e272c3b.svg",
   radioChecked:
-    "https://www.figma.com/api/mcp/asset/cb45fed8-dedb-403f-b352-ed3c6391c3ed",
+    "/figma-assets/cb45fed8-dedb-403f-b352-ed3c6391c3ed.svg",
   bankIcon:
-    "https://www.figma.com/api/mcp/asset/c6a2891e-09ec-478b-9efd-a269fd643873",
+    "/figma-assets/c6a2891e-09ec-478b-9efd-a269fd643873.svg",
   checkmark:
-    "https://www.figma.com/api/mcp/asset/b3948361-c9f6-4bfa-966c-77afc0954aca",
+    "/figma-assets/b3948361-c9f6-4bfa-966c-77afc0954aca.svg",
   atmIcon:
-    "https://www.figma.com/api/mcp/asset/44104f2c-127d-4c71-b8b2-9425b6cca8c6",
+    "/figma-assets/44104f2c-127d-4c71-b8b2-9425b6cca8c6.svg",
   cardIcon:
-    "https://www.figma.com/api/mcp/asset/88e6bfeb-5c0f-44a1-af95-908c427e4561",
+    "/figma-assets/88e6bfeb-5c0f-44a1-af95-908c427e4561.svg",
 };
 
 export const GUEST_ORDER_ITEMS = [

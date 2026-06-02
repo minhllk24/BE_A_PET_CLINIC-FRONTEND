@@ -33,8 +33,8 @@ const PRODUCTS = Array.from({ length: 12 }, (_, i) => ({
   oldPrice: "$23.00",
   price: "$13.00",
 }));
-const imgBestSellerSpark = "https://www.figma.com/api/mcp/asset/03a3298c-9afa-4ef4-910b-3e70e7f1b0d0";
-const imgBestSellerStroke = "https://www.figma.com/api/mcp/asset/152bd026-e93f-4fa5-b60b-f7a19335625f";
+const imgBestSellerSpark = "/figma-assets/03a3298c-9afa-4ef4-910b-3e70e7f1b0d0.png";
+const imgBestSellerStroke = "/figma-assets/152bd026-e93f-4fa5-b60b-f7a19335625f.svg";
 const SECTION_TITLE_TYPOGRAPHY = {
   fontFamily: '"Baloo Tamma 2", "Baloo 2", cursive',
   fontWeight: 400,
@@ -45,16 +45,16 @@ const SECTION_TITLE_TYPOGRAPHY = {
 };
 const PROMOTION_ITEMS = [
   {
-    image: "https://www.figma.com/api/mcp/asset/af034252-8fee-475a-9612-ae2cae66f0c1",
+    image: "/figma-assets/af034252-8fee-475a-9612-ae2cae66f0c1.png",
   },
   {
-    image: "https://www.figma.com/api/mcp/asset/1e8f97d3-53e6-44ce-958b-a52b1c53d4a4",
+    image: "/figma-assets/1e8f97d3-53e6-44ce-958b-a52b1c53d4a4.png",
   },
   {
-    image: "https://www.figma.com/api/mcp/asset/d081388a-7615-4073-9cfc-490285f32fc2",
+    image: "/figma-assets/d081388a-7615-4073-9cfc-490285f32fc2.png",
   },
   {
-    image: "https://www.figma.com/api/mcp/asset/e485a7e0-7289-4b82-8afa-c89af57ade91",
+    image: "/figma-assets/e485a7e0-7289-4b82-8afa-c89af57ade91.png",
   },
 ];
 

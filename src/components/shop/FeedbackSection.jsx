@@ -2,19 +2,19 @@ import { useCallback, useRef, useState } from "react";
 import { FEEDBACK_PAGE_COUNT, FEEDBACK_PAGES } from "./feedbackData";
 
 const imgBackground =
-  "https://www.figma.com/api/mcp/asset/979c3e45-b892-468a-a1b4-abd72fcff538";
+  "/figma-assets/979c3e45-b892-468a-a1b4-abd72fcff538.png";
 const imgCarouselLeft =
-  "https://www.figma.com/api/mcp/asset/05c6c67e-c37c-4ea7-862e-548024d504d2";
+  "/figma-assets/05c6c67e-c37c-4ea7-862e-548024d504d2.png";
 const imgCarouselRight =
-  "https://www.figma.com/api/mcp/asset/3e5e4147-72ee-4cf5-b6d6-bcff18461aee";
+  "/figma-assets/3e5e4147-72ee-4cf5-b6d6-bcff18461aee.png";
 const imgPawDark =
-  "https://www.figma.com/api/mcp/asset/56b3640d-100f-4c23-95b6-adbf5c419ed3";
+  "/figma-assets/56b3640d-100f-4c23-95b6-adbf5c419ed3.png";
 const imgPawSmall =
-  "https://www.figma.com/api/mcp/asset/288dc139-1f3e-49a1-80b2-d128c08a706f";
+  "/figma-assets/288dc139-1f3e-49a1-80b2-d128c08a706f.png";
 const imgPawBlue =
-  "https://www.figma.com/api/mcp/asset/30e54297-c2fe-4461-835d-4457b80e60f7";
+  "/figma-assets/30e54297-c2fe-4461-835d-4457b80e60f7.png";
 const imgPawBlueSmall =
-  "https://www.figma.com/api/mcp/asset/b1710267-5cc9-46d8-afbd-ad53d4704a18";
+  "/figma-assets/b1710267-5cc9-46d8-afbd-ad53d4704a18.png";
 
 const SECTION_TITLE_TYPOGRAPHY = {
   fontFamily: '"Baloo Tamma 2", "Baloo 2", cursive',

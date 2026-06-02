@@ -3,90 +3,26 @@ import CanvasLayout from "../components/layout/CanvasLayout";
 import NavBar from "../components/Navbar";
 import ProductCard from "../components/product/ProductCard";
 import WriteReviewForm from "../components/product/WriteReviewForm";
+import Footer from "../components/layout/Footer";
 
 import { TEST_AUTHENTICATED } from "../config/devFlags";
 
-const imgImage = "https://www.figma.com/api/mcp/asset/ab8aac39-f2f8-4e15-aa3f-85d150496327";
-const imgChevronRight = "https://www.figma.com/api/mcp/asset/0fb4e9c0-4a13-448a-9415-d693643a2161";
-const imgIconStar = "https://www.figma.com/api/mcp/asset/4cc1209e-7852-4306-b55e-4b9e7992fee3";
-const imgChevronDownSmall = "https://www.figma.com/api/mcp/asset/c0fa9cfe-a0f7-4b5e-8d53-998a8fd9c5d8";
-const imgRemove = "https://www.figma.com/api/mcp/asset/21c1ea90-6ce5-45b3-a8a2-fe473cadd9d7";
-const imgAdd = "https://www.figma.com/api/mcp/asset/52cb6f60-f787-44b6-b8d3-072512d7faeb";
-const imgVerticalDivider = "https://www.figma.com/api/mcp/asset/88cc9b8e-59da-4dd4-ac07-3cabee1fa6e4";
-const imgTruck = "https://www.figma.com/api/mcp/asset/d83b8f00-5800-41a1-b909-86e8e9f23d2b";
-const imgRotate3d = "https://www.figma.com/api/mcp/asset/0c241c72-415e-4d95-a95f-a6a4c9793f8a";
+const imgImage = "/figma-assets/ab8aac39-f2f8-4e15-aa3f-85d150496327.png";
+const imgChevronRight = "/figma-assets/0fb4e9c0-4a13-448a-9415-d693643a2161.svg";
+const imgIconStar = "/figma-assets/4cc1209e-7852-4306-b55e-4b9e7992fee3.svg";
+const imgChevronDownSmall = "/figma-assets/c0fa9cfe-a0f7-4b5e-8d53-998a8fd9c5d8.svg";
+const imgRemove = "/figma-assets/21c1ea90-6ce5-45b3-a8a2-fe473cadd9d7.svg";
+const imgAdd = "/figma-assets/52cb6f60-f787-44b6-b8d3-072512d7faeb.svg";
+const imgVerticalDivider = "/figma-assets/88cc9b8e-59da-4dd4-ac07-3cabee1fa6e4.svg";
+const imgTruck = "/figma-assets/d83b8f00-5800-41a1-b909-86e8e9f23d2b.svg";
+const imgRotate3d = "/figma-assets/0c241c72-415e-4d95-a95f-a6a4c9793f8a.svg";
 
-const imgFooterMark = "https://www.figma.com/api/mcp/asset/6c86df5f-06fe-4766-b9a7-f5e440e8b5d5";
-const imgFooterYouTube = "https://www.figma.com/api/mcp/asset/4549c0df-128e-4c86-97aa-501fd0b0e62b";
-const imgFooterFacebook = "https://www.figma.com/api/mcp/asset/c24f4d0d-1282-42f4-909e-11d6c8c5cc40";
-const imgFooterTwitter = "https://www.figma.com/api/mcp/asset/7e0533ef-42cd-4736-9af3-b577f8113a18";
-const imgFooterInstagram1 = "https://www.figma.com/api/mcp/asset/a4d7ef95-0deb-4e26-abed-797b0be7f357";
-const imgFooterInstagram2 = "https://www.figma.com/api/mcp/asset/c1a09fbf-7d37-4314-9822-24e4c73b8b99";
-const imgFooterInstagram3 = "https://www.figma.com/api/mcp/asset/157e9189-cd46-4068-a1e6-13566a41ef30";
-const imgFooterLinkedIn = "https://www.figma.com/api/mcp/asset/ea4bd9df-85e5-4bcf-8376-158111f8fff6";
-const imgReviewDivider = "https://www.figma.com/api/mcp/asset/51dd5fbb-cda9-4e58-b6b7-4e8a614f5d7b";
-const imgReviewStars = "https://www.figma.com/api/mcp/asset/f372926a-e6be-44e4-8f9c-12390c662b81";
-const imgReviewStarSmall = "https://www.figma.com/api/mcp/asset/5c589ecf-a710-4d8c-99ae-eedbd88c075a";
-const imgReviewAvatar = "https://www.figma.com/api/mcp/asset/e937baf2-2355-42b6-a50e-fcd61f9b2842";
-const imgPaginationPrev = "https://www.figma.com/api/mcp/asset/247f3a38-31e1-4fef-8b42-7a332ed5eacb";
-const imgPaginationNext = "https://www.figma.com/api/mcp/asset/2b3027bc-9446-4126-9ead-f5ecafd8ae89";
-
-function FooterExact() {
-  return (
-    <footer className="h-[480px] w-[1440px] overflow-hidden">
-      <div className="flex h-[484px] w-[1440px] flex-col items-center justify-center gap-[24px] bg-[#E5F6FD] px-[120px] pb-[50px] pt-[80px]">
-        <div className="flex w-[1280px] items-start justify-center gap-[48px] border-b border-[#E2E8F0]">
-          <div className="flex flex-1 flex-col">
-            <div className="flex items-center gap-[8px]">
-              <img src={imgFooterMark} alt="" className="h-[32px] w-[21.028px]" />
-              <div className="font-['Roboto'] text-[24px] font-bold leading-[1.1] text-[rgba(0,0,0,0.87)]">WAVES</div>
-            </div>
-          </div>
-          {[
-            { title: "PRODUCT", items: ["Pricing", "Overview", "Browse", "Accessibility", "Five"] },
-            { title: "Solutions", items: ["Brainstorming", "Ideation", "Wireframing", "Research"] },
-            { title: "Resources", items: ["Help Center", "Blog", "Tutorials"] },
-            { title: "Company", items: ["About", "Press", "Events", "Careers"] },
-          ].map((col) => (
-            <div key={col.title} className="flex flex-1 flex-col">
-              <div className="py-[12px] font-['Roboto'] text-[20px] font-bold leading-[1.6] tracking-[0.15px] text-[#0D47A1]">
-                {col.title}
-              </div>
-              {col.items.map((item) => (
-                <div key={item} className="py-[12px] font-['Roboto'] text-[16px] leading-[1.4] text-[rgba(0,0,0,0.87)]">
-                  {item}
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-        <div className="mt-[24px] flex w-[1280px] items-center justify-center gap-[48px]">
-          <div className="flex-1 font-['Roboto'] text-[16px] leading-[1.4] text-[#475569]">
-            @ 2023 Company Name, Inc. All rights reserved.
-          </div>
-          <div className="flex items-center justify-end gap-[24px]">
-            {["Terms", "Privacy", "Contact"].map((item) => (
-              <div key={item} className="py-[12px] font-['Roboto'] text-[16px] leading-[1.4] text-[#475569]">
-                {item}
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center gap-[16px]">
-            <img src={imgFooterYouTube} alt="" className="h-6 w-6" />
-            <img src={imgFooterFacebook} alt="" className="h-6 w-6" />
-            <img src={imgFooterTwitter} alt="" className="h-6 w-6" />
-            <div className="relative h-6 w-6">
-              <img src={imgFooterInstagram1} alt="" className="absolute inset-0 h-6 w-6 object-contain" />
-              <img src={imgFooterInstagram2} alt="" className="absolute inset-0 h-6 w-6 object-contain" />
-              <img src={imgFooterInstagram3} alt="" className="absolute inset-0 h-6 w-6 object-contain" />
-            </div>
-            <img src={imgFooterLinkedIn} alt="" className="h-6 w-6" />
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-}
+const imgReviewDivider = "/figma-assets/51dd5fbb-cda9-4e58-b6b7-4e8a614f5d7b.svg";
+const imgReviewStars = "/figma-assets/f372926a-e6be-44e4-8f9c-12390c662b81.svg";
+const imgReviewStarSmall = "/figma-assets/5c589ecf-a710-4d8c-99ae-eedbd88c075a.svg";
+const imgReviewAvatar = "/figma-assets/e937baf2-2355-42b6-a50e-fcd61f9b2842.svg";
+const imgPaginationPrev = "/figma-assets/247f3a38-31e1-4fef-8b42-7a332ed5eacb.svg";
+const imgPaginationNext = "/figma-assets/2b3027bc-9446-4126-9ead-f5ecafd8ae89.svg";
 
 export default function ProductDetailsPage({ showWriteReview = false }) {
   const [isReviewTab, setIsReviewTab] = useState(showWriteReview);
@@ -356,7 +292,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
           </div>
         </section>
 
-        <FooterExact />
+        <Footer />
       </CanvasLayout>
     </div>
   );

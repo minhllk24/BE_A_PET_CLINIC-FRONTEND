@@ -1,13 +1,13 @@
 import { useCart } from "../../context/CartContext";
 
 const imgProductImage =
-  "https://www.figma.com/api/mcp/asset/e73c2802-9dfa-4d78-a2ad-ca5f21e94ad5";
+  "/figma-assets/e73c2802-9dfa-4d78-a2ad-ca5f21e94ad5.png";
 const imgCheckbox =
-  "https://www.figma.com/api/mcp/asset/9e52b414-ad2b-42db-a5cb-3b510be4be9c";
+  "/figma-assets/9e52b414-ad2b-42db-a5cb-3b510be4be9c.svg";
 const imgIconBin =
-  "https://www.figma.com/api/mcp/asset/cb09bfa4-951a-45da-9055-c584a70429e1";
+  "/figma-assets/cb09bfa4-951a-45da-9055-c584a70429e1.svg";
 const imgIconClose =
-  "https://www.figma.com/api/mcp/asset/e52c928e-28c8-4f44-ac0a-00104147e2ae";
+  "/figma-assets/e52c928e-28c8-4f44-ac0a-00104147e2ae.svg";
 
 const CART_ITEMS = [
   { id: 1, name: "Tên sản phẩm", price: "giá", type: "fill", size: "fill", qty: 1 },

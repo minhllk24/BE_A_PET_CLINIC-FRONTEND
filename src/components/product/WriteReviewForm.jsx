@@ -1,11 +1,11 @@
 import { useState } from "react";
 
 const imgCommenterAvatar =
-  "https://www.figma.com/api/mcp/asset/6af6ab21-b98f-45b9-b5d0-61917d2047dc";
+  "/figma-assets/6af6ab21-b98f-45b9-b5d0-61917d2047dc.svg";
 const imgIconStar =
-  "https://www.figma.com/api/mcp/asset/4cc1209e-7852-4306-b55e-4b9e7992fee3";
+  "/figma-assets/4cc1209e-7852-4306-b55e-4b9e7992fee3.svg";
 const imgSubmitChevron =
-  "https://www.figma.com/api/mcp/asset/f5b9b5c6-f596-4331-9829-0ac94ccb180b";
+  "/figma-assets/f5b9b5c6-f596-4331-9829-0ac94ccb180b.svg";
 
 function StarRating({ value, onChange }) {
   return (

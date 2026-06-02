@@ -1,5 +1,5 @@
 import NavBar from "../../components/Navbar";
-import Footer from "../../components/Footer/Footer";
+import Footer from "../../components/layout/Footer";
 
 /** TEST navbar đã đăng nhập: đổi `true` / `false` rồi lưu file */
 const TEST_AUTHENTICATED_NAVBAR = true;

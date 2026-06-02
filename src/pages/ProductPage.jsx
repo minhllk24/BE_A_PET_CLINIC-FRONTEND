@@ -1,27 +1,20 @@
 import CanvasLayout from "../components/layout/CanvasLayout";
+import Footer from "../components/layout/Footer";
 import NavBar from "../components/Navbar";
 import ProductCard from "../components/product/ProductCard";
 
 import { TEST_AUTHENTICATED } from "../config/devFlags";
 
-const imgSidebarLine = "https://www.figma.com/api/mcp/asset/3bcb8e9a-d93c-44bd-8f2b-0e0e333894d3";
-const imgChevronDown = "https://www.figma.com/api/mcp/asset/91eb7cf9-8d2a-4046-b0e8-2df04f354d3d";
-const imgCheckboxChecked = "https://www.figma.com/api/mcp/asset/52c8d76e-3fa0-493c-a57b-0d16d2d5752f";
-const imgCheckboxEmpty = "https://www.figma.com/api/mcp/asset/c36dd4ac-f3e7-484e-8824-c68a01ee5f98";
+const imgSidebarLine = "/figma-assets/3bcb8e9a-d93c-44bd-8f2b-0e0e333894d3.svg";
+const imgChevronDown = "/figma-assets/91eb7cf9-8d2a-4046-b0e8-2df04f354d3d.svg";
+const imgCheckboxChecked = "/figma-assets/52c8d76e-3fa0-493c-a57b-0d16d2d5752f.svg";
+const imgCheckboxEmpty = "/figma-assets/c36dd4ac-f3e7-484e-8824-c68a01ee5f98.svg";
 
-const imgCollectionSearchIcon = "https://www.figma.com/api/mcp/asset/d6439062-53c3-4a73-96dc-204790263142";
+const imgCollectionSearchIcon = "/figma-assets/d6439062-53c3-4a73-96dc-204790263142.svg";
 
-const imgPaginationDivider = "https://www.figma.com/api/mcp/asset/94d859b0-e47b-4f1e-a72e-10e55d684f49";
-const imgButtonChevron = "https://www.figma.com/api/mcp/asset/b4c4c1dc-7aef-4774-bb10-26f7da50d016";
+const imgPaginationDivider = "/figma-assets/94d859b0-e47b-4f1e-a72e-10e55d684f49.svg";
+const imgButtonChevron = "/figma-assets/b4c4c1dc-7aef-4774-bb10-26f7da50d016.svg";
 
-const imgFooterMark = "https://www.figma.com/api/mcp/asset/5c74a7a0-cad0-468f-9ada-569b1671ea7d";
-const imgFooterYouTube = "https://www.figma.com/api/mcp/asset/aca21be8-571f-436c-acf4-bb0530b5f071";
-const imgFooterFacebook = "https://www.figma.com/api/mcp/asset/7f3e8656-6447-4f03-96c9-067b80639359";
-const imgFooterTwitter = "https://www.figma.com/api/mcp/asset/ee3e02ea-bce6-4eec-9e15-977b997993ac";
-const imgFooterInstagram1 = "https://www.figma.com/api/mcp/asset/776e59b0-79d7-4227-8ad4-36fedf02b74a";
-const imgFooterInstagram2 = "https://www.figma.com/api/mcp/asset/aac7ab4b-93e2-4782-9c80-33660e75eabe";
-const imgFooterInstagram3 = "https://www.figma.com/api/mcp/asset/0a3655c2-d494-4c0c-8d5e-69b20b1cff4d";
-const imgFooterLinkedIn = "https://www.figma.com/api/mcp/asset/a95ed603-37f9-42ad-8002-5c4fb8d3a445";
 
 function SidebarFilter() {
   return (
@@ -166,62 +159,6 @@ function PaginationBlock() {
   );
 }
 
-function FooterExact() {
-  return (
-    <footer className="h-[484px] w-[1440px] bg-[#E5F6FD] px-[120px] pb-[50px] pt-[80px]">
-      <div className="flex w-[1280px] items-start justify-center gap-[48px] border-b border-[#E2E8F0]">
-        <div className="flex flex-1 flex-col">
-          <div className="flex items-center gap-[8px]">
-            <img src={imgFooterMark} alt="" className="h-[32px] w-[21px]" />
-            <div className="font-['Roboto'] text-[24px] font-bold leading-[1.1] text-[rgba(0,0,0,0.87)]">WAVES</div>
-          </div>
-        </div>
-        {[
-          { title: "PRODUCT", items: ["Pricing", "Overview", "Browse", "Accessibility", "Five"] },
-          { title: "Solutions", items: ["Brainstorming", "Ideation", "Wireframing", "Research"] },
-          { title: "Resources", items: ["Help Center", "Blog", "Tutorials"] },
-          { title: "Company", items: ["About", "Press", "Events", "Careers"] },
-        ].map((col) => (
-          <div key={col.title} className="flex flex-1 flex-col">
-            <div className="py-[12px] font-['Roboto'] text-[20px] font-bold leading-[1.6] tracking-[0.15px] text-[#0D47A1]">
-              {col.title}
-            </div>
-            {col.items.map((item) => (
-              <div key={item} className="py-[12px] font-['Roboto'] text-[16px] leading-[1.4] text-[rgba(0,0,0,0.87)]">
-                {item}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-[24px] flex w-[1280px] items-center justify-center gap-[48px]">
-        <div className="flex-1 font-['Roboto'] text-[16px] leading-[1.4] text-[#475569]">
-          @ 2023 Company Name, Inc. All rights reserved.
-        </div>
-        <div className="flex items-center justify-end gap-[24px]">
-          {["Terms", "Privacy", "Contact"].map((item) => (
-            <div key={item} className="py-[12px] font-['Roboto'] text-[16px] leading-[1.4] text-[#475569]">
-              {item}
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center gap-[16px]">
-          <img src={imgFooterYouTube} alt="YouTube" className="h-6 w-6 object-contain" />
-          <img src={imgFooterFacebook} alt="Facebook" className="h-6 w-6 object-contain" />
-          <img src={imgFooterTwitter} alt="Twitter" className="h-6 w-6 object-contain" />
-          <div className="relative h-6 w-6">
-            <img src={imgFooterInstagram1} alt="Instagram" className="absolute inset-0 h-6 w-6 object-contain" />
-            <img src={imgFooterInstagram2} alt="" className="absolute inset-0 h-6 w-6 object-contain" />
-            <img src={imgFooterInstagram3} alt="" className="absolute inset-0 h-6 w-6 object-contain" />
-          </div>
-          <img src={imgFooterLinkedIn} alt="LinkedIn" className="h-6 w-6 object-contain" />
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 export default function ProductPage() {
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#FFFFFF_0%,#E5F6FD_100%)]">
@@ -239,7 +176,7 @@ export default function ProductPage() {
             </section>
           </div>
         </div>
-        <FooterExact />
+        <Footer />
       </CanvasLayout>
     </div>
   );

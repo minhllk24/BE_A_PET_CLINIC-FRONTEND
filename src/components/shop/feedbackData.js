@@ -1,5 +1,5 @@
 const AVATAR =
-  "https://www.figma.com/api/mcp/asset/cf883bd8-4e44-45be-b1cb-6a99d993a70c";
+  "/figma-assets/cf883bd8-4e44-45be-b1cb-6a99d993a70c.png";
 
 /** 6 trang × 3 đánh giá (Figma feedback carousel) */
 export const FEEDBACK_PAGES = [

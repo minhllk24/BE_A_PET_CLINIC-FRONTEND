@@ -9,7 +9,7 @@ const INDICATOR_INACTIVE_WIDTH = 45;
 /** Layout slide 1 (Group 1/3 — 1268:5602) — dùng chung cho cả 3 slide */
 const HERO_LAYOUT = {
   background:
-    "https://www.figma.com/api/mcp/asset/7b1c6372-50ec-4b10-b0a6-4818a5908234",
+    "/figma-assets/7b1c6372-50ec-4b10-b0a6-4818a5908234.png",
   backgroundImgClass:
     "absolute top-0 h-full w-[121.58%] max-w-none left-[-10.79%]",
   yellowInset: "inset-[10.09%_2.83%_10.23%_47.22%]",
@@ -20,22 +20,22 @@ const HERO_SLIDES = [
   {
     id: "slide-1",
     petSrc:
-      "https://www.figma.com/api/mcp/asset/f88be855-19a0-4869-b56d-ba32fb321b6b",
+      "/figma-assets/f88be855-19a0-4869-b56d-ba32fb321b6b.png",
   },
   {
     id: "slide-2",
     petSrc:
-      "https://www.figma.com/api/mcp/asset/da53fb58-ce31-4c1f-95a1-42a5189d8aad",
+      "/figma-assets/da53fb58-ce31-4c1f-95a1-42a5189d8aad.png",
   },
   {
     id: "slide-3",
     petSrc:
-      "https://www.figma.com/api/mcp/asset/b0bd3676-6b12-437e-9539-95b8656665f6",
+      "/figma-assets/b0bd3676-6b12-437e-9539-95b8656665f6.png",
   },
 ].map((slide) => ({ ...HERO_LAYOUT, ...slide }));
 
 const FLOWER_ICON =
-  "https://www.figma.com/api/mcp/asset/7a35e7b1-fc52-4937-a17f-d48cbf5c652e";
+  "/figma-assets/7a35e7b1-fc52-4937-a17f-d48cbf5c652e.png";
 
 function HeroSlideLayer({ slide, isActive }) {
   return (

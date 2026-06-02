@@ -20,11 +20,11 @@ const FOOTER_COLUMNS = [
 ];
 
 const SOCIAL = [
-  { name: "YouTube", icon: "https://www.figma.com/api/mcp/asset/4549c0df-128e-4c86-97aa-501fd0b0e62b" },
-  { name: "Facebook", icon: "https://www.figma.com/api/mcp/asset/c24f4d0d-1282-42f4-909e-11d6c8c5cc40" },
-  { name: "Twitter", icon: "https://www.figma.com/api/mcp/asset/7e0533ef-42cd-4736-9af3-b577f8113a18" },
-  { name: "Instagram", icon: "https://www.figma.com/api/mcp/asset/a4d7ef95-0deb-4e26-abed-797b0be7f357" },
-  { name: "LinkedIn", icon: "https://www.figma.com/api/mcp/asset/ea4bd9df-85e5-4bcf-8376-158111f8fff6" },
+  { name: "YouTube", icon: "/figma-assets/4549c0df-128e-4c86-97aa-501fd0b0e62b.svg" },
+  { name: "Facebook", icon: "/figma-assets/c24f4d0d-1282-42f4-909e-11d6c8c5cc40.svg" },
+  { name: "Twitter", icon: "/figma-assets/7e0533ef-42cd-4736-9af3-b577f8113a18.svg" },
+  { name: "Instagram", icon: "/figma-assets/a4d7ef95-0deb-4e26-abed-797b0be7f357.svg" },
+  { name: "LinkedIn", icon: "/figma-assets/ea4bd9df-85e5-4bcf-8376-158111f8fff6.svg" },
 ];
 
 function Footer() {
