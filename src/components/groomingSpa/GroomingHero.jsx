@@ -1,134 +1,73 @@
 import { groomingImages } from "../../assets/groomingImages";
+import { groomingTitleStyles } from "./groomingTitleStyles";
 
 function GroomingHero() {
   return (
-    <section
-      className="relative w-full bg-white"
-      style={{ height: 690 }}
-    >
-      {/* Background shape - light blue rounded rectangle */}
-      <div
-        className="absolute"
-        style={{
-          top: 0,
-          left: 66,
-          width: 1309,
-          height: 647,
-          borderRadius: 100,
-          backgroundColor: "#E5F6FD",
-          boxShadow: "inset 0px 0px 20px 0px rgba(126, 128, 133, 0.25)",
-        }}
+    <section className="relative h-[690px] w-[1440px] overflow-hidden bg-white">
+      <img
+        src={groomingImages.heroBg}
+        alt=""
+        className="pointer-events-none absolute bottom-[43px] left-1/2 w-[1309px] max-w-none -translate-x-1/2"
+        aria-hidden="true"
       />
 
-      {/* Content container */}
-      <div
-        className="relative z-10 mx-auto flex items-center"
-        style={{
-          maxWidth: 1440,
-          height: "100%",
-          gap: 100,
-          paddingLeft: 120,
-          paddingRight: 87,
-        }}
-      >
-        {/* Left content */}
-        <div
-          className="flex flex-col justify-center"
-          style={{ gap: 43, paddingBottom: 123, flex: "1 1 0" }}
-        >
-          {/* Title */}
-          <h1
-            style={{
-              fontFamily: '"Baloo Tamma", "Baloo 2", cursive',
-              fontWeight: 400,
-              fontSize: 70,
-              lineHeight: "0.97em",
-              color: "#02000F",
-            }}
-          >
+      <div className="relative z-10 flex h-full w-full items-center gap-[100px] pl-[120px] pr-[87px]">
+        <div className="flex max-w-[600px] flex-[1_0_0] flex-col items-start justify-center gap-[43px] pb-[123px]">
+          <h1 style={groomingTitleStyles.hero}>
             Dịch vụ
             <br />
             Grooming &amp; Spa
           </h1>
 
-          {/* Subtitle */}
           <p
+            className="w-full text-justify text-[#0F172A]"
             style={{
               fontFamily: "Roboto, sans-serif",
               fontWeight: 400,
               fontSize: 24,
-              lineHeight: "1.334em",
-              color: "#0F172A",
-              textAlign: "justify",
+              lineHeight: 1.334,
             }}
           >
-            Dịch vụ tắm sấy, cắt tỉa lông và chăm sóc vệ sinh giúp thú cưng
-            luôn sạch sẽ, khỏe mạnh và thoải mái.
+            Dịch vụ tắm sấy, cắt tỉa lông và chăm sóc vệ sinh giúp thú cưng luôn
+            sạch sẽ, khỏe mạnh và thoải mái.
           </p>
 
-          {/* Buttons row */}
-          <div className="flex items-center" style={{ gap: 24 }}>
-            {/* Paw icon + ĐẶT LỊCH NGAY button */}
-            <div className="relative">
-              <img
-                src={groomingImages.heroPaw}
-                alt=""
-                className="absolute pointer-events-none"
+          <div className="relative flex items-start gap-[24px]">
+            <img
+              src={groomingImages.heroPaw}
+              alt=""
+              className="pointer-events-none absolute -left-[54px] -top-[43px] h-[65.801px] w-[59.964px] -rotate-[25deg]"
+              aria-hidden="true"
+            />
+            <a href="/booking">
+              <button
+                type="button"
+                className="flex w-[181px] items-center justify-center rounded-[4px] bg-[#FDD835] px-[22px] py-2 shadow-[0px_3px_1px_-2px_rgba(0,0,0,0.2),0px_2px_2px_0px_rgba(0,0,0,0.14),0px_1px_5px_0px_rgba(0,0,0,0.12)]"
                 style={{
-                  left: -54,
-                  top: -43,
-                  width: 82,
-                  height: 85,
+                  fontFamily: "Roboto, sans-serif",
+                  fontWeight: 700,
+                  fontSize: 15,
+                  lineHeight: "26px",
+                  letterSpacing: "0.46px",
+                  textTransform: "uppercase",
+                  color: "rgba(0, 0, 0, 0.87)",
                 }}
-              />
-              <a href="/booking">
-                <button
-                  type="button"
-                  className="flex items-center justify-center"
-                  style={{
-                    width: 181,
-                    backgroundColor: "#FDD835",
-                    borderRadius: 4,
-                    padding: "8px 22px",
-                    fontFamily: "Roboto, sans-serif",
-                    fontWeight: 500,
-                    fontSize: 15,
-                    lineHeight: "1.733em",
-                    letterSpacing: "0.046em",
-                    textTransform: "uppercase",
-                    color: "rgba(0, 0, 0, 0.87)",
-                    boxShadow:
-                      "0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)",
-                    cursor: "pointer",
-                    border: "none",
-                  }}
-                >
-                  ĐẶT LỊCH NGAY{" "}
-                </button>
-              </a>
-            </div>
-
-            {/* Bắt đầu thôi button */}
+              >
+                ĐẶT LỊCH NGAY
+              </button>
+            </a>
             <a href="#danh-sach-dich-vu">
               <button
                 type="button"
-                className="flex items-center justify-center"
+                className="flex w-[179px] items-center justify-center rounded-[4px] bg-[#FFF9C4] px-[22px] py-2 shadow-[0px_3px_1px_-2px_rgba(0,0,0,0.2),0px_2px_2px_0px_rgba(0,0,0,0.14),0px_1px_5px_0px_rgba(0,0,0,0.12)]"
                 style={{
-                  width: 179,
-                  backgroundColor: "#FFF9C4",
-                  borderRadius: 4,
-                  padding: "8px 22px",
                   fontFamily: "Roboto, sans-serif",
-                  fontWeight: 500,
+                  fontWeight: 700,
                   fontSize: 15,
-                  lineHeight: "1.733em",
-                  letterSpacing: "0.046em",
+                  lineHeight: "26px",
+                  letterSpacing: "0.46px",
                   textTransform: "uppercase",
                   color: "rgba(0, 0, 0, 0.87)",
-                  boxShadow:
-                    "0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)",
-                  cursor: "pointer",
-                  border: "none",
                 }}
               >
                 Bắt đầu thôi
@@ -137,19 +76,12 @@ function GroomingHero() {
           </div>
         </div>
 
-        {/* Right content - Pet image */}
-        <div className="relative" style={{ flex: "1 1 0", height: 848 }}>
+        {/* Figma: ảnh chó + nền vàng — căn giữa cột phải, cách nền trắng 87px trên/dưới */}
+        <div className="flex flex-[1_0_0] max-w-[636px] items-center justify-center self-stretch py-[87px]">
           <img
-            src={groomingImages.heroPet}
+            src={groomingImages.heroPetComposite}
             alt="Grooming & Spa"
-            style={{
-              position: "absolute",
-              left: -86,
-              top: 40,
-              width: 636,
-              height: 568,
-              objectFit: "cover",
-            }}
+            className="h-full w-full max-h-[516px] object-contain object-center"
           />
         </div>
       </div>

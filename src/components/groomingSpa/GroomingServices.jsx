@@ -1,4 +1,5 @@
 import { groomingImages } from "../../assets/groomingImages";
+import { groomingTitleStyles } from "./groomingTitleStyles";
 
 const SERVICES = [
   {
@@ -8,6 +9,7 @@ const SERVICES = [
       "Sử dụng các dòng sữa tắm cao cấp, phù hợp với từng loại da và màu lông của bé.",
     price: "Từ 50.000 đ",
     image: groomingImages.serviceBath,
+    mask: groomingImages.serviceCardMask,
   },
   {
     id: 2,
@@ -16,6 +18,7 @@ const SERVICES = [
       "Kỹ thuật massage nhẹ nhàng giúp pet giải tỏa áp lực, tăng cường sự gắn kết",
     price: "Từ 50.000 đ",
     image: groomingImages.serviceMassage,
+    mask: groomingImages.serviceCardMask,
   },
   {
     id: 3,
@@ -24,6 +27,7 @@ const SERVICES = [
       "Đánh răng loại bỏ mảng bám và xịt thơm miệng khử mùi hôi.",
     price: "Từ 30.000 đ",
     image: groomingImages.serviceTeeth,
+    mask: groomingImages.serviceCardMask,
   },
   {
     id: 4,
@@ -32,6 +36,7 @@ const SERVICES = [
       "Cắt ngắn móng tránh đâm vào thịt và dùng máy mài mịn các góc sắc nhọn",
     price: "Từ 30.000 đ",
     image: groomingImages.serviceNail,
+    mask: groomingImages.serviceCardMaskAlt,
   },
   {
     id: 5,
@@ -40,6 +45,7 @@ const SERVICES = [
       "Cạo vệ sinh kẽ móng, chăm sóc bảo vệ phần đệm thịt",
     price: "Từ 30.000 đ",
     image: groomingImages.servicePawCare,
+    mask: groomingImages.serviceCardMask,
   },
   {
     id: 6,
@@ -48,6 +54,7 @@ const SERVICES = [
       "Tiêu diệt ký sinh trùng và làm sạch môi trường sống để ngăn ngừa tái nhiễm",
     price: "Từ 80.000 đ",
     image: groomingImages.serviceParasite,
+    mask: groomingImages.serviceCardMask,
   },
   {
     id: 7,
@@ -56,6 +63,7 @@ const SERVICES = [
       "Cắt tỉa lông theo yêu cầu hoặc theo form chuẩn của từng giống loài",
     price: "Từ 50.000 đ",
     image: groomingImages.serviceGrooming,
+    mask: groomingImages.serviceCardMask,
   },
   {
     id: 8,
@@ -64,6 +72,7 @@ const SERVICES = [
       "Sử dụng thuốc nhuộm organic 100% an toàn cho thú cưng, tạo điểm nhấn đặc biệt",
     price: "Từ 80.000 đ",
     image: groomingImages.serviceDye,
+    mask: groomingImages.serviceCardMask,
   },
   {
     id: 9,
@@ -72,37 +81,52 @@ const SERVICES = [
       "Giúp thú cưng không bị ngứa ngáy hậu môn, hạn chế mùi hôi đặc trưng cơ thể",
     price: "Từ 50.000 đ",
     image: groomingImages.serviceScent,
+    mask: groomingImages.serviceCardMask,
   },
 ];
 
-/* ──────────────────────────────────────────
-   ServiceCard: a 355×421 card with image,
-   gradient overlay, title/price/desc text
-   and a number badge
-   ────────────────────────────────────────── */
+const POSITIONS = [
+  { id: 1, x: 167, y: 0 },
+  { id: 2, x: 537, y: 0 },
+  { id: 3, x: 907, y: 0 },
+  { id: 4, x: 167, y: 454 },
+  { id: 5, x: 537, y: 454 },
+  { id: 6, x: 907, y: 454 },
+  { id: 7, x: 167, y: 908 },
+  { id: 8, x: 537, y: 908 },
+  { id: 9, x: 907, y: 908 },
+];
+
+function maskStyle(maskUrl) {
+  return {
+    WebkitMaskImage: `url(${maskUrl})`,
+    maskImage: `url(${maskUrl})`,
+    WebkitMaskSize: "355px 422px",
+    maskSize: "355px 422px",
+    WebkitMaskRepeat: "no-repeat",
+    maskRepeat: "no-repeat",
+    WebkitMaskPosition: "0 0",
+    maskPosition: "0 0",
+  };
+}
+
 function ServiceCard({ service }) {
+  const mask = maskStyle(service.mask);
+
   return (
-    <div
-      className="relative overflow-hidden flex-shrink-0"
-      style={{ width: 355, height: 421, borderRadius: 0 }}
-    >
-      {/* Background image */}
-      <img
-        src={service.image}
-        alt={service.title}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-
-      {/* Gradient overlay */}
+    <div className="relative h-[422px] w-[355px] shrink-0">
+      <div className="absolute inset-0 h-[422px] w-[355px]" style={mask}>
+        <img
+          src={service.image}
+          alt={service.title}
+          className="size-full object-cover"
+        />
+      </div>
       <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(2, 0, 15, 0) 0%, rgba(2, 0, 15, 0.7) 80%)",
-        }}
+        className="absolute inset-0 bg-gradient-to-b from-[rgba(2,0,15,0)] to-[rgba(2,0,15,0.7)]"
+        style={mask}
       />
 
-      {/* Number badge */}
       <div
         className="absolute flex items-center justify-center"
         style={{
@@ -110,181 +134,117 @@ function ServiceCard({ service }) {
           top: 8,
           width: 79,
           height: 59,
-          borderRadius: 28,
-          border: "1px solid #A1A4B1",
+          transform: "rotate(-36.71deg) skewX(16.58deg)",
         }}
       >
-        <span
-          style={{
-            fontFamily: "Roboto, sans-serif",
-            fontWeight: 400,
-            fontSize: 24,
-            lineHeight: "1.334em",
-            color: "#A1A4B1",
-            textAlign: "center",
-          }}
-        >
-          {service.id}
-        </span>
+        <div className="flex size-full items-center justify-center rounded-[28px] border border-[#A1A4B1] px-[7px] py-1">
+          <span
+            className="rotate-45 text-center text-[#A1A4B1]"
+            style={{
+              fontFamily: "Roboto, sans-serif",
+              fontWeight: 400,
+              fontSize: 24,
+              lineHeight: 1.334,
+            }}
+          >
+            {service.id}
+          </span>
+        </div>
       </div>
 
-      {/* Text content at bottom */}
-      <div
-        className="absolute"
-        style={{
-          bottom: 0,
-          left: 0,
-          width: 355,
-          height: 124,
-        }}
-      >
-        {/* Service title */}
-        <span
-          className="absolute"
+      <div className="absolute inset-x-0 bottom-0 h-[124px] text-white">
+        <p
+          className="absolute left-[28px] top-0"
           style={{
-            left: 28,
-            top: 0,
             fontFamily: "Roboto, sans-serif",
             fontWeight: 400,
             fontSize: 24,
-            lineHeight: "1.417em",
-            color: "#FFFFFF",
+            lineHeight: "34.01px",
           }}
         >
           {service.title}
-        </span>
-
-        {/* Price */}
-        <span
-          className="absolute"
+        </p>
+        <p
+          className="absolute right-[20px] top-[32px] text-right italic"
           style={{
-            right: 20,
-            top: 32,
             fontFamily: "Roboto, sans-serif",
             fontWeight: 300,
             fontSize: 16,
-            lineHeight: "1.75em",
-            color: "#FFFFFF",
-            textAlign: "right",
+            lineHeight: "28px",
           }}
         >
           {service.price}
-        </span>
-
-        {/* Description */}
-        <span
-          className="absolute"
+        </p>
+        <p
+          className="absolute left-[28px] top-[62px] w-[291px]"
           style={{
-            left: 28,
-            top: 62,
-            width: 291,
             fontFamily: "Roboto, sans-serif",
             fontWeight: 400,
             fontSize: 16,
-            lineHeight: "1.75em",
-            color: "#FFFFFF",
+            lineHeight: "28px",
           }}
         >
           {service.description}
-        </span>
+        </p>
       </div>
     </div>
   );
 }
 
-/* ──────────────────────────────────────────
-   Main Services Section
-   ────────────────────────────────────────── */
 function GroomingServices() {
-  // Layout: 3 columns × 3 rows, positioned absolutely per Figma
-  // Column positions: 167, 537, 907
-  // Row positions: 0, 454, 908
-  const positions = [
-    // Row 1
-    { id: 1, x: 167, y: 0 },   // Container 1 – Tắm & Sấy khô
-    { id: 2, x: 537, y: 0 },   // Container 2 – Massage chuyên sâu
-    { id: 3, x: 907, y: 0 },   // Container 3 – Vệ sinh răng miệng
-    // Row 2
-    { id: 4, x: 167, y: 454 }, // Container 4 – Cắt & mài móng
-    { id: 5, x: 537, y: 454 }, // Container 5 – Chăm sóc bàn chân
-    { id: 6, x: 907, y: 454 }, // Container 6 – Điều trị ký sinh trùng
-    // Row 3
-    { id: 7, x: 167, y: 908 }, // Container 7 – Cắt tỉa tạo kiểu
-    { id: 8, x: 537, y: 908 }, // Container 8 – Nhuộm lông thời trang
-    { id: 9, x: 907, y: 908 }, // Container 9 – Vắt tuyến hôi
-  ];
-
   return (
     <section
       id="danh-sach-dich-vu"
-      className="relative w-full"
-      style={{ borderTop: "1px solid rgba(0, 0, 0, 0.1)" }}
+      className="flex w-full flex-col items-center gap-6 border-t border-[rgba(0,0,0,0.1)] pt-[28px]"
+      style={{ height: 1651 }}
     >
-      {/* Top header area */}
-      <div
-        className="relative mx-auto"
-        style={{
-          maxWidth: 1440,
-          paddingTop: 28,
-        }}
-      >
-        {/* Title block */}
-        <div className="relative" style={{ width: 1440, height: 162 }}>
-          <h2
-            className="absolute"
-            style={{
-              left: 0,
-              top: 17,
-              width: 1440,
-              fontFamily: '"Baloo Tamma", "Baloo 2", cursive',
-              fontWeight: 400,
-              fontSize: 64,
-              lineHeight: "1.1em",
-              textAlign: "center",
-              color: "rgba(0, 0, 0, 0.87)",
-            }}
-          >
-            Dịch vụ{" "}
-            <br />
-            chúng tôi cung cấp
-          </h2>
-
-          {/* Decorative shape next to title */}
-          <img
-            src={groomingImages.serviceBgShape}
-            alt=""
-            className="absolute pointer-events-none"
-            style={{
-              left: 990,
-              top: 3,
-              width: 105,
-              height: 87,
-            }}
-          />
-        </div>
-
-        {/* Tabpanel - services grid */}
-        <div
-          className="relative mx-auto"
-          style={{
-            width: 1440,
-            height: 1572,
-          }}
+      <div className="relative h-[162px] w-[1440px] shrink-0">
+        <h2
+          className="absolute left-1/2 top-[89.5px] w-[1440px] -translate-x-1/2 -translate-y-1/2"
+          style={groomingTitleStyles.primary64}
         >
-          {/* Service cards */}
-          {SERVICES.map((service) => {
-            const pos = positions.find((p) => p.id === service.id);
-            return (
-              <div
-                key={service.id}
-                className="absolute"
-                style={{ left: pos.x, top: pos.y }}
-              >
-                <ServiceCard service={service} />
-              </div>
-            );
-          })}
-        </div>
+          Dịch vụ
+          <br />
+          chúng tôi cung cấp
+        </h2>
+        <img
+          src={groomingImages.serviceBgShape}
+          alt=""
+          className="pointer-events-none absolute left-[990px] top-[3px] h-[87px] w-[105px]"
+          aria-hidden="true"
+        />
+      </div>
+
+      <div className="relative h-[62px] w-[550px] shrink-0">
+        <div className="absolute inset-0 rounded-[30px] border-2 border-[#FDD835] bg-[#F5F5F5]" />
+        <img
+          src={groomingImages.searchIcon}
+          alt=""
+          className="absolute right-[14px] top-1/2 size-6 -translate-y-1/2"
+          aria-hidden="true"
+        />
+      </div>
+
+      <div className="relative h-[1572px] w-full shrink-0">
+        <img
+          src={groomingImages.servicesDecor}
+          alt=""
+          className="pointer-events-none absolute left-[calc(50%+702.61px)] top-[59.86%] h-[129px] w-[129px] -translate-x-1/2 -rotate-[20deg] object-cover"
+          aria-hidden="true"
+        />
+
+        {SERVICES.map((service) => {
+          const pos = POSITIONS.find((p) => p.id === service.id);
+          return (
+            <div
+              key={service.id}
+              className="absolute"
+              style={{ left: pos.x, top: pos.y }}
+            >
+              <ServiceCard service={service} />
+            </div>
+          );
+        })}
       </div>
     </section>
   );

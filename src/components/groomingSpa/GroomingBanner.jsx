@@ -2,97 +2,46 @@ import { groomingImages } from "../../assets/groomingImages";
 
 function GroomingBanner() {
   return (
-    <section
-      className="relative mx-auto"
-      style={{
-        maxWidth: 1440,
-        height: 239,
-        paddingBottom: 25,
-      }}
-    >
-      {/* Top row: button + dog image */}
-      <div
-        className="absolute"
-        style={{
-          left: 0,
-          top: 0,
-          width: 1440,
-          height: 144,
-        }}
-      >
-        {/* Yellow CTA button */}
-        <div
-          className="absolute"
-          style={{
-            left: 506,
-            top: 3,
-            width: 428,
-            height: 154,
-          }}
-        >
+    <section className="relative flex h-[239px] w-full flex-col items-center justify-center overflow-hidden pb-[25px]">
+      <div className="absolute inset-x-0 bottom-[95px] top-0 overflow-hidden">
+        <div className="absolute bottom-[-13px] left-1/2 top-[3px] w-[428px] -translate-x-1/2">
           <a href="/booking">
             <button
               type="button"
-              className="absolute flex items-center justify-center"
+              className="absolute inset-x-0 bottom-[17px] top-[74px] flex items-center justify-center rounded-[4px] bg-[#FDD835] px-[22px] py-2 shadow-[0px_3px_1px_-2px_rgba(0,0,0,0.2),0px_2px_2px_0px_rgba(0,0,0,0.14),0px_1px_5px_0px_rgba(0,0,0,0.12)]"
               style={{
-                left: 0,
-                top: 74,
-                width: 428,
-                height: 63,
-                backgroundColor: "#FDD835",
-                borderRadius: 4,
-                padding: "8px 22px",
                 fontFamily: "Roboto, sans-serif",
-                fontWeight: 400,
+                fontWeight: 700,
                 fontSize: 32,
-                lineHeight: "1.235em",
-                letterSpacing: "0.0078em",
+                lineHeight: 1.235,
+                letterSpacing: "0.25px",
                 color: "rgba(0, 0, 0, 0.87)",
-                border: "none",
-                cursor: "pointer",
-                boxShadow:
-                  "0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)",
               }}
             >
-              ĐẶT LỊCH NGAY{" "}
+              ĐẶT LỊCH NGAY
             </button>
           </a>
-
-          {/* Dog image */}
           <img
             src={groomingImages.bannerDog}
             alt=""
-            className="absolute"
-            style={{
-              left: 153,
-              top: 13,
-              width: 122,
-              height: 74,
-              objectFit: "cover",
-            }}
+            className="pointer-events-none absolute left-[153px] top-[13px] h-[74px] w-[122px] object-cover"
+            aria-hidden="true"
           />
         </div>
       </div>
 
-      {/* Bottom text */}
       <p
-        className="absolute"
+        className="absolute left-[10.97%] right-[10.97%] top-[157px] text-center text-black"
         style={{
-          left: 158,
-          top: 157,
-          width: 1124,
-          height: 55,
           fontFamily: "Roboto, sans-serif",
           fontWeight: 500,
           fontSize: 24,
-          lineHeight: "1.6em",
-          letterSpacing: "0.006em",
-          textAlign: "center",
-          color: "#000000",
+          lineHeight: 1.6,
+          letterSpacing: "0.15px",
         }}
       >
         Thưởng cho bé cưng của bạn những giờ phút siêu thư giãn và trở nên xinh
-        xắn hơn~{" "}
+        xắn hơn~
       </p>
     </section>
   );
