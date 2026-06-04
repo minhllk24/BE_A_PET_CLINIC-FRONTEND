@@ -2,8 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import LayoutManagePet from "../layout/LayoutManagePet";
 
 import HomePage from "../pages/HomePage/HomePage";
-import GroomingSpaPage from "../pages/GroomingSpaPage";
-import CheckoutPage from "../pages/CheckoutPage";
 import MyPetPage from "../pages/Pet/MyPetPage";
 import PetDetailPage from "../pages/Pet/PetDetailPage";
 import PetFormPage from "../pages/Pet/PetFormPage";
@@ -11,10 +9,8 @@ import PetFormPage from "../pages/Pet/PetFormPage";
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* 1. Trang chủ (HomePage), Grooming Spa Page, và Checkout Page đều không dùng layout bọc chung */}
+      {/* 1. Trang chủ (HomePage không dùng layout bọc chung */}
       <Route path="/" element={<HomePage />} />
-      <Route path="/services/grooming-spa" element={<GroomingSpaPage />} />
-      <Route path="/checkout" element={<CheckoutPage />} />
 
       {/* 2. Các trang thuộc nhóm quản lý thú cưng có layout riêng */}
       <Route element={<LayoutManagePet />}>
