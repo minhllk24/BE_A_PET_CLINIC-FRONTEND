@@ -253,7 +253,7 @@ function PetFormPage() {
   const defaultHealthStatus = pet?.healthStatus === 'Khỏe mạnh' ? 'Bình thường' : (pet?.healthStatus || "Bình thường");
 
   return (
-    <div className="max-w-4xl mx-auto pb-10 pt-6 px-4">
+    <div className="max-w-4xl mx-auto pb-10 pt-6 px-4 font-sans">
       <div className="flex items-center gap-3 mb-6">
         <Link to="/my-pets" className="text-slate-500 hover:text-slate-900 transition">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
