@@ -793,111 +793,111 @@ function PaymentStep({ selectedDate, selectedSlot, paymentMode, setPaymentMode, 
   );
 }
 
-function BankTransferModal({ onClose }) {
-  return (
-    <PaymentModal onClose={onClose}>
-      <div className="w-full max-w-sm rounded border border-slate-300 bg-white p-5">
-        <div className="mb-5 flex justify-center">
-          <div className="rounded-md border border-slate-300 bg-white p-1">
-            <img src={bankPopupQrPlaceholder} alt="QR thanh toán" className="h-32 w-32 object-contain" />
-          </div>
-        </div>
-        <InfoLine label="Ngân hàng" value="Vietcombank" />
-        <InfoLine label="Số tài khoản" value="123456789" icon={bankPopupCopyIcon} />
-        <InfoLine label="Chủ tài khoản" value="AZURE AMBER" />
-        <InfoLine label="Số tiền" value="250.000 đ" strong />
-        <p className="mt-4 text-center text-xs text-red-600">Vui lòng ghi mã đơn BK-8712-2023 trong phần nội dung chuyển khoản.</p>
-      </div>
-    </PaymentModal>
-  );
-}
+// function BankTransferModal({ onClose }) {
+//   return (
+//     <PaymentModal onClose={onClose}>
+//       <div className="w-full max-w-sm rounded border border-slate-300 bg-white p-5">
+//         <div className="mb-5 flex justify-center">
+//           <div className="rounded-md border border-slate-300 bg-white p-1">
+//             <img src={bankPopupQrPlaceholder} alt="QR thanh toán" className="h-32 w-32 object-contain" />
+//           </div>
+//         </div>
+//         <InfoLine label="Ngân hàng" value="Vietcombank" />
+//         <InfoLine label="Số tài khoản" value="123456789" icon={bankPopupCopyIcon} />
+//         <InfoLine label="Chủ tài khoản" value="AZURE AMBER" />
+//         <InfoLine label="Số tiền" value="250.000 đ" strong />
+//         <p className="mt-4 text-center text-xs text-red-600">Vui lòng ghi mã đơn BK-8712-2023 trong phần nội dung chuyển khoản.</p>
+//       </div>
+//     </PaymentModal>
+//   );
+// }
 
-function CardBrandIcons({ compact = false }) {
-  const brands = [
-    { src: cardPopupVisa, alt: "Visa" },
-    { src: cardPopupMastercard, alt: "Mastercard" },
-    { src: cardPopupJcb, alt: "JCB" },
-    { src: cardPopupUnionpay, alt: "UnionPay" },
-    { src: cardPopupAmex, alt: "AMEX" },
-    { src: cardPopupDiscover, alt: "Discover" },
-  ];
+// function CardBrandIcons({ compact = false }) {
+//   const brands = [
+//     { src: cardPopupVisa, alt: "Visa" },
+//     { src: cardPopupMastercard, alt: "Mastercard" },
+//     { src: cardPopupJcb, alt: "JCB" },
+//     { src: cardPopupUnionpay, alt: "UnionPay" },
+//     { src: cardPopupAmex, alt: "AMEX" },
+//     { src: cardPopupDiscover, alt: "Discover" },
+//   ];
 
-  return (
-    <div className={`flex items-center ${compact ? "gap-1" : "gap-2"}`}>
-      {brands.map((brand) => (
-        <img key={brand.alt} src={brand.src} alt={brand.alt} className="h-4 w-6 object-contain" />
-      ))}
-    </div>
-  );
-}
+//   return (
+//     <div className={`flex items-center ${compact ? "gap-1" : "gap-2"}`}>
+//       {brands.map((brand) => (
+//         <img key={brand.alt} src={brand.src} alt={brand.alt} className="h-4 w-6 object-contain" />
+//       ))}
+//     </div>
+//   );
+// }
 
-function CreditCardModal({ onClose }) {
-  return (
-    <PaymentModal onClose={onClose}>
-      <div className="w-full max-w-[430px]">
-        <div className="mb-2 rounded-lg border border-slate-300 bg-secondary-light px-5 py-4 text-sm font-medium text-[#585858]">
-          Dr. Pet’s House không trực tiếp lưu thẻ của bạn. Thông tin thẻ của bạn được bảo mật toàn diện bởi MasterCard.
-        </div>
-        <div className="rounded-lg border border-slate-300 bg-white px-5 py-4">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-medium text-[#585858]">Nhập thông tin thẻ</h3>
-            <CardBrandIcons compact />
-          </div>
-          <CardInput label="Số thẻ" placeholder="1234 1234 1234 1234" />
-          <CardInput label="Họ và tên chủ thẻ" placeholder="Nguyen Van A" rightSlot={<CardBrandIcons compact />} />
-          <div className="grid grid-cols-2 gap-3">
-            <CardInput label="Ngày hết hạn" placeholder="MM / YY" />
-            <CardInput label="CVC" placeholder="CVC" />
-          </div>
-          <div className="mt-4 border-t border-slate-300 pt-3">
-            <h4 className="mb-3 font-medium text-[#585858]">Địa chỉ đăng ký thẻ Tín dụng/Ghi nợ</h4>
-            <div className="grid grid-cols-2 gap-3">
-              <CardInput label="Quốc gia" placeholder="Việt Nam" rightSlot={<img src={cardPopupChevron} alt="" className="h-3 w-3" />} />
-              <CardInput label="Mã bưu chính" placeholder="90210" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </PaymentModal>
-  );
-}
+// function CreditCardModal({ onClose }) {
+//   return (
+//     <PaymentModal onClose={onClose}>
+//       <div className="w-full max-w-[430px]">
+//         <div className="mb-2 rounded-lg border border-slate-300 bg-secondary-light px-5 py-4 text-sm font-medium text-[#585858]">
+//           Dr. Pet’s House không trực tiếp lưu thẻ của bạn. Thông tin thẻ của bạn được bảo mật toàn diện bởi MasterCard.
+//         </div>
+//         <div className="rounded-lg border border-slate-300 bg-white px-5 py-4">
+//           <div className="mb-4 flex items-center justify-between">
+//             <h3 className="font-medium text-[#585858]">Nhập thông tin thẻ</h3>
+//             <CardBrandIcons compact />
+//           </div>
+//           <CardInput label="Số thẻ" placeholder="1234 1234 1234 1234" />
+//           <CardInput label="Họ và tên chủ thẻ" placeholder="Nguyen Van A" rightSlot={<CardBrandIcons compact />} />
+//           <div className="grid grid-cols-2 gap-3">
+//             <CardInput label="Ngày hết hạn" placeholder="MM / YY" />
+//             <CardInput label="CVC" placeholder="CVC" />
+//           </div>
+//           <div className="mt-4 border-t border-slate-300 pt-3">
+//             <h4 className="mb-3 font-medium text-[#585858]">Địa chỉ đăng ký thẻ Tín dụng/Ghi nợ</h4>
+//             <div className="grid grid-cols-2 gap-3">
+//               <CardInput label="Quốc gia" placeholder="Việt Nam" rightSlot={<img src={cardPopupChevron} alt="" className="h-3 w-3" />} />
+//               <CardInput label="Mã bưu chính" placeholder="90210" />
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </PaymentModal>
+//   );
+// }
 
-function CardInput({ label, placeholder, rightSlot }) {
-  return (
-    <label className="mb-3 block">
-      <span className="mb-1 block text-xs font-bold text-[#4f5b76]">{label}</span>
-      <span className="relative block">
-        <input
-          placeholder={placeholder}
-          className={`h-[43px] w-full rounded-md border-2 border-[#e0e0e0] px-3 text-sm shadow-[0_2px_4px_rgba(0,0,0,0.07)] outline-none placeholder:text-[#a5acb8] focus:border-blue-900 ${
-            rightSlot ? "pr-28" : ""
-          }`}
-        />
-        {rightSlot && <span className="absolute right-4 top-1/2 -translate-y-1/2">{rightSlot}</span>}
-      </span>
-    </label>
-  );
-}
+// function CardInput({ label, placeholder, rightSlot }) {
+//   return (
+//     <label className="mb-3 block">
+//       <span className="mb-1 block text-xs font-bold text-[#4f5b76]">{label}</span>
+//       <span className="relative block">
+//         <input
+//           placeholder={placeholder}
+//           className={`h-[43px] w-full rounded-md border-2 border-[#e0e0e0] px-3 text-sm shadow-[0_2px_4px_rgba(0,0,0,0.07)] outline-none placeholder:text-[#a5acb8] focus:border-blue-900 ${
+//             rightSlot ? "pr-28" : ""
+//           }`}
+//         />
+//         {rightSlot && <span className="absolute right-4 top-1/2 -translate-y-1/2">{rightSlot}</span>}
+//       </span>
+//     </label>
+//   );
+// }
 
-function InfoLine({ label, value, strong, icon }) {
-  return (
-    <div className="mb-3 flex items-center justify-between text-sm">
-      <span className="text-slate-500">{label}</span>
-      <span className={`flex items-center gap-2 ${strong ? "font-bold text-[#9a4600]" : "text-slate-900"}`}>
-        {value}
-        {icon && <img src={icon} alt="" className="h-4 w-4" />}
-      </span>
-    </div>
-  );
-}
+// function InfoLine({ label, value, strong, icon }) {
+//   return (
+//     <div className="mb-3 flex items-center justify-between text-sm">
+//       <span className="text-slate-500">{label}</span>
+//       <span className={`flex items-center gap-2 ${strong ? "font-bold text-[#9a4600]" : "text-slate-900"}`}>
+//         {value}
+//         {icon && <img src={icon} alt="" className="h-4 w-4" />}
+//       </span>
+//     </div>
+//   );
+// }
 
-function PaymentModal({ children, onClose }) {
-  return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-[#06105a33] p-4 backdrop-blur-md" onClick={onClose}>
-      <div onClick={(event) => event.stopPropagation()}>{children}</div>
-    </div>
-  );
-}
+// function PaymentModal({ children, onClose }) {
+//   return (
+//     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-[#06105a33] p-4 backdrop-blur-md" onClick={onClose}>
+//       <div onClick={(event) => event.stopPropagation()}>{children}</div>
+//     </div>
+//   );
+// }
 
 function SuccessModal() {
   return (
