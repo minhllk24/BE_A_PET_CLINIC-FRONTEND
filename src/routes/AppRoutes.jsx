@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import LayoutManagePet from "../layout/LayoutManagePet";
 
 import HomePage from "../pages/HomePage/HomePage";
+import BookingPage from "../pages/Booking/BookingPage";
 import MyPetPage from "../pages/Pet/MyPetPage";
 import PetDetailPage from "../pages/Pet/PetDetailPage";
 import PetFormPage from "../pages/Pet/PetFormPage";
@@ -11,6 +12,7 @@ const AppRoutes = () => {
     <Routes>
       {/* 1. Trang chủ (HomePage không dùng layout bọc chung */}
       <Route path="/" element={<HomePage />} />
+      <Route path="/booking" element={<BookingPage />} />
 
       {/* 2. Các trang thuộc nhóm quản lý thú cưng có layout riêng */}
       <Route element={<LayoutManagePet />}>

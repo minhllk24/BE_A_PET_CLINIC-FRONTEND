@@ -519,7 +519,7 @@ function PetDetailPage() {
   const defaultDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
 
   return (
-    <div className="bg-transparent flex flex-col min-h-full">
+    <div className="bg-transparent flex flex-col min-h-full font-sans">
       <div className="mx-auto max-w-[1300px] w-full pt-3 pb-4 flex-1 flex flex-col">
         
         <div className="flex items-center gap-3 mb-5 flex-shrink-0">
