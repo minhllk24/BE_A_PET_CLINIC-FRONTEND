@@ -1,24 +1,10 @@
 import { useCallback, useRef, useState } from "react";
+import { shopImages } from "../../assets/shopImages";
 import { FEEDBACK_PAGE_COUNT, FEEDBACK_PAGES } from "./feedbackData";
-
-const imgBackground =
-  "/figma-assets/979c3e45-b892-468a-a1b4-abd72fcff538.png";
-const imgCarouselLeft =
-  "/figma-assets/05c6c67e-c37c-4ea7-862e-548024d504d2.png";
-const imgCarouselRight =
-  "/figma-assets/3e5e4147-72ee-4cf5-b6d6-bcff18461aee.png";
-const imgPawDark =
-  "/figma-assets/56b3640d-100f-4c23-95b6-adbf5c419ed3.png";
-const imgPawSmall =
-  "/figma-assets/288dc139-1f3e-49a1-80b2-d128c08a706f.png";
-const imgPawBlue =
-  "/figma-assets/30e54297-c2fe-4461-835d-4457b80e60f7.png";
-const imgPawBlueSmall =
-  "/figma-assets/b1710267-5cc9-46d8-afbd-ad53d4704a18.png";
 
 const SECTION_TITLE_TYPOGRAPHY = {
   fontFamily: '"Baloo Tamma 2", "Baloo 2", cursive',
-  fontWeight: 400,
+  fontWeight: 700,
   fontStyle: "normal",
   fontSize: "64px",
   lineHeight: "110%",
@@ -160,7 +146,7 @@ function FeedbackSection() {
       onTouchEnd={handleTouchEnd}
     >
       <img
-        src={imgBackground}
+        src={shopImages.feedbackBg}
         alt=""
         className="absolute inset-0 h-full w-full object-cover"
       />
@@ -199,7 +185,7 @@ function FeedbackSection() {
             aria-label="Trang phản hồi trước"
           >
             <img
-              src={imgCarouselLeft}
+              src={shopImages.feedbackCarouselLeft}
               alt=""
               className="h-[10px] w-[271px] object-contain"
             />
@@ -224,7 +210,7 @@ function FeedbackSection() {
             aria-label="Trang phản hồi tiếp"
           >
             <img
-              src={imgCarouselRight}
+              src={shopImages.feedbackCarouselRight}
               alt=""
               className="h-[10px] w-[271px] object-contain"
             />
@@ -233,32 +219,32 @@ function FeedbackSection() {
       </div>
 
       <img
-        src={imgPawSmall}
+        src={shopImages.feedbackPawSmall}
         alt=""
         className="pointer-events-none absolute left-[278px] top-[103px] h-[60px] w-[60px]"
       />
       <img
-        src={imgPawSmall}
+        src={shopImages.feedbackPawSmall}
         alt=""
         className="pointer-events-none absolute left-[1085px] top-[90px] h-[60px] w-[60px]"
       />
       <img
-        src={imgPawBlue}
+        src={shopImages.feedbackPawBlue}
         alt=""
         className="pointer-events-none absolute left-[1145px] top-[102px] h-[48px] w-[49px]"
       />
       <img
-        src={imgPawBlue}
+        src={shopImages.feedbackPawBlue}
         alt=""
         className="pointer-events-none absolute left-[158.39px] top-[512.17px] h-[48px] w-[49px]"
       />
       <img
-        src={imgPawBlueSmall}
+        src={shopImages.feedbackPawBlueSmall}
         alt=""
         className="pointer-events-none absolute left-[158.39px] top-[526.17px] h-[34px] w-[34px]"
       />
       <img
-        src={imgPawDark}
+        src={shopImages.feedbackPawDark}
         alt=""
         className="pointer-events-none absolute bottom-0 right-[12px] h-[87px] w-[87px]"
       />

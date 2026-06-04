@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { shopImages } from "../../assets/shopImages";
 import useCarouselKeyboard from "../../hooks/useCarouselKeyboard";
 
 const AUTO_PLAY_MS = 5000;
@@ -8,34 +9,20 @@ const INDICATOR_INACTIVE_WIDTH = 45;
 
 /** Layout slide 1 (Group 1/3 — 1268:5602) — dùng chung cho cả 3 slide */
 const HERO_LAYOUT = {
-  background:
-    "/figma-assets/7b1c6372-50ec-4b10-b0a6-4818a5908234.png",
+  background: shopImages.heroBg,
   backgroundImgClass:
     "absolute top-0 h-full w-[121.58%] max-w-none left-[-10.79%]",
   yellowInset: "inset-[10.09%_2.83%_10.23%_47.22%]",
   petFrame: "absolute right-[60px] top-[215.66px] h-[439.17px] w-[648px]",
 };
 
-const HERO_SLIDES = [
-  {
-    id: "slide-1",
-    petSrc:
-      "/figma-assets/f88be855-19a0-4869-b56d-ba32fb321b6b.png",
-  },
-  {
-    id: "slide-2",
-    petSrc:
-      "/figma-assets/da53fb58-ce31-4c1f-95a1-42a5189d8aad.png",
-  },
-  {
-    id: "slide-3",
-    petSrc:
-      "/figma-assets/b0bd3676-6b12-437e-9539-95b8656665f6.png",
-  },
-].map((slide) => ({ ...HERO_LAYOUT, ...slide }));
+const HERO_SLIDES = shopImages.heroPets.map((petSrc, index) => ({
+  ...HERO_LAYOUT,
+  id: `slide-${index + 1}`,
+  petSrc,
+}));
 
-const FLOWER_ICON =
-  "/figma-assets/7a35e7b1-fc52-4937-a17f-d48cbf5c652e.png";
+const FLOWER_ICON = shopImages.heroFlower;
 
 function HeroSlideLayer({ slide, isActive }) {
   return (

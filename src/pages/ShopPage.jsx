@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { homeImages } from "../assets/homeImages";
+import { shopImages } from "../assets/shopImages";
 import Footer from "../components/layout/Footer";
 import ScaledCanvasLayout from "../components/layout/ScaledCanvasLayout";
 import NavBar from "../components/Navbar";
@@ -8,16 +9,6 @@ import FeedbackSection from "../components/shop/FeedbackSection";
 import ShopHeroSection from "../components/shop/ShopHeroSection";
 
 import { TEST_AUTHENTICATED } from "../config/devFlags";
-
-const MENU_ITEMS = [
-  "Trang chủ",
-  "Dịch vụ thú y",
-  "Mua sắm",
-  "Cứu trợ",
-  "Blog",
-  "Về chúng tôi",
-  "Liên hệ",
-];
 
 const CATEGORIES = [
   { label: "Thức ăn", image: homeImages.category1 },
@@ -33,42 +24,34 @@ const PRODUCTS = Array.from({ length: 12 }, (_, i) => ({
   oldPrice: "$23.00",
   price: "$13.00",
 }));
-const imgBestSellerSpark = "/figma-assets/03a3298c-9afa-4ef4-910b-3e70e7f1b0d0.png";
-const imgBestSellerStroke = "/figma-assets/152bd026-e93f-4fa5-b60b-f7a19335625f.svg";
+
 const SECTION_TITLE_TYPOGRAPHY = {
   fontFamily: '"Baloo Tamma 2", "Baloo 2", cursive',
-  fontWeight: 400,
+  fontWeight: 700,
   fontStyle: "normal",
   fontSize: "64px",
   lineHeight: "110%",
   letterSpacing: "0px",
 };
-const PROMOTION_ITEMS = [
-  {
-    image: "/figma-assets/af034252-8fee-475a-9612-ae2cae66f0c1.png",
-  },
-  {
-    image: "/figma-assets/1e8f97d3-53e6-44ce-958b-a52b1c53d4a4.png",
-  },
-  {
-    image: "/figma-assets/d081388a-7615-4073-9cfc-490285f32fc2.png",
-  },
-  {
-    image: "/figma-assets/e485a7e0-7289-4b82-8afa-c89af57ade91.png",
-  },
+
+const PROMOTION_ITEMS = shopImages.promoBanners.map((image) => ({ image }));
+
+const PROMOTION_PAGES = [
+  [PROMOTION_ITEMS[0], PROMOTION_ITEMS[1]],
+  [PROMOTION_ITEMS[2], PROMOTION_ITEMS[3]],
 ];
 
 function ShopCanvas() {
-  const [promotionIndex, setPromotionIndex] = useState(0);
-  const leftPromotion = PROMOTION_ITEMS[promotionIndex];
-  const rightPromotion = PROMOTION_ITEMS[(promotionIndex + 1) % PROMOTION_ITEMS.length];
+  const [promotionPageIndex, setPromotionPageIndex] = useState(0);
+  const currentPage = PROMOTION_PAGES[promotionPageIndex];
+  const [leftPromotion, rightPromotion] = currentPage;
 
   const goPrevPromotion = () => {
-    setPromotionIndex((prev) => (prev - 1 + PROMOTION_ITEMS.length) % PROMOTION_ITEMS.length);
+    setPromotionPageIndex((prev) => (prev - 1 + PROMOTION_PAGES.length) % PROMOTION_PAGES.length);
   };
 
   const goNextPromotion = () => {
-    setPromotionIndex((prev) => (prev + 1) % PROMOTION_ITEMS.length);
+    setPromotionPageIndex((prev) => (prev + 1) % PROMOTION_PAGES.length);
   };
 
   return (
@@ -133,6 +116,7 @@ function ShopCanvas() {
                 <ProductCard
                   key={p.id}
                   variant={idx < 2 ? "tag" : "default"}
+                  href="/product-details"
                 />
               ))}
             </div>
@@ -145,18 +129,18 @@ function ShopCanvas() {
 
       <section className="absolute left-0 top-[calc(1538px+0.5cm)] h-[767px] w-[1440px] bg-[radial-gradient(50%_50%_at_50%_50%,#E3F2FD_25.48%,#FFFFFF_100%)] py-[50px]">
         <div className="relative mx-auto h-[70px] w-[900px]">
-          <img src={imgBestSellerStroke} alt="" className="absolute left-[479px] top-[50px] h-[7px] w-[243px]" />
+          <img src={shopImages.bestSellerStroke} alt="" className="absolute left-[479px] top-[50px] h-[7px] w-[243px]" />
           <h2
-          className="text-center text-[#0F172A]"
-          style={{ ...SECTION_TITLE_TYPOGRAPHY }}
+            className="text-center text-[#0F172A]"
+            style={{ ...SECTION_TITLE_TYPOGRAPHY }}
           >
             Sản phẩm bán chạy
           </h2>
-          <img src={imgBestSellerSpark} alt="" className="absolute left-[717px] top-[-12px] h-[42px] w-[43px]" />
+          <img src={shopImages.bestSellerSpark} alt="" className="absolute left-[717px] top-[-12px] h-[42px] w-[43px]" />
         </div>
         <div className="mx-auto mt-5 grid w-[1200px] grid-cols-6 justify-items-center gap-y-[10px]">
           {PRODUCTS.map((p) => (
-            <ProductCard key={`best-${p.id}`} />
+            <ProductCard key={`best-${p.id}`} href="/product-details" />
           ))}
         </div>
         <div className="mt-5 flex justify-center">
@@ -183,8 +167,7 @@ function ShopCanvas() {
                 type="button"
                 className="absolute left-[40px] top-[173px] h-[54px] w-[152.27px] rounded-[50px] bg-transparent"
                 aria-label="Mua ngay banner trái"
-              >
-              </button>
+              />
             </div>
             <div className="relative h-[269px] w-[570px]">
               <img src={rightPromotion.image} alt="Promotion banner right" className="h-[269px] w-[570px] rounded-[30px] object-cover" />
@@ -192,8 +175,7 @@ function ShopCanvas() {
                 type="button"
                 className="absolute left-[40px] top-[173px] h-[54px] w-[152.27px] rounded-[50px] bg-transparent"
                 aria-label="Mua ngay banner phải"
-              >
-              </button>
+              />
             </div>
           </div>
           <button
@@ -206,18 +188,18 @@ function ShopCanvas() {
           </button>
         </div>
         <div className="mt-[10px] flex items-center justify-center gap-[7px]">
-          {PROMOTION_ITEMS.map((_, idx) => (
+          {PROMOTION_PAGES.map((_, idx) => (
             <button
               key={idx}
               type="button"
-              onClick={() => setPromotionIndex(idx)}
+              onClick={() => setPromotionPageIndex(idx)}
               className={`focus-ring-brand transition-all duration-component ease-premium ${
-                idx === promotionIndex
+                idx === promotionPageIndex
                   ? "h-[8px] w-[24px] rounded-[20px] bg-[#F4E11B]"
                   : "h-[8px] w-[8px] rounded-full bg-[#D9D9D9] hover:bg-[#E6D445]"
               }`}
               aria-label={`Khuyến mãi ${idx + 1}`}
-              aria-current={idx === promotionIndex ? "true" : undefined}
+              aria-current={idx === promotionPageIndex ? "true" : undefined}
             />
           ))}
         </div>

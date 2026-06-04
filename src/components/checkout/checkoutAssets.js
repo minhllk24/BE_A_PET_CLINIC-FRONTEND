@@ -1,27 +1,29 @@
+import product from "../../assets/images/checkout/product-thumb.png";
+import backArrow from "../../assets/images/checkout/back-arrow.svg";
+import locationPin from "../../assets/images/checkout/location-pin.svg";
+import momo from "../../assets/images/checkout/momo.png";
+import zalopay from "../../assets/images/checkout/zalopay.png";
+import vnpay from "../../assets/images/checkout/vnpay.png";
+import radioUnchecked from "../../assets/images/checkout/radio-unchecked.svg";
+import radioChecked from "../../assets/images/checkout/radio-checked.svg";
+import bankIcon from "../../assets/images/checkout/bank.svg";
+import checkmark from "../../assets/images/checkout/coupon-error.svg";
+import atmIcon from "../../assets/images/checkout/atm-icon.svg";
+import cardIcon from "../../assets/images/checkout/card-icon.svg";
+
 export const checkoutImages = {
-  product:
-    "/figma-assets/119059f1-03f3-4369-89d5-e045322a2396.png",
-  backArrow:
-    "/figma-assets/c0a91732-d6c5-4f5d-8150-0e82cf15bddd.svg",
-  locationPin:
-    "/figma-assets/2453da1e-ca37-458b-a7e5-25cfd2463ebe.svg",
-  momo: "/figma-assets/964bceb7-c1d0-4002-aab4-ae87caebdd4d.png",
-  zalopay:
-    "/figma-assets/0cc23b90-c52b-4e76-8b61-29a2b0ea6fab.png",
-  vnpay:
-    "/figma-assets/30e87f5c-1184-4617-9d44-950ce6fdbbe3.png",
-  radioUnchecked:
-    "/figma-assets/377bd4ad-9b21-4ccc-838e-c2597e272c3b.svg",
-  radioChecked:
-    "/figma-assets/cb45fed8-dedb-403f-b352-ed3c6391c3ed.svg",
-  bankIcon:
-    "/figma-assets/c6a2891e-09ec-478b-9efd-a269fd643873.svg",
-  checkmark:
-    "/figma-assets/b3948361-c9f6-4bfa-966c-77afc0954aca.svg",
-  atmIcon:
-    "/figma-assets/44104f2c-127d-4c71-b8b2-9425b6cca8c6.svg",
-  cardIcon:
-    "/figma-assets/88e6bfeb-5c0f-44a1-af95-908c427e4561.svg",
+  product,
+  backArrow,
+  locationPin,
+  momo,
+  zalopay,
+  vnpay,
+  radioUnchecked,
+  radioChecked,
+  bankIcon,
+  checkmark,
+  atmIcon,
+  cardIcon,
 };
 
 export const GUEST_ORDER_ITEMS = [

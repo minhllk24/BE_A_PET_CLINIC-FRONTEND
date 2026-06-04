@@ -3,17 +3,8 @@ import Footer from "../components/layout/Footer";
 import NavBar from "../components/Navbar";
 import ProductCard from "../components/product/ProductCard";
 
+import { productImages } from "../assets/productImages";
 import { TEST_AUTHENTICATED } from "../config/devFlags";
-
-const imgSidebarLine = "/figma-assets/3bcb8e9a-d93c-44bd-8f2b-0e0e333894d3.svg";
-const imgChevronDown = "/figma-assets/91eb7cf9-8d2a-4046-b0e8-2df04f354d3d.svg";
-const imgCheckboxChecked = "/figma-assets/52c8d76e-3fa0-493c-a57b-0d16d2d5752f.svg";
-const imgCheckboxEmpty = "/figma-assets/c36dd4ac-f3e7-484e-8824-c68a01ee5f98.svg";
-
-const imgCollectionSearchIcon = "/figma-assets/d6439062-53c3-4a73-96dc-204790263142.svg";
-
-const imgPaginationDivider = "/figma-assets/94d859b0-e47b-4f1e-a72e-10e55d684f49.svg";
-const imgButtonChevron = "/figma-assets/b4c4c1dc-7aef-4774-bb10-26f7da50d016.svg";
 
 
 function SidebarFilter() {
@@ -24,7 +15,7 @@ function SidebarFilter() {
           <div className="flex items-center gap-[17px]">
             <div className="flex h-[24px] w-0 items-center justify-center">
               <div className="-rotate-90">
-                <img src={imgSidebarLine} alt="" className="h-0 w-[24px]" />
+                <img src={productImages.sidebarLine} alt="" className="h-0 w-[24px]" />
               </div>
             </div>
             <div className="font-['Oxygen'] text-[22px] leading-[normal] text-[#2D2D2D]">Categories</div>
@@ -35,7 +26,7 @@ function SidebarFilter() {
                 <div className="font-['Oxygen'] text-[16px] leading-[27.28px] text-[#414141]">
                   Lorem ipsum (3)
                 </div>
-                <img src={imgChevronDown} alt="" className="h-5 w-5" />
+                <img src={productImages.chevronDown} alt="" className="h-5 w-5" />
               </div>
             ))}
           </div>
@@ -47,7 +38,7 @@ function SidebarFilter() {
           <div className="flex items-center gap-[17px]">
             <div className="flex h-[24px] w-0 items-center justify-center">
               <div className="-rotate-90">
-                <img src={imgSidebarLine} alt="" className="h-0 w-[24px]" />
+                <img src={productImages.sidebarLine} alt="" className="h-0 w-[24px]" />
               </div>
             </div>
             <div className="font-['Oxygen'] text-[22px] leading-[normal] text-[#2D2D2D]">Price Range</div>
@@ -61,12 +52,12 @@ function SidebarFilter() {
                     <>
                       <span className="absolute inset-[12.5%] rounded-[2px] bg-[#3D3D3D]" />
                       <span className="absolute inset-[37.5%_29.17%_33.33%_29.17%]">
-                        <img src={imgCheckboxChecked} alt="" className="h-full w-full" />
+                        <img src={productImages.checkboxChecked} alt="" className="h-full w-full" />
                       </span>
                     </>
                   ) : (
                     <span className="absolute inset-[37.5%_29.17%_33.33%_29.17%]">
-                      <img src={imgCheckboxEmpty} alt="" className="h-full w-full" />
+                      <img src={productImages.checkboxEmpty} alt="" className="h-full w-full" />
                     </span>
                   )}
                 </span>
@@ -94,7 +85,7 @@ function CollectionHeader() {
           Search An Item
         </div>
         <div className="flex h-10 w-10 items-start rounded-[24px] p-[11px]">
-          <img src={imgCollectionSearchIcon} alt="" className="h-[24px] w-[24px] object-contain" />
+          <img src={productImages.searchIcon} alt="" className="h-[24px] w-[24px] object-contain" />
         </div>
       </div>
 

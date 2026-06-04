@@ -96,11 +96,25 @@ export const groomingImages = {
   faqOrnament,
 
   searchIcon,
+
+  feedbackAvatar,
+  feedbackBg,
+  feedbackCarouselLeft,
+  feedbackCarouselRight,
+  feedbackShape150,
+  feedbackShape152,
+  feedbackShape153,
+  feedbackShape154,
 };
 
 import feedbackBg from "./images/grooming/feedback-bg.png";
+import feedbackAvatar from "./images/grooming/feedback-avatar.png";
 import feedbackCarouselLeft from "./images/grooming/feedback-carousel-left.png";
 import feedbackCarouselRight from "./images/grooming/feedback-carousel-right.png";
+import feedbackShape150 from "./images/grooming/feedback-shape-150.png";
+import feedbackShape152 from "./images/grooming/feedback-shape-152.png";
+import feedbackShape153 from "./images/grooming/feedback-shape-153.png";
+import feedbackShape154 from "./images/grooming/feedback-shape-154.png";
 import feedbackPawDark from "./images/grooming/feedback-paw-dark.png";
 import feedbackPawSmall from "./images/grooming/feedback-paw-small.png";
 import feedbackPawBlue from "./images/grooming/feedback-paw-blue.png";

@@ -1,13 +1,5 @@
+import { cartImages } from "../../assets/cartImages";
 import { useCart } from "../../context/CartContext";
-
-const imgProductImage =
-  "/figma-assets/e73c2802-9dfa-4d78-a2ad-ca5f21e94ad5.png";
-const imgCheckbox =
-  "/figma-assets/9e52b414-ad2b-42db-a5cb-3b510be4be9c.svg";
-const imgIconBin =
-  "/figma-assets/cb09bfa4-951a-45da-9055-c584a70429e1.svg";
-const imgIconClose =
-  "/figma-assets/e52c928e-28c8-4f44-ac0a-00104147e2ae.svg";
 
 const CART_ITEMS = [
   { id: 1, name: "Tên sản phẩm", price: "giá", type: "fill", size: "fill", qty: 1 },
@@ -24,14 +16,14 @@ function CartItemRow({ item }) {
         aria-label="Chọn sản phẩm"
       >
         <span className="flex shrink-0 items-start rounded-[100px] p-0">
-          <img src={imgCheckbox} alt="" className="size-6" />
+          <img src={cartImages.checkbox} alt="" className="size-6" />
         </span>
       </button>
 
       <div className="flex h-full shrink-0 items-center justify-center">
         <div className="h-full w-[80px]">
           <img
-            src={imgProductImage}
+            src={cartImages.productThumb}
             alt=""
             className="size-full object-cover"
           />
@@ -48,7 +40,7 @@ function CartItemRow({ item }) {
             className="relative h-5 w-[17px] shrink-0"
             aria-label="Xóa sản phẩm"
           >
-            <img src={imgIconBin} alt="" className="size-full" />
+            <img src={cartImages.iconBin} alt="" className="size-full" />
           </button>
         </div>
 
@@ -108,7 +100,7 @@ function MyCartPanel({ onClose }) {
           className="btn-icon-subtle relative size-[30px] shrink-0 p-1"
           aria-label="Đóng giỏ hàng"
         >
-          <img src={imgIconClose} alt="" className="size-full" />
+          <img src={cartImages.iconClose} alt="" className="size-full" />
         </button>
       </div>
 

@@ -1,5 +1,6 @@
-const AVATAR =
-  "/figma-assets/cf883bd8-4e44-45be-b1cb-6a99d993a70c.png";
+import { shopImages } from "../../assets/shopImages";
+
+const AVATAR = shopImages.feedbackAvatar;
 
 /** 6 trang × 3 đánh giá (Figma feedback carousel) */
 export const FEEDBACK_PAGES = [

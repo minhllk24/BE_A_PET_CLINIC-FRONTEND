@@ -5,24 +5,8 @@ import ProductCard from "../components/product/ProductCard";
 import WriteReviewForm from "../components/product/WriteReviewForm";
 import Footer from "../components/layout/Footer";
 
+import { productImages } from "../assets/productImages";
 import { TEST_AUTHENTICATED } from "../config/devFlags";
-
-const imgImage = "/figma-assets/ab8aac39-f2f8-4e15-aa3f-85d150496327.png";
-const imgChevronRight = "/figma-assets/0fb4e9c0-4a13-448a-9415-d693643a2161.svg";
-const imgIconStar = "/figma-assets/4cc1209e-7852-4306-b55e-4b9e7992fee3.svg";
-const imgChevronDownSmall = "/figma-assets/c0fa9cfe-a0f7-4b5e-8d53-998a8fd9c5d8.svg";
-const imgRemove = "/figma-assets/21c1ea90-6ce5-45b3-a8a2-fe473cadd9d7.svg";
-const imgAdd = "/figma-assets/52cb6f60-f787-44b6-b8d3-072512d7faeb.svg";
-const imgVerticalDivider = "/figma-assets/88cc9b8e-59da-4dd4-ac07-3cabee1fa6e4.svg";
-const imgTruck = "/figma-assets/d83b8f00-5800-41a1-b909-86e8e9f23d2b.svg";
-const imgRotate3d = "/figma-assets/0c241c72-415e-4d95-a95f-a6a4c9793f8a.svg";
-
-const imgReviewDivider = "/figma-assets/51dd5fbb-cda9-4e58-b6b7-4e8a614f5d7b.svg";
-const imgReviewStars = "/figma-assets/f372926a-e6be-44e4-8f9c-12390c662b81.svg";
-const imgReviewStarSmall = "/figma-assets/5c589ecf-a710-4d8c-99ae-eedbd88c075a.svg";
-const imgReviewAvatar = "/figma-assets/e937baf2-2355-42b6-a50e-fcd61f9b2842.svg";
-const imgPaginationPrev = "/figma-assets/247f3a38-31e1-4fef-8b42-7a332ed5eacb.svg";
-const imgPaginationNext = "/figma-assets/2b3027bc-9446-4126-9ead-f5ecafd8ae89.svg";
 
 export default function ProductDetailsPage({ showWriteReview = false }) {
   const [isReviewTab, setIsReviewTab] = useState(showWriteReview);
@@ -35,7 +19,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
         <section className="relative h-[778px] w-[1440px]">
           <div className="absolute left-[120px] top-[32px] flex items-center gap-[4px] text-[16px]">
             <span className="text-[#0D47A1]">Product Listing</span>
-            <img src={imgChevronRight} alt="" className="h-5 w-5" />
+            <img src={productImages.chevronRight} alt="" className="h-5 w-5" />
             <span className="text-[rgba(0,0,0,0.87)]">Dummy Product Page</span>
           </div>
 
@@ -43,11 +27,11 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
             <div className="ml-[-18px] flex h-[644px] w-[1218px] items-start gap-[71px]">
               <div className="flex w-[626px] gap-[24px] pl-[15px] pt-[8.5px]">
                 <div className="flex h-[626px] flex-col justify-between rounded-[16px]">
-                  <img src={imgImage} alt="" className="h-[194px] w-[141px] rounded-[4px] object-cover opacity-20" />
-                  <img src={imgImage} alt="" className="h-[194px] w-[141px] rounded-[4px] border border-[#90CAF9] object-cover" />
-                  <img src={imgImage} alt="" className="h-[194px] w-[141px] rounded-[4px] object-cover" />
+                  <img src={productImages.detailImage} alt="" className="h-[194px] w-[141px] rounded-[4px] object-cover opacity-20" />
+                  <img src={productImages.detailImage} alt="" className="h-[194px] w-[141px] rounded-[4px] border border-[#90CAF9] object-cover" />
+                  <img src={productImages.detailImage} alt="" className="h-[194px] w-[141px] rounded-[4px] object-cover" />
                 </div>
-                <img src={imgImage} alt="" className="h-[627px] w-[460px] rounded-[4px] object-cover opacity-20" />
+                <img src={productImages.detailImage} alt="" className="h-[627px] w-[460px] rounded-[4px] object-cover opacity-20" />
               </div>
 
               <div className="flex h-[644px] w-[511px] flex-col justify-between">
@@ -60,7 +44,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                       <div className="flex items-center gap-[10px]">
                         <div className="flex items-center gap-[2px]">
                           {Array.from({ length: 5 }).map((_, i) => (
-                            <img key={i} src={imgIconStar} alt="" className="h-[16.101px] w-[16.101px]" />
+                            <img key={i} src={productImages.starIcon} alt="" className="h-[16.101px] w-[16.101px]" />
                           ))}
                         </div>
                         <span className="font-['Oxygen'] text-[14px] leading-[23.87px] text-[#414141]">( 32 review )</span>
@@ -95,12 +79,12 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                   <div className="flex h-[49px] gap-[15px]">
                     <button className="flex h-[49px] items-center gap-[11px] rounded-[4px] bg-[#F2F4F7] px-[20px] py-[10px]">
                       <span className="font-['Roboto'] text-[16px] font-bold leading-[24px] tracking-[0.15px] text-[#1D2939]">100ml</span>
-                      <img src={imgChevronDownSmall} alt="" className="h-6 w-6" />
+                      <img src={productImages.chevronDownSmall} alt="" className="h-6 w-6" />
                     </button>
                     <button className="flex h-[49px] w-[94px] items-center justify-center gap-[10px] rounded-[4px] border border-[#D7D7D7] bg-white px-[24px] py-[16px]">
-                      <img src={imgRemove} alt="" className="h-6 w-6" />
+                      <img src={productImages.remove} alt="" className="h-6 w-6" />
                       <span className="font-['Oxygen'] text-[18px] font-bold leading-[normal] text-[#414141]">1</span>
-                      <img src={imgAdd} alt="" className="h-6 w-6" />
+                      <img src={productImages.add} alt="" className="h-6 w-6" />
                     </button>
                     <button className="h-[43px] flex-1 rounded-[4px] bg-[#FFF176] px-[22px] py-[8px] font-['Roboto'] text-[15px] font-bold leading-[26px] uppercase tracking-[0.46px] text-black shadow-elevation">
                       THÊM VÀO GIỎ HÀNG
@@ -112,11 +96,11 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                 </div>
                 <div className="w-[350px] space-y-[16px] pb-[2px] font-['Oxygen'] text-[14px] leading-[normal] text-[#424242]">
                   <div className="flex items-center gap-[20px]">
-                    <img src={imgTruck} alt="" className="h-6 w-[26px]" />
+                    <img src={productImages.truck} alt="" className="h-6 w-[26px]" />
                     Free worldwide shipping on all orders over $100
                   </div>
                   <div className="flex items-center gap-[20px] whitespace-nowrap">
-                    <img src={imgRotate3d} alt="" className="h-[26px] w-[26px]" />
+                    <img src={productImages.rotate3d} alt="" className="h-[26px] w-[26px]" />
                     Delivers in: 3-7 Working Days <span className="underline">Shipping & Return</span>
                   </div>
                 </div>
@@ -145,7 +129,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                   Mô tả
                 </button>
                 <div className="h-[33px] w-0">
-                  <img src={imgVerticalDivider} alt="" className="h-[33px]" />
+                  <img src={productImages.verticalDivider} alt="" className="h-[33px]" />
                 </div>
                 <button
                   type="button"
@@ -192,7 +176,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                   Mô tả
                 </button>
                 <div className="h-[33px] w-0">
-                  <img src={imgReviewDivider} alt="" className="h-[33px]" />
+                  <img src={productImages.reviewDivider} alt="" className="h-[33px]" />
                 </div>
                 <button
                   type="button"
@@ -208,7 +192,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                   <div className="font-['Roboto'] text-[32px] font-medium leading-[32px] tracking-[0.15px] text-black">126 Đánh giá</div>
                   <div className="mt-[16px] h-[87px] rounded-[14px] bg-white px-[22px] py-[11px]">
                     <div className="font-['Roboto'] text-[40px] font-bold leading-[40px] tracking-[0.25px] text-black">4.6</div>
-                    <img src={imgReviewStars} alt="" className="mt-0 h-6 w-[114px]" />
+                    <img src={productImages.reviewStars} alt="" className="mt-0 h-6 w-[114px]" />
                   </div>
                 </div>
 
@@ -217,7 +201,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                     <div key={value} className="flex h-6 items-center gap-px">
                       <div className="flex items-center">
                         <span className="font-['Roboto'] text-[16px] leading-[24px] tracking-[0.15px] text-[rgba(0,0,0,0.7)]">{value}</span>
-                        <img src={imgReviewStarSmall} alt="" className="h-4 w-4" />
+                        <img src={productImages.reviewStarSmall} alt="" className="h-4 w-4" />
                       </div>
                       <div className="relative h-[22px] w-[200px]">
                         <div className="absolute left-4 right-4 top-[9px] h-[6px] rounded-[3px] bg-[rgba(120,120,120,0.2)]" />
@@ -231,12 +215,12 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
 
               {[1, 2].map((item) => (
                 <div key={item} className="flex w-full gap-5 rounded-[14px] border border-[#90CAF9] bg-white px-4 py-[15px]">
-                  <img src={imgReviewAvatar} alt="" className="h-[52px] w-[52px]" />
+                  <img src={productImages.reviewAvatarBlock} alt="" className="h-[52px] w-[52px]" />
                   <div className="flex min-w-0 flex-1 flex-col gap-5">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center justify-between">
                         <span className="font-['Oxygen'] text-[16px] leading-[normal] text-[#3D3D3D]">Mike Johnson</span>
-                        <img src={imgReviewStars} alt="" className="h-6 w-[114px]" />
+                        <img src={productImages.reviewStars} alt="" className="h-6 w-[114px]" />
                       </div>
                       <p className="font-['Oxygen'] text-[16px] leading-[1.705] text-[#949494]">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Diam nisi, cras neque, lorem vel vulputate vitae aliquam.
@@ -255,7 +239,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
 
               <div className="flex w-full items-center justify-center gap-[28.3px]">
                 <button type="button" className="p-2">
-                  <img src={imgPaginationPrev} alt="" className="h-6 w-6" />
+                  <img src={productImages.paginationPrev} alt="" className="h-6 w-6" />
                 </button>
                 <div className="flex items-center">
                   <div className="flex h-10 w-10 items-center justify-center rounded-[4px] bg-[#0D47A1] pb-[6.5px] pt-[5.5px] font-['Inter'] text-[18px] font-medium leading-[28px] text-white">
@@ -268,7 +252,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                   <div className="pl-6 font-['Inter'] text-[18px] font-medium leading-[28px] text-[#7D858D]">...</div>
                 </div>
                 <button type="button" className="p-2">
-                  <img src={imgPaginationNext} alt="" className="h-6 w-6" />
+                  <img src={productImages.paginationNext} alt="" className="h-6 w-6" />
                 </button>
               </div>
 

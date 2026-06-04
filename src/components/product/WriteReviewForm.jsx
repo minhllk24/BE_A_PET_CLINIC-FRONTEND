@@ -1,11 +1,5 @@
 import { useState } from "react";
-
-const imgCommenterAvatar =
-  "/figma-assets/6af6ab21-b98f-45b9-b5d0-61917d2047dc.svg";
-const imgIconStar =
-  "/figma-assets/4cc1209e-7852-4306-b55e-4b9e7992fee3.svg";
-const imgSubmitChevron =
-  "/figma-assets/f5b9b5c6-f596-4331-9829-0ac94ccb180b.svg";
+import { productImages } from "../../assets/productImages";
 
 function StarRating({ value, onChange }) {
   return (
@@ -24,9 +18,10 @@ function StarRating({ value, onChange }) {
             className="focus-ring-brand h-[16.101px] w-[16.101px] shrink-0"
           >
             <img
-              src={imgIconStar}
+              src={productImages.starIcon}
               alt=""
               className={`size-full ${filled ? "opacity-100" : "opacity-25"}`}
+              style={filled ? { filter: "brightness(0) saturate(100%) invert(77%) sepia(52%) saturate(638%) hue-rotate(359deg) brightness(103%) contrast(101%)" } : undefined}
             />
           </button>
         );
@@ -43,7 +38,7 @@ function WriteReviewForm() {
   return (
     <div className="flex w-full gap-5 rounded-[14px] border border-solid border-[#d3d3d3] bg-white py-[34px] pl-4 pr-[31px]">
       <img
-        src={imgCommenterAvatar}
+        src={productImages.reviewAvatar}
         alt=""
         className="size-[52px] shrink-0 rounded-full object-cover"
         aria-hidden="true"
@@ -94,7 +89,7 @@ function WriteReviewForm() {
             <span className="font-['Roboto'] text-[15px] font-bold uppercase leading-[26px] tracking-[0.46px] text-black">
               Gửi đánh giá
             </span>
-            <img src={imgSubmitChevron} alt="" className="size-[22px]" aria-hidden="true" />
+            <img src={productImages.submitChevron} alt="" className="size-[22px]" aria-hidden="true" />
           </button>
         </div>
       </div>
