@@ -30,13 +30,44 @@ function StarRating({ value, onChange }) {
   );
 }
 
-function WriteReviewForm() {
+function WriteReviewForm({
+  targetType = "product",
+  targetId,
+  targetName = "",
+  appointmentId,
+  onSubmit,
+}) {
   const [rating, setRating] = useState(0);
   const [name, setName] = useState("");
   const [review, setReview] = useState("");
+  const targetLabel = targetType === "service" ? "Dịch vụ" : "Sản phẩm";
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    onSubmit?.({
+      targetType,
+      targetId,
+      targetName,
+      appointmentId,
+      name,
+      rating,
+      review,
+    });
+  };
 
   return (
-    <div className="flex w-full gap-5 rounded-[14px] border border-solid border-[#d3d3d3] bg-white py-[34px] pl-4 pr-[31px]">
+    <form
+      onSubmit={handleSubmit}
+      className="flex w-full gap-5 rounded-[14px] border border-solid border-[#d3d3d3] bg-white py-[34px] pl-4 pr-[31px]"
+    >
+      {targetType === "service" && (
+        <button
+          type="button"
+          className="absolute -right-3 -top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-md"
+        >
+          <span className="text-xl font-bold leading-none">×</span>
+        </button>
+      )}
       <img
         src={productImages.reviewAvatar}
         alt=""
@@ -45,8 +76,8 @@ function WriteReviewForm() {
       />
 
       <div className="flex min-w-0 flex-1 flex-col gap-[30px]">
-        <div className="flex flex-wrap items-start justify-between gap-8">
-          <div className="flex w-full max-w-[500px] flex-col gap-[10px]">
+        <div className="flex flex-wrap items-start gap-8">
+          <div className="flex w-full max-w-[400px] flex-col gap-[10px]">
             <label
               htmlFor="reviewer-name"
               className="font-['Roboto'] text-[16px] leading-[1.705] text-[#3d3d3d]"
@@ -62,11 +93,19 @@ function WriteReviewForm() {
             />
           </div>
 
-          <div className="flex flex-col gap-[15px]">
-            <span className="font-['Roboto'] text-[16px] leading-[1.705] text-[#3d3d3d]">
-              Đánh giá của bạn:
-            </span>
-            <StarRating value={rating} onChange={setRating} />
+          <div className="flex min-w-[280px] flex-col pt-6 gap-[20px]">
+            {targetName && (
+              <div className="flex gap-[10px] overflow-hidden font-['Roboto'] text-[16px] leading-[1.705]">
+                <span className="shrink-0 text-[#3d3d3d]">{targetLabel}:</span>
+                <span className="min-w-0 flex-1 text-[rgba(0,0,0,0.6)]">{targetName}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-[10px]">
+              <span className="font-['Roboto'] text-[16px] leading-[1.705] text-[#3d3d3d]">
+                Đánh giá của bạn:
+              </span>
+              <StarRating value={rating} onChange={setRating} />
+            </div>
           </div>
         </div>
 
@@ -83,17 +122,16 @@ function WriteReviewForm() {
 
         <div className="flex justify-center">
           <button
-            type="button"
+            type="submit"
             className="btn-brand-yellow flex h-[42px] items-center justify-center gap-2 rounded-[4px] px-[22px] py-2 shadow-elevation"
           >
             <span className="font-['Roboto'] text-[15px] font-bold uppercase leading-[26px] tracking-[0.46px] text-black">
               Gửi đánh giá
             </span>
-            <img src={productImages.submitChevron} alt="" className="size-[22px]" aria-hidden="true" />
           </button>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
 

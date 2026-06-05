@@ -2,45 +2,50 @@ import { productCardImages } from "./productCardAssets";
 
 function ProductRating() {
   return (
-    <div className="flex shrink-0 items-center" aria-label="2.5 sao">
+    <div className="flex items-center">
+      {/* full */}
       <img
         src={productCardImages.starFull}
         alt=""
-        className="size-6 shrink-0"
+        className="w-6 h-6"
       />
+
       <img
         src={productCardImages.starFull}
         alt=""
-        className="size-6 shrink-0"
+        className="w-6 h-6"
       />
-      <div className="relative size-6 shrink-0">
-        <div
-          className="absolute bottom-0 left-0 top-0 w-3 bg-[#FFB400]"
-          style={{
-            maskImage: `url('${productCardImages.starHalfMask}')`,
-            maskSize: "24px 24px",
-            maskRepeat: "no-repeat",
-          }}
+
+      {/* half */}
+      <div className="relative w-6 h-6">
+        {/* star empty */}
+        <img
+          src={productCardImages.starEmpty}
+          alt=""
+          className="absolute inset-0 w-6 h-6"
         />
-        <div
-          className="absolute bottom-0 right-0 top-0 w-3 bg-[rgba(0,0,0,0.23)]"
-          style={{
-            maskImage: `url('${productCardImages.starHalfMask}')`,
-            maskSize: "24px 24px",
-            maskRepeat: "no-repeat",
-            maskPosition: "-12px 0px",
-          }}
-        />
+
+        {/* half filled */}
+        <div className="absolute inset-0 overflow-hidden w-1/2">
+          <img
+            src={productCardImages.starFull}
+            alt=""
+            className="w-6 h-6 max-w-none"
+          />
+        </div>
       </div>
+
+      {/* empty */}
       <img
         src={productCardImages.starEmpty}
         alt=""
-        className="size-6 shrink-0"
+        className="w-6 h-6"
       />
+
       <img
         src={productCardImages.starEmpty}
         alt=""
-        className="size-6 shrink-0"
+        className="w-6 h-6"
       />
     </div>
   );

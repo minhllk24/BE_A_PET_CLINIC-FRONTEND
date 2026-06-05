@@ -3,6 +3,7 @@ import LayoutManagePet from "../layout/LayoutManagePet";
 
 import HomePage from "../pages/HomePage/HomePage";
 import BookingPage from "../pages/Booking/BookingPage";
+import AppointmentHistoryPage from "../pages/Booking/AppointmentHistoryPage";
 
 import ShopPage from "../pages/ShopPage";
 import ProductPage from "../pages/ProductPage";
@@ -40,6 +41,7 @@ const AppRoutes = () => {
         <Route path="/my-pets/new" element={<PetFormPage />} />
         <Route path="/my-pets/:id" element={<PetDetailPage />} />
         <Route path="/my-pets/:id/edit" element={<PetFormPage />} />
+        <Route path="/appointment/history" element={<AppointmentHistoryPage />} />
       </Route>
     </Routes>
   );
