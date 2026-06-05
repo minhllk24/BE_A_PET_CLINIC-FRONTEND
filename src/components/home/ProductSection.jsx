@@ -11,9 +11,12 @@ const CATEGORIES = [
   { label: "Phụ kiện", image: homeImages.category5 },
 ];
 
-function ProductSection() {
-  const products = Array.from({ length: 12 }, (_, i) => i);
+const PRODUCTS = Array.from({ length: 12 }, (_, index) => ({
+  id: index + 1,
+  variant: index % 4 === 0 ? "tag" : "default",
+}));
 
+function ProductSection() {
   return (
     <section
       id="mua-sắm"
@@ -60,25 +63,24 @@ function ProductSection() {
           ))}
           </div>
 
-          <div className="w-full max-w-[1200px] space-y-2.5">
-            <div className="flex flex-wrap justify-center gap-5 rounded-lg p-2.5">
-              {products.slice(0, 6).map((id) => (
-                <ProductCard
-                  key={id}
-                  imageSrc={homeImages.productPlaceholder}
-                />
-              ))}
-            </div>
-            <div className="flex flex-wrap justify-center gap-5 rounded-lg p-2.5">
-              {products.slice(6, 12).map((id) => (
-                <ProductCard
-                  key={id}
-                  imageSrc={homeImages.productPlaceholder}
-                />
-              ))}
+        <div className="w-full max-w-[1200px] space-y-2.5">
+          <div className="flex flex-wrap justify-center gap-5 rounded-lg p-2.5">
+            {PRODUCTS.slice(0, 6).map((product) => (
+              <ProductCard
+                key={product.id}
+                variant={product.variant}
+              />
+            ))}
+          </div>
+          <div className="flex flex-wrap justify-center gap-5 rounded-lg p-2.5">
+            {PRODUCTS.slice(6, 12).map((product) => (
+              <ProductCard
+                key={product.id}
+                variant={product.variant}
+              />
+            ))}
           </div>
         </div>
-   
 
         <YellowButton className="h-[42px] min-w-[154px]">XEM THÊM →</YellowButton>
       </div>

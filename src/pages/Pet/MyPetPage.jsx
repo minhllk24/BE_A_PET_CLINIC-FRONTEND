@@ -200,7 +200,7 @@ function PetListPage() {
   }
 
   return (
-    <div>
+    <div className="font-sans">
       <div className="mb-6 flex flex-col gap-1">
         <h1 className="text-2xl font-bold text-slate-900">Danh sách hồ sơ thú cưng</h1>
         <p className="text-sm text-slate-600">

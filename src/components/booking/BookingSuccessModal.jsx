@@ -21,9 +21,9 @@ function BookingSuccessModal() {
           <Link to="/" className="rounded bg-secondary px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation">
             Trở về trang chủ
           </Link>
-          <button type="button" className="rounded border border-secondary px-6 py-3 text-sm font-medium uppercase tracking-[0.46px]">
+          <Link to="/appointment/history" className="rounded border border-secondary px-6 py-3 text-sm font-medium uppercase tracking-[0.46px]">
             Chi tiết lịch hẹn
-          </button>
+          </Link>
         </div>
       </div>
     </div>
