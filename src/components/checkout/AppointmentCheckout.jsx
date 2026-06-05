@@ -1,4 +1,6 @@
+import { useState } from "react";
 import React from 'react';
+import CouponInput from "../../components/ui/CouponInput";
 
 // You can use standard a/img tags with the local paths or import SVG React components depending on the bundler
 // Since this is Vite, we can just use the path as src
@@ -10,6 +12,15 @@ import phoneIcon from "../../assets/icons/phone-icon.svg";
 import infoIcon from "../../assets/icons/info-icon.svg";
 
 function AppointmentCheckout() {
+  const [couponCode, setCouponCode] = useState("");
+  const [paymentMode, setPaymentMode] = useState("cod"); // "cod" | "online"
+
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) return;
+  };
+
+  const isCod = paymentMode === "cod";
+
   return (
     <div className="w-full min-h-screen bg-[#F8F9FB] flex justify-center font-sans">
       {/* Main Container */}
@@ -149,14 +160,30 @@ function AppointmentCheckout() {
 
               <div className="flex flex-col w-full gap-[24px]">
                 {/* Payment Mode Toggle */}
-                <div className="w-full bg-[#E7E8EA] rounded-[12px] p-[4px] flex flex-row items-center">
-                  <button className="flex-1 flex justify-center items-center py-[8px] bg-[#FFFFFF] rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]">
-                    <span className="text-[12px] font-bold text-[#00355F] leading-[1.333em] tracking-[0.0416em]">
+                <div className="relative w-full bg-[#E7E8EA] rounded-[12px] p-[4px] flex items-center">
+                  <div
+                    className="absolute top-1 h-8 w-[calc(50%-4px)] rounded-[12px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] transition-[left] duration-component ease-premium"
+                    style={{ left: isCod ? "4px" : "calc(50% + 0px)" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMode("cod")}
+                    className={`flex-1 flex justify-center items-center py-[8px] rounded-[12px] transition-colors duration-micro z-10 ${
+                      isCod ? "font-bold text-[#00355F]" : "text-[#727780] hover:text-[#00355F]"
+                    }`}
+                  >
+                    <span className="text-[12px] leading-[1.333em] tracking-[0.0416em]">
                       Tại cửa hàng
                     </span>
                   </button>
-                  <button className="flex-1 flex justify-center items-center py-[8px] rounded-[12px]">
-                    <span className="text-[12px] font-bold text-[#727780] leading-[1.333em] tracking-[0.0416em]">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMode("online")}
+                    className={`flex-1 flex justify-center items-center py-[8px] rounded-[12px] transition-colors duration-micro z-10 ${
+                      !isCod ? "font-bold text-[#00355F]" : "text-[#727780] hover:text-[#00355F]"
+                    }`}
+                  >
+                    <span className="text-[12px] leading-[1.333em] tracking-[0.0416em]">
                       Trực tuyến
                     </span>
                   </button>
@@ -167,28 +194,12 @@ function AppointmentCheckout() {
                   <h3 className="text-[15px] font-medium text-[#585858] leading-[1.171em]">
                     Thẻ quà tặng / Mã giảm giá
                   </h3>
-                  <div className="flex flex-row items-start gap-[26px]">
-                    <div className="flex flex-col w-[306px]">
-                      <div className="w-full h-[37px] border border-[rgba(0,0,0,0.23)] rounded-[4px] px-[14px] flex items-center bg-[#FFFFFF]">
-                        <input 
-                          type="text" 
-                          value="DCFV " 
-                          readOnly
-                          className="w-full bg-transparent outline-none text-[14px] font-normal text-[#4F4B4B] leading-[2.66em] tracking-[0.0714em] uppercase" 
-                        />
-                      </div>
-                      <div className="w-full px-[14px] pt-[3px] h-[15px]">
-                        <span className="text-[10px] font-normal text-[rgba(255,0,0,0.6)] leading-[1.66em] tracking-[0.04em]">
-                          Mã không tồn tại
-                        </span>
-                      </div>
-                    </div>
-                    <button className="w-[104px] py-[7px] px-[22px] bg-[#FFF176] rounded-[8px] shadow-[0px_1px_5px_0px_rgba(0,0,0,0.12),_0px_2px_2px_0px_rgba(0,0,0,0.14),_0px_3px_1px_-2px_rgba(0,0,0,0.2)] flex justify-center items-center">
-                      <span className="text-[16px] font-normal text-[#000000] leading-[1.5em] tracking-[0.0093em]">
-                        Áp dụng
-                      </span>
-                    </button>
-                  </div>
+                  <CouponInput
+                    value={couponCode}
+                    onChange={setCouponCode}
+                    onApply={handleApplyCoupon}
+                    error=""
+                  />
                 </div>
 
                 {/* Summary Section */}
@@ -212,23 +223,22 @@ function AppointmentCheckout() {
                 </div>
 
                 {/* Action Button */}
-                <button className="w-full h-[48px] bg-[#FDD835] rounded-[4px] shadow-[0px_2px_4px_-2px_rgba(0,0,0,0.1),_0px_4px_6px_-1px_rgba(0,0,0,0.1)] flex justify-center items-center">
+                <button
+                  type="button"
+                  className="w-full h-[48px] bg-[#FDD835] rounded-[4px] shadow-[0px_2px_4px_-2px_rgba(0,0,0,0.1),_0px_4px_6px_-1px_rgba(0,0,0,0.1)] flex justify-center items-center hover:bg-[#ffe454] active:scale-[0.99] active:shadow-none transition-all duration-micro focus-ring-brand"
+                >
                   <span className="text-[20px] font-bold text-[#000000] leading-[1.2em]">
                     Xác nhận đặt lịch
                   </span>
                 </button>
 
                 {/* Footer Text */}
-                <div className="w-full h-[30px] flex flex-wrap justify-center items-center text-center">
-                  <span className="text-[12px] font-normal text-[#727780] leading-[1.25em]">
-                    Bằng cách nhấn xác nhận, bạn đồng ý với Điều khoản dịch vụ và{' '}
-                  </span>
-                  <span className="text-[12px] font-normal text-[#00355F] leading-[1.25em] mx-1">
-                    Chính sách bảo mật
-                  </span>
-                  <span className="text-[12px] font-normal text-[#727780] leading-[1.25em]">
-                    {' '}của chúng tôi.
-                  </span>
+                <div className="flex flex-wrap justify-center text-center font-['Roboto'] text-[12px] leading-[15px] text-[#727780]">
+                  <span>Bằng cách nhấn xác nhận, bạn đồng ý với </span>
+                  <a href="/terms" className="text-[#00355f] underline hover:no-underline mx-1">Điều khoản dịch vụ</a>
+                  <span>và </span>
+                  <a href="/privacy" className="text-[#00355f] underline hover:no-underline">Chính sách bảo mật</a>
+                  <span> của chúng tôi.</span>
                 </div>
               </div>
             </div>

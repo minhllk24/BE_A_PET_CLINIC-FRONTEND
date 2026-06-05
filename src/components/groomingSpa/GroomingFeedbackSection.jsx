@@ -127,7 +127,7 @@ function GroomingFeedbackSection() {
 
   return (
     <section
-      className="relative h-[683px] w-[1440px] overflow-hidden"
+      className="relative h-[683px] w-full overflow-hidden"
       aria-label="Phản hồi của khách hàng"
       aria-roledescription="carousel"
       tabIndex={0}

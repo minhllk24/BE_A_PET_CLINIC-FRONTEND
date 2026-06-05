@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { shopImages } from "../../assets/shopImages";
 import { FEEDBACK_PAGE_COUNT, FEEDBACK_PAGES } from "./feedbackData";
 
@@ -69,7 +69,7 @@ function FeedbackDot({ isActive, onClick, pageIndex, totalPages }) {
   );
 }
 
-function FeedbackSection() {
+function FeedbackSection({ onMouseEnter, onMouseLeave }) {
   const [pageIndex, setPageIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const touchStartX = useRef(null);
@@ -132,6 +132,38 @@ function FeedbackSection() {
     touchStartX.current = null;
   };
 
+  /* ---- Auto-slide 5s ---- */
+  const autoTimerRef = useRef(null);
+  const pauseRef = useRef(null);
+  const resumeRef = useRef(null);
+
+  const startAutoSlide = useCallback(() => {
+    clearInterval(autoTimerRef.current);
+    autoTimerRef.current = setInterval(() => {
+      setDirection(1);
+      setPageIndex((prev) => (prev + 1) % FEEDBACK_PAGE_COUNT);
+    }, 5000);
+  }, []);
+
+  /* Keep refs in sync so mouse handlers work without stale closures */
+  pauseRef.current = onMouseEnter;
+  resumeRef.current = onMouseLeave;
+
+  const handleMouseEnter = () => {
+    clearInterval(autoTimerRef.current);
+    if (pauseRef.current) pauseRef.current();
+  };
+
+  const handleMouseLeave = () => {
+    if (resumeRef.current) resumeRef.current();
+    else startAutoSlide();
+  };
+
+  useEffect(() => {
+    startAutoSlide();
+    return () => clearInterval(autoTimerRef.current);
+  }, [startAutoSlide]);
+
   const slideOffset =
     direction === 0 ? "translate-x-0" : direction > 0 ? "animate-feedback-in-next" : "animate-feedback-in-prev";
 
@@ -144,6 +176,8 @@ function FeedbackSection() {
       onKeyDown={handleKeyDown}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <img
         src={shopImages.feedbackBg}

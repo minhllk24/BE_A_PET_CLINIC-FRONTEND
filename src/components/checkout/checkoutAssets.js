@@ -89,7 +89,6 @@ export const ONLINE_PAYMENT_METHODS = [
     label: "Chuyển khoản ngân hàng",
     icon: checkoutImages.bankIcon,
     iconClass: "size-8",
-    checkIcon: checkoutImages.checkmark,
   },
   {
     id: "atm",

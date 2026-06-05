@@ -20,7 +20,7 @@ function BookButton({ className = "" }) {
   return (
     <a
       href="/booking"
-      className={`z-10 flex h-12 shrink-0 items-center justify-center rounded-[50px] bg-[#0D47A1] px-6 text-center font-['Roboto'] text-[16px] leading-4 text-white no-underline shadow-[0_2px_4px_rgba(0,0,0,0.12)] ${className}`}
+      className={`z-10 flex h-12 shrink-0 items-center justify-center rounded-[50px] bg-[#0D47A1] px-6 text-center font-['Roboto'] text-[16px] leading-4 text-white no-underline shadow-[0_2px_4px_rgba(0,0,0,0.12)] transition-all duration-micro hover:bg-[#1565C0] ${className}`}
     >
       Đặt lịch
     </a>

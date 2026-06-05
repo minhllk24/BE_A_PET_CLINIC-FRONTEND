@@ -79,7 +79,7 @@ function FaqItem({ faq, isOpen, onToggle }) {
           {faq.question}
         </span>
         <span
-          className="absolute right-[24px] top-1/2 flex w-4 -translate-y-1/2 items-center justify-center font-black text-[18px] leading-[18px] text-black"
+          className="absolute right-[24px] top-1/2 flex w-4 -translate-y-1/2 items-center justify-center text-[18px] leading-[18px] text-black"
           aria-hidden="true"
         >
           {isOpen ? "_" : "+"}
