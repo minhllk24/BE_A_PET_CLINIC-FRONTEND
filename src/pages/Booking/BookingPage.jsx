@@ -529,8 +529,11 @@ function InfoForm({ selectedPet, setSelectedPet, onBack, onNext }) {
   );
 }
 
+<<<<<<< HEAD
 import { ChevronDown } from "lucide-react";
 
+=======
+>>>>>>> origin/Fix-ShopPage-Dich-vu
 function Field({
   label,
   required,
@@ -553,17 +556,24 @@ function Field({
             <select
               defaultValue={defaultValue}
               required={required}
+<<<<<<< HEAD
               className="h-10 w-full appearance-none rounded-2xl border border-slate-300 bg-white px-4 pr-12 text-sm outline-none focus:border-blue-900"
+=======
+              className="h-10 w-full cursor-pointer rounded-2xl border border-slate-300 bg-white px-4 text-sm outline-none transition-colors hover:bg-slate-50 focus:border-blue-900 [-webkit-appearance:none] [appearance:none] [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden"
+>>>>>>> origin/Fix-ShopPage-Dich-vu
             >
               {options.map((option) => (
                 <option key={option}>{option}</option>
               ))}
             </select>
+<<<<<<< HEAD
 
             <ChevronDown
               size={18}
               className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-slate-500"
             />
+=======
+>>>>>>> origin/Fix-ShopPage-Dich-vu
           </>
         ) : (
           <input

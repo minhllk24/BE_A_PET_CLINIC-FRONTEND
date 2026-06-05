@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+import CouponInput from "../ui/CouponInput";
+import { useState } from "react";
+>>>>>>> origin/Fix-ShopPage-Dich-vu
 import { bookingImages } from "../../assets/bookingImages";
 
 const {
@@ -101,6 +106,10 @@ function Detail({ label, value, icon }) {
 }
 
 function PaymentPanel({ paymentMode, setPaymentMode, onConfirm }) {
+<<<<<<< HEAD
+=======
+  const [couponCode, setCouponCode] = useState("");
+>>>>>>> origin/Fix-ShopPage-Dich-vu
   const online = paymentMode !== "store";
   const selectedMethod = online && paymentMode !== "online" ? paymentMode : "bank";
 
@@ -148,6 +157,7 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm }) {
 
       <div className="border-b border-slate-300 pb-5">
         <label className="mb-2 block text-sm text-slate-700">Thẻ quà tặng / Mã giảm giá</label>
+<<<<<<< HEAD
         <div className="flex gap-3">
           <div className="flex-1">
             <input defaultValue="DCFV" className="h-10 w-full rounded border border-slate-300 px-3 outline-none focus:border-blue-900" />
@@ -155,6 +165,14 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm }) {
           </div>
           <button type="button" className="h-10 rounded-lg bg-secondary px-6 font-bold shadow-elevation">Áp dụng</button>
         </div>
+=======
+        <CouponInput
+          value={couponCode}
+          onChange={setCouponCode}
+          onApply={() => {}}
+          error=""
+        />
+>>>>>>> origin/Fix-ShopPage-Dich-vu
       </div>
 
       <div className="space-y-3 py-5 text-sm">
@@ -169,7 +187,11 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm }) {
         </div>
         <p className="text-xl font-bold text-[#00355f]">200.000 đ</p>
       </div>
+<<<<<<< HEAD
       <button type="button" onClick={onConfirm} className="w-full rounded bg-secondary py-3 text-lg font-bold shadow-elevation">
+=======
+      <button type="button" onClick={onConfirm} className="w-full rounded bg-[#FDD835] py-3 text-lg font-bold shadow-elevation hover:bg-[#ffe454] active:bg-[#F9A825] transition-all duration-micro">
+>>>>>>> origin/Fix-ShopPage-Dich-vu
         Xác nhận đặt lịch
       </button>
       <p className="mt-5 text-center text-xs text-slate-500">

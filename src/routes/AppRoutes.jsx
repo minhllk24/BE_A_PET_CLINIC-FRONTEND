@@ -17,6 +17,7 @@ import CheckoutPage from "../pages/CheckoutPage";
 import MyPetPage from "../pages/Pet/MyPetPage";
 import PetDetailPage from "../pages/Pet/PetDetailPage";
 import PetFormPage from "../pages/Pet/PetFormPage";
+import BookingPage from "../pages/Booking/BookingPage";
 
 const AppRoutes = () => {
   return (
@@ -34,6 +35,7 @@ const AppRoutes = () => {
       <Route path="/services/grooming-spa" element={<GroomingSpaPage />} />
       <Route path="/services/groomng-spa" element={<GroomingSpaPage />} />
       <Route path="/checkout" element={<CheckoutPage />} />
+      <Route path="/booking" element={<BookingPage />} />
 
       {/* 2. Các trang thuộc nhóm quản lý thú cưng có layout riêng */}
       <Route element={<LayoutManagePet />}>

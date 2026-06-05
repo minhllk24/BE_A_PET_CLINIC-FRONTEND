@@ -24,6 +24,47 @@ export function CartProvider({ children }) {
   const [paymentMode, setPaymentMode] = useState("cod");
   const [onlineMethod, setOnlineMethod] = useState("bank");
 
+  /* ---- Cart items state ---- */
+  const [cartItems, setCartItems] = useState([
+    { id: 1, name: "Tên sản phẩm", price: "$13.00", type: "fill", size: "fill", qty: 1, selected: true },
+    { id: 2, name: "Tên sản phẩm", price: "$13.00", type: "fill", size: "fill", qty: 1, selected: true },
+    { id: 3, name: "Tên sản phẩm", price: "$13.00", type: "fill", size: "fill", qty: 1, selected: false },
+  ]);
+
+  const toggleCartItem = useCallback((id) => {
+    setCartItems((items) =>
+      items.map((item) =>
+        item.id === id ? { ...item, selected: !item.selected } : item,
+      ),
+    );
+  }, []);
+
+  const removeCartItem = useCallback((id) => {
+    setCartItems((items) => items.filter((item) => item.id !== id));
+  }, []);
+
+  const updateCartQty = useCallback((id, delta) => {
+    setCartItems((items) =>
+      items.map((item) =>
+        item.id === id
+          ? { ...item, qty: Math.max(1, item.qty + delta) }
+          : item,
+      ),
+    );
+  }, []);
+
+  const addToCart = useCallback((product) => {
+    setCartItems((items) => {
+      const existing = items.find((i) => i.id === product.id);
+      if (existing) {
+        return items.map((i) =>
+          i.id === product.id ? { ...i, qty: i.qty + 1 } : i
+        );
+      }
+      return [...items, { ...product, qty: 1, selected: true }];
+    });
+  }, []);
+
   const openCart = useCallback(() => {
     setIsCheckoutOpen(false);
     setIsOrderSuccessOpen(false);
@@ -108,6 +149,11 @@ export function CartProvider({ children }) {
       completeBankTransfer,
       closeOrderSuccess,
       closeGuestSuccess,
+      cartItems,
+      toggleCartItem,
+      removeCartItem,
+      updateCartQty,
+      addToCart,
     }),
     [
       isCartOpen,
@@ -128,6 +174,11 @@ export function CartProvider({ children }) {
       completeBankTransfer,
       closeOrderSuccess,
       closeGuestSuccess,
+      cartItems,
+      toggleCartItem,
+      removeCartItem,
+      updateCartQty,
+      addToCart,
     ],
   );
 

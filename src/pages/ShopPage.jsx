@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { homeImages } from "../assets/homeImages";
 import { shopImages } from "../assets/shopImages";
 import Footer from "../components/layout/Footer";
+import CanvasLayout from "../components/layout/CanvasLayout";
 import ScaledCanvasLayout from "../components/layout/ScaledCanvasLayout";
 import NavBar from "../components/Navbar";
 import ProductCard from "../components/product/ProductCard";
@@ -11,11 +13,11 @@ import ShopHeroSection from "../components/shop/ShopHeroSection";
 import { TEST_AUTHENTICATED } from "../config/devFlags";
 
 const CATEGORIES = [
-  { label: "Thức ăn", image: homeImages.category1 },
-  { label: "Đồ dùng thiết yếu", image: homeImages.category2 },
-  { label: "Chăm sóc sức khỏe", image: homeImages.category3 },
-  { label: "Đồ chơi", image: homeImages.category4 },
-  { label: "Phụ kiện", image: homeImages.category5 },
+  { label: "Thức ăn", image: homeImages.category1, slug: "thuc-an" },
+  { label: "Đồ dùng thiết yếu", image: homeImages.category2, slug: "do-dung-thiet-yeu" },
+  { label: "Chăm sóc sức khỏe", image: homeImages.category3, slug: "cham-soc-suc-khoe" },
+  { label: "Đồ chơi", image: homeImages.category4, slug: "do-choi" },
+  { label: "Phụ kiện", image: homeImages.category5, slug: "phu-kien" },
 ];
 
 const PRODUCTS = Array.from({ length: 12 }, (_, i) => ({
@@ -42,17 +44,83 @@ const PROMOTION_PAGES = [
 ];
 
 function ShopCanvas() {
+  const navigate = useNavigate();
+
+  /* ---- FlashSale: horizontal carousel, slide 1 card at a time ---- */
+  const CARD_WIDTH = 170; // approx card width + gap
+  const VISIBLE_COUNT = 6;
+  const [flashOffset, setFlashOffset] = useState(0);
+  const [flashAnimKey, setFlashAnimKey] = useState(0);
+
+  const canGoPrev = flashOffset > 0;
+  const canGoNext = flashOffset < PRODUCTS.length - VISIBLE_COUNT;
+
+  const goPrevFlash = () => {
+    if (!canGoPrev) return;
+    setFlashOffset((prev) => prev - 1);
+    setFlashAnimKey((k) => k + 1);
+  };
+
+  const goNextFlash = () => {
+    if (!canGoNext) return;
+    setFlashOffset((prev) => prev + 1);
+    setFlashAnimKey((k) => k + 1);
+  };
+
+  const visibleProducts = PRODUCTS.slice(flashOffset, flashOffset + VISIBLE_COUNT);
+
+  /* ---- Promotion carousel ---- */
   const [promotionPageIndex, setPromotionPageIndex] = useState(0);
-  const currentPage = PROMOTION_PAGES[promotionPageIndex];
-  const [leftPromotion, rightPromotion] = currentPage;
+  const [promoDirection, setPromoDirection] = useState(0);
+  const promoTimerRef = useRef(null);
+  const currentPromoPage = PROMOTION_PAGES[promotionPageIndex];
+  const [leftPromotion, rightPromotion] = currentPromoPage;
+
+  const advancePromo = useCallback(() => {
+    setPromoDirection(1);
+    setPromotionPageIndex((prev) => (prev + 1) % PROMOTION_PAGES.length);
+  }, []);
+
+  useEffect(() => {
+    promoTimerRef.current = setInterval(advancePromo, 5000);
+    return () => clearInterval(promoTimerRef.current);
+  }, [advancePromo]);
+
+  const goPromoPage = (idx) => {
+    if (idx === promotionPageIndex) return;
+    clearInterval(promoTimerRef.current);
+    const forward = idx > promotionPageIndex
+      ? idx - promotionPageIndex
+      : idx + PROMOTION_PAGES.length - promotionPageIndex;
+    setPromoDirection(forward <= PROMOTION_PAGES.length / 2 ? 1 : -1);
+    setPromotionPageIndex(idx);
+    promoTimerRef.current = setInterval(advancePromo, 5000);
+  };
 
   const goPrevPromotion = () => {
-    setPromotionPageIndex((prev) => (prev - 1 + PROMOTION_PAGES.length) % PROMOTION_PAGES.length);
+    clearInterval(promoTimerRef.current);
+    const next = (promotionPageIndex - 1 + PROMOTION_PAGES.length) % PROMOTION_PAGES.length;
+    goPromoPage(next);
   };
 
   const goNextPromotion = () => {
-    setPromotionPageIndex((prev) => (prev + 1) % PROMOTION_PAGES.length);
+    clearInterval(promoTimerRef.current);
+    goPromoPage((promotionPageIndex + 1) % PROMOTION_PAGES.length);
   };
+
+  const pausePromo = useCallback(() => {
+    clearInterval(promoTimerRef.current);
+  }, []);
+
+  const resumePromo = useCallback(() => {
+    clearInterval(promoTimerRef.current);
+    promoTimerRef.current = setInterval(advancePromo, 5000);
+  }, [advancePromo]);
+
+  const promoSlideClass =
+    promoDirection === 0 ? "translate-x-0" : promoDirection > 0 ? "animate-feedback-in-next" : "animate-feedback-in-prev";
+
+  /* ---- Promotion Banner: dịch lên 1cm = top[calc(2218px+0.5cm)] ---- */
 
   return (
     <main className="relative h-[calc(3346px+0.5cm)] w-[1440px] bg-white">
@@ -74,6 +142,7 @@ function ShopCanvas() {
                 key={item.label}
                 type="button"
                 className="card-category w-full border-0 bg-transparent p-0"
+                onClick={() => navigate(`/products?category=${item.slug}`)}
               >
                 <img
                   src={item.image}
@@ -90,7 +159,7 @@ function ShopCanvas() {
       </section>
 
       <section className="absolute left-0 top-[calc(1055px+0.5cm)] w-[1440px] px-[83px] py-[10px]">
-        <div className="rounded-[40px] bg-[#FFF9C4] px-[10px] pb-[17px] pt-[9px] shadow-[inset_0_0_10px_rgba(0,0,0,0.25)]">
+        <div className="rounded-[40px] bg-[#FFF9C4] px-[10px] pb-[27px] pt-[20px] shadow-[inset_0_0_10px_rgba(0,0,0,0.25)]">
           <h2
             className="text-center text-[#01579B]"
             style={{ ...SECTION_TITLE_TYPOGRAPHY }}
@@ -108,19 +177,44 @@ function ShopCanvas() {
             ))}
           </div>
           <div className="mt-3 flex items-center justify-center gap-5">
-            <button type="button" className="btn-carousel" aria-label="Xem sản phẩm trước">
+            <button
+              type="button"
+              className="btn-carousel disabled:opacity-30"
+              aria-label="Xem sản phẩm trước"
+              onClick={goPrevFlash}
+              disabled={!canGoPrev}
+            >
               ‹
             </button>
-            <div className="grid grid-cols-6 gap-5">
-              {PRODUCTS.slice(0, 6).map((p, idx) => (
-                <ProductCard
+            <div
+              key={flashAnimKey}
+              className="flex gap-5 overflow-hidden"
+              style={{ width: CARD_WIDTH * VISIBLE_COUNT + 5 * (VISIBLE_COUNT - 1) }}
+            >
+              {visibleProducts.map((p, idx) => (
+                <div
                   key={p.id}
-                  variant={idx < 2 ? "tag" : "default"}
-                  href="/product-details"
-                />
+                  className="flash-card-animate shrink-0"
+                  style={{ width: CARD_WIDTH }}
+                >
+                  <ProductCard
+                    id={p.id}
+                    variant={idx < 2 ? "tag" : "default"}
+                    name={p.name}
+                    price={p.price}
+                    oldPrice={p.oldPrice}
+                    href="/product-details"
+                  />
+                </div>
               ))}
             </div>
-            <button type="button" className="btn-carousel" aria-label="Xem sản phẩm tiếp">
+            <button
+              type="button"
+              className="btn-carousel disabled:opacity-30"
+              aria-label="Xem sản phẩm tiếp"
+              onClick={goNextFlash}
+              disabled={!canGoNext}
+            >
               ›
             </button>
           </div>
@@ -140,17 +234,25 @@ function ShopCanvas() {
         </div>
         <div className="mx-auto mt-5 grid w-[1200px] grid-cols-6 justify-items-center gap-y-[10px]">
           {PRODUCTS.map((p) => (
-            <ProductCard key={`best-${p.id}`} href="/product-details" />
+            <ProductCard key={`best-${p.id}`} id={p.id} name={p.name} price={p.price} oldPrice={p.oldPrice} href="/product-details" />
           ))}
         </div>
         <div className="mt-5 flex justify-center">
-          <button type="button" className="btn-yellow h-[42px] w-[154px] text-[15px] tracking-[0.46px]">
+          <button
+            type="button"
+            onClick={() => navigate("/products")}
+            className="btn-yellow flex h-[42px] items-center gap-2 px-4 text-[15px] tracking-[0.46px]"
+          >
             XEM THÊM
+            <span className="text-xl leading-none">›</span>
           </button>
         </div>
       </section>
 
-      <section className="absolute left-0 top-[calc(2318px+0.5cm)] w-[1440px] py-4">
+      <section className="absolute left-0 top-[calc(2308px)] w-[1440px] bg-white py-4"
+        onMouseEnter={pausePromo}
+        onMouseLeave={resumePromo}
+      >
         <div className="mx-auto flex h-[269px] w-[1274px] items-center justify-between">
           <button
             type="button"
@@ -161,7 +263,10 @@ function ShopCanvas() {
             ‹
           </button>
           <div className="flex w-[1158px] items-center justify-between">
-            <div className="relative h-[269px] w-[570px]">
+            <div
+              key={promotionPageIndex}
+              className={`relative h-[269px] w-[570px] ${promoSlideClass}`}
+            >
               <img src={leftPromotion.image} alt="Promotion banner left" className="h-[269px] w-[570px] rounded-[30px] object-cover" />
               <button
                 type="button"
@@ -169,7 +274,10 @@ function ShopCanvas() {
                 aria-label="Mua ngay banner trái"
               />
             </div>
-            <div className="relative h-[269px] w-[570px]">
+            <div
+              key={promotionPageIndex + "_r"}
+              className={`relative h-[269px] w-[570px] ${promoSlideClass}`}
+            >
               <img src={rightPromotion.image} alt="Promotion banner right" className="h-[269px] w-[570px] rounded-[30px] object-cover" />
               <button
                 type="button"
@@ -192,7 +300,7 @@ function ShopCanvas() {
             <button
               key={idx}
               type="button"
-              onClick={() => setPromotionPageIndex(idx)}
+              onClick={() => goPromoPage(idx)}
               className={`focus-ring-brand transition-all duration-component ease-premium ${
                 idx === promotionPageIndex
                   ? "h-[8px] w-[24px] rounded-[20px] bg-[#F4E11B]"
@@ -205,7 +313,10 @@ function ShopCanvas() {
         </div>
       </section>
 
-      <FeedbackSection />
+      <FeedbackSection
+        onMouseEnter={pausePromo}
+        onMouseLeave={resumePromo}
+      />
     </main>
   );
 }

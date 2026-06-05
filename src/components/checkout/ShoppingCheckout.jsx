@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import {
@@ -146,6 +147,16 @@ function OnlinePaymentMethods() {
 
 function CouponAndSummary({ isGuest }) {
   const { confirmOrder } = useCart();
+  const [couponCode, setCouponCode] = useState("");
+  const [couponError, setCouponError] = useState("");
+
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) {
+      setCouponError("Vui lòng nhập mã giảm giá");
+      return;
+    }
+    setCouponError("Mã không tồn tại");
+  };
 
   return (
     <>
@@ -153,31 +164,36 @@ function CouponAndSummary({ isGuest }) {
         <p className="whitespace-nowrap font-['Roboto'] text-[15px] font-medium leading-normal text-[#585858]">
           Thẻ quà tặng / Mã giảm giá
         </p>
-        <div className="relative h-[52px] w-full">
-          <input
-            type="text"
-            defaultValue="DCFV"
-            readOnly
-            className="input-brand absolute left-0 top-0 h-[37px] w-[calc(100%-28.19%)] px-[14px] font-['Roboto'] text-[14px] uppercase leading-[2.66] tracking-[1px] text-[#4f4b4b]"
-            aria-invalid="true"
-            aria-describedby="coupon-error"
-          />
+        <div className="flex flex-row items-start gap-[26px]">
+          <div className="flex flex-col flex-1 min-w-0">
+            <div className="w-full h-[37px] border border-[rgba(0,0,0,0.23)] rounded-[4px] px-[14px] flex items-center bg-[#FFFFFF]">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => {
+                  setCouponCode(e.target.value.toUpperCase());
+                  setCouponError("");
+                }}
+                placeholder="Nhập mã giảm giá"
+                className="w-full bg-transparent outline-none text-[14px] font-normal text-[#4F4B4B] leading-[2.66em] tracking-[0.0714em] uppercase placeholder:text-[#999]"
+              />
+            </div>
+            {couponError && (
+              <p className="w-full px-[14px] pt-[3px] font-['Roboto'] text-[10px] font-normal leading-[1.66em] tracking-[0.04em] text-[rgba(255,0,0,0.6)]" role="alert">
+                {couponError}
+              </p>
+            )}
+          </div>
           <button
             type="button"
-            className="btn-brand-yellow-sm absolute right-0 top-0 h-[38px]"
+            onClick={handleApplyCoupon}
+            className="h-[37px] w-[104px] flex items-center justify-center bg-[#FFF176] rounded-[4px] drop-shadow-[0px_3px_0.5px_rgba(0,0,0,0.2),0px_2px_1px_rgba(0,0,0,0.14),0px_1px_2.5px_rgba(0,0,0,0.12)] hover:bg-[#ffe454] active:scale-[0.98] focus-ring-brand transition-all duration-micro"
           >
-            <span className="whitespace-nowrap font-['Roboto'] text-[16px] leading-[1.5] tracking-[0.15px] text-black">
+            <span className="whitespace-nowrap font-['Roboto'] text-[16px] font-normal leading-[1.5] tracking-[0.15px] text-black">
               Áp dụng
             </span>
           </button>
         </div>
-        <p
-          id="coupon-error"
-          className="px-[14px] font-['Roboto'] text-[10px] leading-[1.66] tracking-[0.4px] text-[rgba(255,0,0,0.6)]"
-          role="alert"
-        >
-          Mã không tồn tại
-        </p>
       </div>
 
       <div className="flex w-full flex-col gap-3 border-t border-solid border-[#c2c7d1] pt-[25px]">
@@ -213,7 +229,7 @@ function CouponAndSummary({ isGuest }) {
       <button
         type="button"
         onClick={confirmOrder}
-        className="btn-brand-yellow relative h-12 w-full rounded-[4px] text-[20px] font-bold shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)]"
+        className="btn-brand-yellow relative h-12 w-full rounded-[4px] text-[20px] font-bold shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)] hover:bg-[#ffe454] active:scale-[0.99] active:shadow-none transition-all duration-micro focus-ring-brand"
       >
         <span className="font-['Roboto'] text-[20px] font-bold leading-6 text-black">
           {isGuest ? "Xác nhận đặt lịch" : "Xác nhận đơn hàng"}
@@ -222,15 +238,15 @@ function CouponAndSummary({ isGuest }) {
 
       <p className="text-center font-['Roboto'] text-[12px] leading-[15px] text-[#727780]">
         Bằng cách nhấn xác nhận, bạn đồng ý với{" "}
-        <span className="text-[#00355f] underline">Điều khoản dịch vụ</span> và{" "}
-        <span className="text-[#00355f] underline">Chính sách bảo mật</span> của
+        <a href="/terms" className="text-[#00355f] underline hover:no-underline">Điều khoản dịch vụ</a> và{" "}
+        <a href="/privacy" className="text-[#00355f] underline hover:no-underline">Chính sách bảo mật</a> của
         chúng tôi.
       </p>
     </>
   );
 }
 
-function AuthenticatedAddressCard() {
+function AuthenticatedAddressCard({ onChange }) {
   return (
     <section className="flex flex-col gap-4 rounded-[8px] border border-solid border-[#c2c7d1] bg-white p-[25px]">
       <div className="flex items-center justify-between">
@@ -247,7 +263,8 @@ function AuthenticatedAddressCard() {
         </div>
         <button
           type="button"
-          className="font-['Roboto'] text-[12px] leading-[1.66] tracking-[0.4px] text-[#00355f]"
+          onClick={onChange}
+          className="font-['Roboto'] text-[12px] leading-[1.66] tracking-[0.4px] text-[#00355f] hover:underline focus-ring-brand transition-colors duration-micro"
         >
           Thay đổi
         </button>
@@ -264,6 +281,73 @@ function AuthenticatedAddressCard() {
         </span>
       </div>
     </section>
+  );
+}
+
+function AddressChangeModal({ onClose, onSave }) {
+  const [form, setForm] = useState({ name: "Nguyễn Văn A", phone: "090 123 4567", address: "123 Đường Lê Lợi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh" });
+
+  const handleSave = () => {
+    onSave(form);
+    onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/30 backdrop-blur-[4px]"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="w-[500px] animate-dropdown-in rounded-[12px] bg-white p-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.15)]">
+        <h3 className="mb-4 font-['Roboto'] text-[20px] font-bold leading-[1.334] text-[#00355f]">
+          Thay đổi địa chỉ
+        </h3>
+        <div className="mb-4 flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="font-['Roboto'] text-[14px] text-[#3d3d3d]">Họ tên</label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="h-[43px] rounded-[16px] border border-[#e0e0e0] px-4 font-['Roboto'] text-[14px] text-[rgba(0,0,0,0.87)] outline-none focus:border-[#0d47a1] transition-colors duration-micro"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="font-['Roboto'] text-[14px] text-[#3d3d3d]">Số điện thoại</label>
+            <input
+              type="tel"
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              className="h-[43px] rounded-[16px] border border-[#e0e0e0] px-4 font-['Roboto'] text-[14px] text-[rgba(0,0,0,0.87)] outline-none focus:border-[#0d47a1] transition-colors duration-micro"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="font-['Roboto'] text-[14px] text-[#3d3d3d]">Địa chỉ</label>
+            <input
+              type="text"
+              value={form.address}
+              onChange={(e) => setForm({ ...form, address: e.target.value })}
+              className="h-[43px] rounded-[16px] border border-[#e0e0e0] px-4 font-['Roboto'] text-[14px] text-[rgba(0,0,0,0.87)] outline-none focus:border-[#0d47a1] transition-colors duration-micro"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-[40px] rounded-[8px] border border-[#c2c7d1] px-6 font-['Roboto'] text-[14px] text-[#727780] hover:bg-[#f5f5f5] active:scale-[0.98] focus-ring-brand transition-all duration-micro"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            className="h-[40px] rounded-[8px] bg-[#FFF176] px-6 font-['Roboto'] text-[14px] font-bold text-black shadow-[0px_1px_5px_rgba(0,0,0,0.12)] hover:bg-[#ffe454] active:scale-[0.98] focus-ring-brand transition-all duration-micro"
+          >
+            Lưu
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -309,6 +393,7 @@ function ShoppingCheckout({ onBack }) {
   const { paymentMode } = useCart();
   const isGuest = !isAuthenticated;
   const orderItems = GUEST_ORDER_ITEMS;
+  const [showAddressModal, setShowAddressModal] = useState(false);
 
   return (
     <div
@@ -316,6 +401,15 @@ function ShoppingCheckout({ onBack }) {
       role="dialog"
       aria-label="Thanh toán"
     >
+      {showAddressModal && (
+        <AddressChangeModal
+          onClose={() => setShowAddressModal(false)}
+          onSave={(data) => {
+            // placeholder: update address in context/state
+            console.log("Address updated:", data);
+          }}
+        />
+      )}
       <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center px-6 py-[22px]">
         <div className="flex w-full max-w-[1392px] flex-col gap-[14px]">
           <button
@@ -332,7 +426,9 @@ function ShoppingCheckout({ onBack }) {
           <div className="flex flex-col gap-7 px-4 lg:flex-row lg:items-start lg:justify-center lg:gap-8 lg:px-16">
             <div className="flex w-full max-w-[720px] flex-col gap-7">
               {isGuest && <GuestLoginBanner />}
-              {isGuest ? <GuestShippingForm /> : <AuthenticatedAddressCard />}
+              {isGuest ? <GuestShippingForm /> : (
+                <AuthenticatedAddressCard onChange={() => setShowAddressModal(true)} />
+              )}
               <OrderDetailsCard items={orderItems} />
             </div>
 
