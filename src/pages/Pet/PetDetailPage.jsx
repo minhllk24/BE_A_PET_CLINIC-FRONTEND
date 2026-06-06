@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { MOCK_PETS } from "../../data/mockPets";
+import { INITIAL_PET_EVENTS } from "../../data/petEvents";
 
 import buddyImg from "../../assets/images/pets/buddy.jpg";
 import lunaImg from "../../assets/images/pets/luna.jpg";
@@ -17,24 +18,6 @@ const petImages = {
   Max: maxImg,
   Snow: snowImg,
 };
-
-const INITIAL_EVENTS = [
-  { id: 1, day: 3, title: "Uống thuốc", type: "green", icon: "medical", time: "08:00 SA", files: [] },
-  { 
-    id: 2, 
-    day: 9, 
-    title: "Khám định kỳ", 
-    type: "yellow", 
-    icon: "medical", 
-    time: "09:00 SA",
-    files: [
-      { id: 'f1', name: "SieuAm.pdf", size: "2.1 MB" },
-      { id: 'f2', name: "XetNghiemMau.png", size: "1.5 MB" }
-    ]
-  },
-  { id: 3, day: 9, title: "Cắt móng", type: "blue", icon: "scissors", time: "02:30 CH", files: [] },
-  { id: 4, day: 15, title: "Tiêm dại", type: "red", icon: "vaccine", time: "10:00 SA", files: [] },
-];
 
 const renderIconSvg = (id, className = "w-5 h-5") => {
   switch(id) {
@@ -183,7 +166,7 @@ function PetDetailPage() {
   
   // 3. KHỞI TẠO STATES
   const [calendarDate, setCalendarDate] = useState(new Date(2023, 9, 9)); 
-  const [eventsList, setEventsList] = useState(INITIAL_EVENTS); 
+  const [eventsList, setEventsList] = useState(INITIAL_PET_EVENTS); 
   const [medicalHistoryList, setMedicalHistoryList] = useState(pet?.medicalRecords || []);
 
   const [showGeneralNoteModal, setShowGeneralNoteModal] = useState(false);
@@ -519,7 +502,7 @@ function PetDetailPage() {
   const defaultDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
 
   return (
-    <div className="bg-transparent flex flex-col min-h-full">
+    <div className="bg-transparent flex flex-col min-h-full font-sans">
       <div className="mx-auto max-w-[1300px] w-full pt-3 pb-4 flex-1 flex flex-col">
         
         <div className="flex items-center gap-3 mb-5 flex-shrink-0">

@@ -1,0 +1,46 @@
+/** Figma section titles — Grooming & Spa (1384:5851) */
+export const groomingTitleStyles = {
+  hero: {
+    color: "#02000F",
+    fontFamily: '"Baloo Tamma", sans-serif',
+    fontSize: "70px",
+    fontStyle: "normal",
+    fontWeight: 400,
+    lineHeight: "67.98px",
+  },
+  primary64: {
+    color: "rgba(0, 0, 0, 0.87)",
+    textAlign: "center",
+    fontFamily: '"Baloo Tamma", sans-serif',
+    fontSize: "64px",
+    fontStyle: "normal",
+    fontWeight: 400,
+    lineHeight: "110%",
+  },
+  dark64: {
+    color: "#02000F",
+    textAlign: "center",
+    fontFamily: '"Baloo Tamma", sans-serif',
+    fontSize: "64px",
+    fontStyle: "normal",
+    fontWeight: 400,
+    lineHeight: "110%",
+  },
+  dark56Center: {
+    color: "#02000F",
+    textAlign: "center",
+    fontFamily: '"Baloo Tamma", sans-serif',
+    fontSize: "56px",
+    fontStyle: "normal",
+    fontWeight: 400,
+    lineHeight: "67.98px",
+  },
+  dark56: {
+    color: "#02000F",
+    fontFamily: '"Baloo Tamma", sans-serif',
+    fontSize: "56px",
+    fontStyle: "normal",
+    fontWeight: 400,
+    lineHeight: "67.98px",
+  },
+};

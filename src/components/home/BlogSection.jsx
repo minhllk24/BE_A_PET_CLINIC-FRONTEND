@@ -1,15 +1,10 @@
 import { homeImages } from "../../assets/homeImages";
+import {
+  HOME_BLOG_POSTS,
+  HOME_BLOG_POST_TITLE,
+  HOME_FEATURED_BLOG,
+} from "../../data/homeData";
 import YellowButton from "./YellowButton";
-
-const POSTS = [
-  { author: "John Deo", date: "Aug 23, 2021", highlighted: false },
-  { author: "John Doe", date: "Aug 23, 2021", highlighted: true },
-  { author: "John Doe", date: "Aug 23, 2021", highlighted: false },
-  { author: "John Doe", date: "Aug 23, 2021", highlighted: false },
-];
-
-const POST_TITLE =
-  "8 Figma design systems that you can download for free today.";
 
 function BlogPostItem({ author, date, highlighted }) {
   return (
@@ -24,7 +19,7 @@ function BlogPostItem({ author, date, highlighted }) {
         {date}
       </p>
       <h3 className="mt-3 text-2xl font-bold leading-snug text-[#232536]">
-        {POST_TITLE}
+        {HOME_BLOG_POST_TITLE}
       </h3>
     </article>
   );
@@ -69,18 +64,15 @@ function BlogSection() {
               className="h-auto w-full max-h-[348px] object-cover"
             />
             <p className="text-sm text-[#4c4c4c]">
-              By <span className="text-[#592ea9]">John Doe</span>
+              By <span className="text-[#592ea9]">{HOME_FEATURED_BLOG.author}</span>
               <span className="mx-2">|</span>
-              May 23, 2022
+              {HOME_FEATURED_BLOG.date}
             </p>
             <h3 className="text-2xl font-bold text-[#232536]">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor.
+              {HOME_FEATURED_BLOG.title}
             </h3>
             <p className="text-xl leading-relaxed text-[#6d6e76]">
-              Duis aute irure dolor in reprehenderit in voluptate velit esse
-              cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-              cupidatat non proident.
+              {HOME_FEATURED_BLOG.description}
             </p>
             <YellowButton variant="light" className="w-fit bg-[#fff176]">
               ĐỌC THÊM →
@@ -98,7 +90,7 @@ function BlogSection() {
               View All
             </a>
           </div>
-          {POSTS.map((post, index) => (
+          {HOME_BLOG_POSTS.map((post, index) => (
             <BlogPostItem key={`${post.author}-${index}`} {...post} />
           ))}
         </div>

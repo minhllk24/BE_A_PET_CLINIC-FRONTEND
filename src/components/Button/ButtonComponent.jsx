@@ -1,32 +1,38 @@
-import React from 'react'
-
-const ButtonComponent = ({ 
-  children, 
-  onClick, 
-  variant = 'primary', 
-  type = 'button', 
-  className = '', 
-  disabled = false 
-}) => {
-  const baseStyles = 'px-4 py-2 rounded font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
-  
+function ButtonComponent({
+  children,
+  onClick,
+  variant = "primary",
+  type = "button",
+  className = "",
+  disabled = false,
+  loading = false,
+}) {
   const variants = {
-    primary: 'bg-primary text-white hover:bg-sky-500 focus:ring-sky-400',
-    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-300',
-    danger: 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500',
-    outline: 'border-2 border-primary text-primary hover:bg-primary hover:text-white',
-  }
+    primary: "btn-brand bg-primary text-white hover:bg-[#5BB8E8] focus-ring-brand",
+    secondary:
+      "btn-brand bg-gray-200 text-gray-800 hover:bg-gray-300 focus-ring-brand",
+    danger:
+      "btn-brand bg-red-500 text-white hover:bg-red-600 focus-ring-brand",
+    outline:
+      "btn-brand border-2 border-primary bg-transparent text-primary hover:bg-primary hover:text-white focus-ring-brand",
+  };
 
   return (
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled}
-      className={`${baseStyles} ${variants[variant]} ${className}`}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      className={[
+        "rounded px-4 py-2 font-medium",
+        variants[variant] ?? variants.primary,
+        loading ? "btn-loading" : "",
+        className,
+      ].join(" ")}
     >
       {children}
     </button>
-  )
+  );
 }
 
-export default ButtonComponent
+export default ButtonComponent;

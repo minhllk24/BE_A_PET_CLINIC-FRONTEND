@@ -1,13 +1,7 @@
 import { homeImages } from "../../assets/homeImages";
+import { HOME_DOCTORS } from "../../data/homeData";
 import SectionTitle from "./SectionTitle";
 import YellowButton from "./YellowButton";
-
-const DOCTORS = [
-  { image: homeImages.doctor1, name: "BS. Nguyễn Minh Anh" },
-  { image: homeImages.doctor2, name: "BS. Trần Quốc Huy" },
-  { image: homeImages.doctor3, name: "BS. Lê Khánh Linh" },
-  { image: homeImages.doctor4, name: "BS. Phạm Đức Thành" },
-];
 
 function DoctorCard({ image, name }) {
   return (
@@ -105,10 +99,10 @@ function DoctorSection() {
         <div className="flex flex-wrap items-center justify-center gap-4">
      
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4 pb-10">
             <YellowButton className="h-12 px-4 text-xl">ĐẶT LỊCH NGAY</YellowButton>
             <YellowButton variant="outline" className="h-12 px-4">
-              ĐĂNG KÝ TÀI KHOẢN →
+              ĐĂNG KÝ TÀI KHOẢN
             </YellowButton>
             <button
               type="button"
@@ -120,7 +114,7 @@ function DoctorSection() {
         </div>
 
         <div className="grid w-full grid-cols-1 gap-10 sm:grid-cols-2 xl:grid-cols-4 xl:gap-8">
-          {DOCTORS.map((doctor) => (
+          {HOME_DOCTORS.map((doctor) => (
             <DoctorCard key={doctor.name} {...doctor} />
           ))}
         </div>

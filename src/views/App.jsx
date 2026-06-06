@@ -1,9 +1,15 @@
+import { AuthProvider } from "../context/AuthContext";
+import { CartProvider } from "../context/CartContext";
 import AppRoutes from "../routes/AppRoutes";
 import "./App.css";
 
 function App() {
   return (
-    <AppRoutes />
+    <AuthProvider>
+      <CartProvider>
+        <AppRoutes />
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

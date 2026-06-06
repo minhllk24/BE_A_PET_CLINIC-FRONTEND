@@ -1,64 +1,11 @@
-import { homeImages } from "../../assets/homeImages";
+import { useNavigate } from "react-router-dom";
+import { FEATURED_PRODUCTS, PRODUCT_CATEGORIES } from "../../data/shopData";
+import ProductCard from "../product/ProductCard";
 import SectionTitle from "./SectionTitle";
 import YellowButton from "./YellowButton";
 
-const CATEGORIES = [
-  { label: "Thức ăn", image: homeImages.category1 },
-  { label: "Đồ dùng thiết yếu", image: homeImages.category2 },
-  { label: "Chăm sóc sức khỏe", image: homeImages.category3 },
-  { label: "Đồ chơi", image: homeImages.category4 },
-  { label: "Phụ kiện", image: homeImages.category5 },
-];
-
-function StarRating() {
-  return (
-    <div className="flex gap-0.5" aria-label="3.5 sao">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span
-          key={i}
-          className={i <= 3 ? "text-secondary" : "text-gray-300"}
-          aria-hidden
-        >
-          ★
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function ProductCard() {
-  return (
-    <article className="relative flex w-[170px] flex-col rounded-[30px] bg-white p-2.5 shadow-md">
-      <img
-        src={homeImages.productPlaceholder}
-        alt="Sản phẩm"
-        className="mb-2 h-[110px] w-full rounded-[20px] object-cover"
-      />
-      <p className="text-sm text-black">ten sp</p>
-      <div className="mt-1 flex items-center justify-between">
-        <p className="text-sm font-medium text-black">$13.00</p>
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-lg"
-          aria-label="Thêm vào giỏ"
-        >
-          <img
-            src={homeImages.cart_black}
-            alt="Thêm vào giỏ"
-            className="h-6 w-6"
-          />
-    
-        </button>
-      </div>
-      <div className="mt-2">
-        <StarRating />
-      </div>
-    </article>
-  );
-}
-
 function ProductSection() {
-  const products = Array.from({ length: 12 }, (_, i) => i);
+  const navigate = useNavigate();
 
   return (
     <section
@@ -87,39 +34,42 @@ function ProductSection() {
         <SectionTitle>Pet shop</SectionTitle>
 
         <div className="grid w-full max-w-[992px] grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
-          {CATEGORIES.map(({ label, image }) => (
-            <div
+          {PRODUCT_CATEGORIES.map(({ label, image }) => (
+            <button
               key={label}
-              className="flex flex-col items-center gap-3 text-center"
+              type="button"
+              className="card-category flex flex-col items-center gap-3 border-0 bg-transparent p-0 text-center"
             >
               <img
                 src={image}
                 alt={label}
-                className="h-[110px] w-[106px] object-contain transition duration-300 hover:scale-105"
+                className="h-[110px] w-[106px] object-contain"
               />
 
               <p className="text-lg font-bold text-black">
                 {label}
               </p>
-            </div>
+            </button>
           ))}
           </div>
 
-          <div className="w-full max-w-[1200px] space-y-2.5">
-            <div className="flex flex-wrap justify-center gap-5 rounded-lg p-2.5">
-              {products.slice(0, 6).map((id) => (
-                <ProductCard key={id} />
-              ))}
-            </div>
-            <div className="flex flex-wrap justify-center gap-5 rounded-lg p-2.5">
-              {products.slice(6, 12).map((id) => (
-                <ProductCard key={id} />
-              ))}
-          </div>
+        <div className="grid w-full max-w-[1200px] grid-cols-2 justify-items-center gap-x-5 gap-y-6 sm:grid-cols-3 lg:grid-cols-6">
+          {FEATURED_PRODUCTS.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              variant={product.discountPercent ? "tag" : "default"}
+            />
+          ))}
         </div>
-   
 
-        <YellowButton className="h-[42px] min-w-[154px]">XEM THÊM →</YellowButton>
+        <YellowButton
+          className="h-[42px] min-w-[154px]"
+          onClick={() => navigate("/products")}
+        >
+          XEM THÊM 
+          <span className="text-xl leading-none">›</span>
+        </YellowButton>
       </div>
     </section>
   );

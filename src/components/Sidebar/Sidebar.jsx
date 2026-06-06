@@ -37,7 +37,7 @@ const Sidebar = () => {
       id: "appointments",
       label: "Lịch sử đặt lịch",
       icon: CalendarOutlined,
-      path: "/appointments",
+      path: "/appointment/history",
     },
     {
       id: "orders",

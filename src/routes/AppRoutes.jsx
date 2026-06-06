@@ -2,6 +2,18 @@ import { Routes, Route } from "react-router-dom";
 import LayoutManagePet from "../layout/LayoutManagePet";
 
 import HomePage from "../pages/HomePage/HomePage";
+import BookingPage from "../pages/Booking/BookingPage";
+import AppointmentHistoryPage from "../pages/Booking/AppointmentHistoryPage";
+
+import ShopPage from "../pages/ShopPage";
+import ProductPage from "../pages/ProductPage";
+import ProductDetailsPage from "../pages/ProductDetailsPage";
+import WriteReviewPage from "../pages/WriteReviewPage";
+import CartOpenHandler from "../pages/CartOpenHandler";
+
+import GroomingSpaPage from "../pages/GroomingSpaPage";
+import CheckoutPage from "../pages/CheckoutPage";
+
 import MyPetPage from "../pages/Pet/MyPetPage";
 import PetDetailPage from "../pages/Pet/PetDetailPage";
 import PetFormPage from "../pages/Pet/PetFormPage";
@@ -9,8 +21,20 @@ import PetFormPage from "../pages/Pet/PetFormPage";
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* 1. Trang chủ (HomePage không dùng layout bọc chung */}
       <Route path="/" element={<HomePage />} />
+      
+      <Route path="/booking" element={<BookingPage />} />
+
+      <Route path="/petshop" element={<ShopPage />} />
+      <Route path="/products" element={<ProductPage />} />
+      <Route path="/product-details" element={<ProductDetailsPage />} />
+      <Route path="/product-details/:productId" element={<ProductDetailsPage />} />
+      <Route path="/product-details/:productId/write-review" element={<WriteReviewPage />} />
+      <Route path="/cart" element={<CartOpenHandler />} />
+
+      <Route path="/services/grooming-spa" element={<GroomingSpaPage />} />
+      <Route path="/services/groomng-spa" element={<GroomingSpaPage />} />
+      <Route path="/checkout" element={<CheckoutPage />} />
 
       {/* 2. Các trang thuộc nhóm quản lý thú cưng có layout riêng */}
       <Route element={<LayoutManagePet />}>
@@ -18,10 +42,7 @@ const AppRoutes = () => {
         <Route path="/my-pets/new" element={<PetFormPage />} />
         <Route path="/my-pets/:id" element={<PetDetailPage />} />
         <Route path="/my-pets/:id/edit" element={<PetFormPage />} />
-        {/* Các route khác liên quan user account có thể thêm tại đây */}
-        {/* <Route path="/profile" element={<ProfilePage />} /> */}
-        {/* <Route path="/appointments" element={<AppointmentsPage />} /> */}
-        {/* <Route path="/orders" element={<OrdersPage />} /> */}
+        <Route path="/appointment/history" element={<AppointmentHistoryPage />} />
       </Route>
     </Routes>
   );

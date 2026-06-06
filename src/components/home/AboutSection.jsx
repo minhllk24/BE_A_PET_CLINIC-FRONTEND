@@ -1,11 +1,6 @@
 import { homeImages } from "../../assets/homeImages";
+import { HOME_FEATURES } from "../../data/homeData";
 import YellowButton from "./YellowButton";
-
-const FEATURES = [
-  ["Đặt lịch khám nhanh chóng", "Mua sắm sản phẩm đa dạng"],
-  ["Quản lý hồ sơ số hóa", "Tư vấn chăm sóc chuyên sâu"],
-  ["Theo dõi bệnh án trọn đời", "Kết nối cứu trợ và Nhận nuôi"],
-];
 
 function CheckIcon() {
   return (
@@ -89,7 +84,7 @@ function AboutSection() {
           </p>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {FEATURES.map(([left, right]) => (
+            {HOME_FEATURES.map(([left, right]) => (
               <div key={left} className="contents">
                 <div className="flex items-start gap-3">
                   <CheckIcon />

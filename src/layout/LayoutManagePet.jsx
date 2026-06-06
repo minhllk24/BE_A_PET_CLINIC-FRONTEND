@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import NavBarAuthenticated from "../components/Navbar/NavBarAuthenticated";
 import Sidebar from "../components/Sidebar";
-import Footer from "../components/Footer/Footer";
+import Footer from "../components/layout/Footer";
 
 const LayoutManagePet = () => {
   return (
