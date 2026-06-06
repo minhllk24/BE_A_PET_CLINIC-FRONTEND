@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { shopImages } from "../../assets/shopImages";
 import useCarouselKeyboard from "../../hooks/useCarouselKeyboard";
 
@@ -58,6 +59,7 @@ function HeroSlideLayer({ slide, isActive }) {
 }
 
 function ShopHeroSection() {
+  const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef(null);
@@ -125,28 +127,28 @@ function ShopHeroSection() {
           <img
             src={FLOWER_ICON}
             alt=""
-            className="absolute left-[60px] top-[155px] h-[30px] w-[30px] object-contain"
+            className="absolute left-[60px] top-[195px] h-[30px] w-[30px] object-contain"
           />
-          <p className="absolute left-[100px] top-[157px] w-[202.34px] font-['Onest'] text-[20px] font-bold leading-6 text-[#02000F]">
-            Natural Pet Products
+          <p className="absolute left-[100px] top-[200px] w-[202.34px] font-['Roboto'] text-[20px] font-bold leading-6 text-[#02000F]">
+            Thức ăn hữu cơ
           </p>
-          <h1 className="absolute left-[60px] top-[196.61px] w-[562.73px] font-['Fredoka'] text-[70px] font-semibold leading-[79.94px] text-[#02000F]">
-            the Best Products
+          <h1 className="absolute left-[60px] top-[250px] w-[562.73px] font-bold font-display text-4xl leading-tight text-[#02000f] md:text-[56px] md:leading-[68px]">
+            Sản phẩm tốt nhất
             <br />
-            for Your Pets!
+            cho thú cưng của bạn
           </h1>
-          <p className="absolute left-[60px] top-[382.48px] w-[448.9px] font-['Onest'] text-[20px] font-normal leading-[35px] text-[#4E4E4E]">
-            Very best, highest quality organic ingredients to
-            <br />
-            produce our own range of 100% natural pet
-            <br />
-            products.
+          <p className="absolute left-[60px] top-[382.48px] w-[448.9px] font-['Roboto'] text-[20px] font-normal leading-[35px] text-[#4E4E4E]">
+            Các thành phần hữu cơ chất lượng cao nhất, tốt nhất
+            để tạo ra dòng sản phẩm vật nuôi 100% tự nhiên
           </p>
           <button
             type="button"
+            onClick={() =>
+              navigate(`/products?keyword=${encodeURIComponent("Thức ăn hữu cơ")}`)
+            }
             className="btn-hero-cta pointer-events-auto absolute left-[60px] top-[510.48px] h-16 w-[203.61px]"
           >
-            Explore Products
+            Khám phá ngay
           </button>
         </div>
 

@@ -1,27 +1,7 @@
 import { groomingImages } from "../../assets/groomingImages";
+import { GROOMING_VALUE_PROPS } from "../../data/groomingData";
 import { cssMask } from "./groomingMaskUtils";
 import { groomingTitleStyles } from "./groomingTitleStyles";
-
-const VALUE_PROPS = [
-  {
-    num: "01",
-    title: "Sản phẩm chăm sóc chất lượng & an toàn",
-    desc: "Sự an toàn và thoải mái của bé cưng luôn là ưu tiên hàng đầu. Chúng tôi cam kết 100% trang thiết bị và dụng cụ sử dụng đều đạt tiêu chuẩn chất lượng cao và an toàn tuyệt đối.",
-    top: 226,
-  },
-  {
-    num: "02",
-    title: "Đội ngũ chuyên viên được đào tạo bài bản",
-    desc: "Đội ngũ chuyên viên chuyên nghiệp, sở hữu tình yêu lớn với động vật và nền tảng chuyên môn vững chắc. Bảo đảm sẽ giúp bé cưng của bạn có những phút giây thoải mái.",
-    top: 425,
-  },
-  {
-    num: "03",
-    title: "Bảng giá minh bạch & Chi phí hợp lý",
-    desc: "Chúng tôi mang đến giải pháp chăm sóc thú cưng toàn diện với mức giá cạnh tranh nhất thị trường, đi kèm chất lượng dịch vụ vượt trội xuất phát từ tình yêu thương.",
-    top: 624,
-  },
-];
 
 function ValuePropCard({ prop }) {
   return (
@@ -146,7 +126,7 @@ function GroomingWhyUs() {
         />
       </div>
 
-      {VALUE_PROPS.map((prop) => (
+      {GROOMING_VALUE_PROPS.map((prop) => (
         <ValuePropCard key={prop.num} prop={prop} />
       ))}
     </section>

@@ -25,11 +25,7 @@ export function CartProvider({ children }) {
   const [onlineMethod, setOnlineMethod] = useState("bank");
 
   /* ---- Cart items state ---- */
-  const [cartItems, setCartItems] = useState([
-    { id: 1, name: "Tên sản phẩm", price: "$13.00", type: "fill", size: "fill", qty: 1, selected: true },
-    { id: 2, name: "Tên sản phẩm", price: "$13.00", type: "fill", size: "fill", qty: 1, selected: true },
-    { id: 3, name: "Tên sản phẩm", price: "$13.00", type: "fill", size: "fill", qty: 1, selected: false },
-  ]);
+  const [cartItems, setCartItems] = useState([]);
 
   const toggleCartItem = useCallback((id) => {
     setCartItems((items) =>
@@ -58,10 +54,10 @@ export function CartProvider({ children }) {
       const existing = items.find((i) => i.id === product.id);
       if (existing) {
         return items.map((i) =>
-          i.id === product.id ? { ...i, qty: i.qty + 1 } : i
+          i.id === product.id ? { ...i, qty: i.qty + (product.qty || 1) } : i
         );
       }
-      return [...items, { ...product, qty: 1, selected: true }];
+      return [...items, { ...product, qty: product.qty || 1, selected: true }];
     });
   }, []);
 

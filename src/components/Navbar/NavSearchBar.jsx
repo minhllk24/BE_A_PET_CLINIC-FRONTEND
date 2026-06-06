@@ -13,7 +13,7 @@ function NavSearchBar({ className = "" }) {
       <input
         type="search"
         placeholder="Bạn muốn tìm gì nè?"
-        className="input-search pl-10 pr-10 text-xs tracking-[0.4px] text-black/87"
+        className="input-search pl-10 pr-13 text-xs tracking-[0.4px] text-black/87"
         aria-label="Tìm kiếm"
       />
       <img

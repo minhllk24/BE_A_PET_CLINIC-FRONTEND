@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
 import NavBarAuthenticated from "../../components/Navbar/NavBarAuthenticated";
 import Footer from "../../components/Footer/Footer";
-import BookingPaymentStep, {
-  BankTransferModal,
-  CreditCardModal,
-} from "../../components/booking/BookingPaymentStep";
+import BookingPaymentStep from "../../components/booking/BookingPaymentStep";
 import BookingSuccessModal from "../../components/booking/BookingSuccessModal";
 import { MOCK_PETS } from "../../data/mockPets";
+import {
+  BOOKING_SERVICES,
+  BOOKING_SERVICE_TYPES,
+  BOOKING_TIME_SLOTS,
+} from "../../data/bookingData";
 import { bookingImages } from "../../assets/bookingImages";
 
 import buddyImg from "../../assets/images/pets/buddy.jpg";
@@ -31,15 +33,6 @@ const {
   onlineVnpayLogo,
   onlineBankIcon,
   onlineCardIcon,
-  bankPopupQrPlaceholder,
-  bankPopupCopyIcon,
-  cardPopupVisa,
-  cardPopupMastercard,
-  cardPopupJcb,
-  cardPopupUnionpay,
-  cardPopupAmex,
-  cardPopupDiscover,
-  cardPopupChevron,
   successPanelBackground,
   successCheckGroup,
 } = bookingImages;
@@ -50,36 +43,6 @@ const petImages = {
   Max: petPickerMaxPhoto,
   Snow: informationSelectedPetPhoto,
 };
-
-const services = [
-  {
-    id: "bath",
-    name: "Tắm sấy khử mùi",
-    desc: "Vệ sinh sạch sẽ, sấy khô và xịt nước hoa cao cấp",
-    price: 150000,
-  },
-  {
-    id: "trim",
-    name: "Cắt tỉa lông tạo kiểu",
-    desc: "Tạo kiểu theo yêu cầu, tỉa gọn chân và bụng",
-    price: 250000,
-  },
-  {
-    id: "nails",
-    name: "Cắt móng & Mài dũa",
-    desc: "Cắt tỉa móng gọn gàng, tránh trầy xước",
-    price: 60000,
-  },
-];
-
-const paymentMethods = [
-  { id: "momo", label: "MoMo", icon: onlineMomoLogo },
-  { id: "zalopay", label: "ZaloPay", icon: onlineZalopayLogo },
-  { id: "vnpay", label: "VNPay", icon: onlineVnpayLogo },
-  { id: "bank", label: "Chuyển khoản ngân hàng", icon: onlineBankIcon },
-  { id: "atm", label: "Thẻ ATM", icon: onlineCardIcon },
-  { id: "card", label: "Thẻ Tín dụng/Ghi nợ", icon: onlineCardIcon },
-];
 
 const formatMoney = (value) =>
   new Intl.NumberFormat("vi-VN", {
@@ -149,17 +112,18 @@ function Stepper({ step }) {
   );
 }
 
-function Card({ children, className = "" }) {
+function Card({ children, className = "", ...props }) {
   return (
     <section
       className={`rounded-2xl bg-white shadow-[0_4px_13px_rgba(144,202,249,0.85)] ${className}`}
+      {...props}
     >
       {children}
     </section>
   );
 }
 
-function BookingCalendar({ selectedDate, onSelect }) {
+function BookingCalendar({ selectedDate, onSelect, invalid = false }) {
   const days = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
   const [viewedMonth, setViewedMonth] = useState(() => {
     const today = new Date();
@@ -198,7 +162,12 @@ function BookingCalendar({ selectedDate, onSelect }) {
   };
 
   return (
-    <Card className="p-6">
+    <Card
+      className={`p-6 ${invalid ? "ring-2 ring-red-500" : ""}`}
+      title={invalid ? "Vui lòng điền thông tin" : undefined}
+      data-booking-error={invalid ? "true" : undefined}
+      tabIndex={invalid ? -1 : undefined}
+    >
       <div className="mb-6 flex items-center justify-between">
         <h3 className="text-xl font-bold text-slate-900">
           Tháng {viewedMonth.getMonth() + 1}, {viewedMonth.getFullYear()}
@@ -238,31 +207,27 @@ function BookingCalendar({ selectedDate, onSelect }) {
   );
 }
 
-function TimeSlots({ selectedSlot, onSelect }) {
-  const slots = [
-    "08:00 - 09:00",
-    "09:30 - 10:30",
-    "11:00 - 12:00",
-    "13:30 - 14:30",
-    "15:00 - 16:00",
-    "16:00 - 17:00",
-  ];
-
+function TimeSlots({ selectedSlot, onSelect, invalid = false }) {
   return (
-    <Card className="p-6">
+    <Card
+      className={`p-6 ${invalid ? "ring-2 ring-red-500" : ""}`}
+      title={invalid ? "Vui lòng điền thông tin" : undefined}
+      data-booking-error={invalid ? "true" : undefined}
+      tabIndex={invalid ? -1 : undefined}
+    >
       <h3 className="mb-5 flex items-center gap-2 text-xl font-bold text-blue-900">
         <span>◷</span> Khung giờ trống
       </h3>
       <div className="space-y-3">
-        {slots.map((slot) => {
-          const disabled = slot === "11:00 - 12:00";
-          const active = selectedSlot === slot;
+        {BOOKING_TIME_SLOTS.map((slot) => {
+          const disabled = !slot.available;
+          const active = selectedSlot === slot.value;
           return (
             <button
-              key={slot}
+              key={slot.value}
               type="button"
               disabled={disabled}
-              onClick={() => onSelect(slot)}
+              onClick={() => onSelect(slot.value)}
               className={`flex w-full items-center justify-between rounded-2xl px-5 py-3 text-left text-sm font-semibold transition ${
                 active
                   ? "bg-blue-900 text-white shadow"
@@ -271,7 +236,7 @@ function TimeSlots({ selectedSlot, onSelect }) {
                     : "bg-slate-100 text-slate-900 hover:bg-slate-200"
               }`}
             >
-              <span>{slot}</span>
+              <span>{slot.value}</span>
               {disabled && <span className="text-[10px] uppercase text-red-600">Hết chỗ</span>}
               {active && <span>✓</span>}
             </button>
@@ -293,8 +258,9 @@ function ServiceSelection({
   setSelectedSlot,
   onNext,
 }) {
+  const [validationAttempted, setValidationAttempted] = useState(false);
   const total = useMemo(
-    () => services.filter((item) => selectedServices.includes(item.id)).reduce((sum, item) => sum + item.price, 0),
+    () => BOOKING_SERVICES.filter((item) => selectedServices.includes(item.id)).reduce((sum, item) => sum + item.price, 0),
     [selectedServices],
   );
 
@@ -304,27 +270,19 @@ function ServiceSelection({
     );
   };
 
-  const serviceTypes = [
-    {
-      id: "clinic",
-      title: "Khám và tiêm phòng",
-      desc: "Khám sức khỏe và tiêm phòng định kỳ",
-      icon: serviceVeterinaryClinicIcon,
-    },
-    {
-      id: "grooming",
-      title: "Spa & Grooming",
-      desc: "Tắm, cắt tỉa, làm đẹp cho thú cưng",
-      icon: serviceSpaGroomingIcon,
-    },
-  ];
-
   return (
     <>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_320px]">
         <div className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            {serviceTypes.map((serviceType) => {
+          <div
+            className={`grid gap-6 rounded-2xl md:grid-cols-2 ${
+              validationAttempted && !selectedServiceType ? "ring-2 ring-red-500" : ""
+            }`}
+            title={validationAttempted && !selectedServiceType ? "Vui lòng điền thông tin" : undefined}
+            data-booking-error={validationAttempted && !selectedServiceType ? "true" : undefined}
+            tabIndex={validationAttempted && !selectedServiceType ? -1 : undefined}
+          >
+            {BOOKING_SERVICE_TYPES.map((serviceType) => {
               const active = selectedServiceType === serviceType.id;
 
               return (
@@ -349,7 +307,12 @@ function ServiceSelection({
             })}
           </div>
 
-          <Card className="p-6">
+          <Card
+            className={`p-6 ${validationAttempted && selectedServices.length === 0 ? "ring-2 ring-red-500" : ""}`}
+            title={validationAttempted && selectedServices.length === 0 ? "Vui lòng điền thông tin" : undefined}
+            data-booking-error={validationAttempted && selectedServices.length === 0 ? "true" : undefined}
+            tabIndex={validationAttempted && selectedServices.length === 0 ? -1 : undefined}
+          >
             <h2 className="mb-5 flex items-center gap-2 text-xl font-bold text-blue-900">
               <AssetIcon src={serviceListIcon} /> Danh sách dịch vụ chi tiết
             </h2>
@@ -362,7 +325,7 @@ function ServiceSelection({
               />
             </div>
             <div className="max-h-[320px] space-y-4 overflow-y-auto pr-2">
-              {services.map((service) => {
+              {BOOKING_SERVICES.map((service) => {
                 const active = selectedServices.includes(service.id);
                 return (
                   <div
@@ -398,11 +361,11 @@ function ServiceSelection({
           </Card>
         </div>
         <aside className="space-y-6">
-          <BookingCalendar selectedDate={selectedDate} onSelect={setSelectedDate} />
-          <TimeSlots selectedSlot={selectedSlot} onSelect={setSelectedSlot} />
+          <BookingCalendar selectedDate={selectedDate} onSelect={setSelectedDate} invalid={validationAttempted && !selectedDate} />
+          <TimeSlots selectedSlot={selectedSlot} onSelect={setSelectedSlot} invalid={validationAttempted && !selectedSlot} />
         </aside>
       </div>
-      <FlowButtons onNext={onNext} nextDisabled={selectedServices.length === 0 || !selectedDate || !selectedSlot} />
+      <FlowButtons onNext={handleNext} />
     </>
   );
 }
@@ -439,8 +402,45 @@ function PetSummaryCard({ selectedPet, active, onClick }) {
   );
 }
 
-function InfoForm({ selectedPet, setSelectedPet, onBack, onNext }) {
+function InfoForm({
+  selectedPet,
+  setSelectedPet,
+  petInfo,
+  setPetInfo,
+  ownerInfo,
+  setOwnerInfo,
+  onBack,
+  onNext,
+}) {
   const [showPetPicker, setShowPetPicker] = useState(false);
+  const [validationAttempted, setValidationAttempted] = useState(false);
+  const updatePetInfo = (field, value) =>
+    setPetInfo((current) => ({ ...current, [field]: value }));
+  const updateOwnerInfo = (field, value) =>
+    setOwnerInfo((current) => ({ ...current, [field]: value }));
+  const infoComplete =
+    petInfo.name.trim() &&
+    petInfo.species &&
+    String(petInfo.weight).trim() &&
+    petInfo.status &&
+    ownerInfo.name.trim() &&
+    ownerInfo.phone.trim() &&
+    ownerInfo.branch &&
+    ownerInfo.agreed;
+
+  const handleNext = () => {
+    if (infoComplete) {
+      onNext();
+      return;
+    }
+
+    setValidationAttempted(true);
+    window.setTimeout(() => {
+      const firstInvalid = document.querySelector('[data-booking-error="true"]');
+      firstInvalid?.focus();
+      firstInvalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 0);
+  };
 
   return (
     <>
@@ -470,30 +470,37 @@ function InfoForm({ selectedPet, setSelectedPet, onBack, onNext }) {
           <Card className="p-8">
             <h2 className="mb-5 text-xl font-black text-blue-900">THÔNG TIN THÚ CƯNG</h2>
             <div className="grid gap-5 md:grid-cols-6">
-              <Field className="md:col-span-4" label="Tên thú cưng" required />
-              <Field className="md:col-span-2" label="Loài" as="select" options={["Chó", "Mèo", "Khác"]} required />
-              <Field className="md:col-span-2" label="Giống" />
-              <Field className="md:col-span-2" label="Tuổi" suffix="tuổi" />
-              <Field className="md:col-span-2" label="Cân nặng" suffix="kg" required />
+              <Field className="md:col-span-4" label="Tên thú cưng" required showError={validationAttempted} value={petInfo.name} onChange={(event) => updatePetInfo("name", event.target.value)} />
+              <Field className="md:col-span-2" label="Loài" as="select" options={["Chó", "Mèo", "Khác"]} required showError={validationAttempted} value={petInfo.species} onChange={(event) => updatePetInfo("species", event.target.value)} />
+              <Field className="md:col-span-2" label="Giống" value={petInfo.breed} onChange={(event) => updatePetInfo("breed", event.target.value)} />
+              <Field className="md:col-span-2" label="Tuổi" suffix="tuổi" value={petInfo.age} onChange={(event) => updatePetInfo("age", event.target.value)} />
+              <Field className="md:col-span-2" label="Cân nặng" suffix="kg" required showError={validationAttempted} value={petInfo.weight} onChange={(event) => updatePetInfo("weight", event.target.value)} />
               <div className="md:col-span-3">
                 <p className="mb-3 text-sm font-medium text-slate-900">Giới tính</p>
                 <div className="flex gap-5 text-sm">
-                  <label><input type="radio" name="gender" className="mr-2 accent-blue-900" />Đực</label>
-                  <label><input type="radio" name="gender" className="mr-2 accent-blue-900" />Cái</label>
+                  <label><input type="radio" name="gender" checked={petInfo.gender === "male"} onChange={() => updatePetInfo("gender", "male")} className="mr-2 accent-blue-900" />Đực</label>
+                  <label><input type="radio" name="gender" checked={petInfo.gender === "female"} onChange={() => updatePetInfo("gender", "female")} className="mr-2 accent-blue-900" />Cái</label>
                 </div>
               </div>
               <div className="md:col-span-3">
                 <p className="mb-3 text-sm font-medium text-slate-900">Tình trạng sức khỏe <span className="text-red-500">*</span></p>
-                <div className="flex flex-wrap gap-4 text-sm">
-                  <label><input type="radio" name="status" className="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900" />Bình thường</label>
-                  <label><input type="radio" name="status" className="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900" />Đang điều trị</label>
-                  <label><input type="radio" name="status" className="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900" />Có bệnh nền</label>
+                <div
+                  className={`flex flex-wrap gap-4 rounded-lg text-sm ${validationAttempted && !petInfo.status ? "ring-2 ring-red-500" : ""}`}
+                  title={validationAttempted && !petInfo.status ? "Vui lòng điền thông tin" : undefined}
+                  data-booking-error={validationAttempted && !petInfo.status ? "true" : undefined}
+                  tabIndex={validationAttempted && !petInfo.status ? -1 : undefined}
+                >
+                  <label><input type="radio" name="status" checked={petInfo.status === "normal"} onChange={() => updatePetInfo("status", "normal")} className="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900" />Bình thường</label>
+                  <label><input type="radio" name="status" checked={petInfo.status === "treating"} onChange={() => updatePetInfo("status", "treating")} className="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900" />Đang điều trị</label>
+                  <label><input type="radio" name="status" checked={petInfo.status === "chronic"} onChange={() => updatePetInfo("status", "chronic")} className="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900" />Có bệnh nền</label>
                 </div>
               </div>
               <label className="md:col-span-6">
                 <span className="mb-2 block text-sm font-medium text-slate-900">Thông tin thêm</span>
                 <textarea 
                 placeholder="Nhập ghi chú, yêu cầu đặc biệt hoặc thông tin bổ sung tại đây..." 
+                value={petInfo.notes}
+                onChange={(event) => updatePetInfo("notes", event.target.value)}
                 className="h-15 w-full text-sm resize-none rounded-2xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-900" />
               </label>
             </div>
@@ -503,24 +510,35 @@ function InfoForm({ selectedPet, setSelectedPet, onBack, onNext }) {
         <Card className="p-8">
           <h2 className="mb-5 text-xl font-black text-blue-900">THÔNG TIN CHỦ THÚ CƯNG</h2>
           <div className="grid gap-5">
-            <Field label="Họ và tên" required/>
-            <Field label="Số điện thoại" required/>
-            <Field label="Email"/>
-            <Field label="Lựa chọn chi nhánh gần bạn nhất" as="select" required defaultValue="Phường Linh Xuân, TP. Thủ Đức, TP. Hồ Chí Minh" options={["Phường Linh Xuân, TP. Thủ Đức, TP. Hồ Chí Minh", "Quận 1, TP. Hồ Chí Minh","Quận Gò Vấp, TP. Hồ Chí Minh", "Quận Cầu Giấy, Hà Nội","Quận Hoàng Mai, Hà Nội"]} />
-            <label className="flex items-start gap-3 text-sm text-slate-700">
-              <input type="checkbox" className="mt-1" />
+            <Field label="Họ và tên" required showError={validationAttempted} value={ownerInfo.name} onChange={(event) => updateOwnerInfo("name", event.target.value)}/>
+            <Field label="Số điện thoại" required showError={validationAttempted} value={ownerInfo.phone} onChange={(event) => updateOwnerInfo("phone", event.target.value)}/>
+            <Field label="Email" value={ownerInfo.email} onChange={(event) => updateOwnerInfo("email", event.target.value)}/>
+            <Field label="Lựa chọn chi nhánh gần bạn nhất" as="select" required showError={validationAttempted} value={ownerInfo.branch} onChange={(event) => updateOwnerInfo("branch", event.target.value)} options={["Phường Linh Xuân, TP. Thủ Đức, TP. Hồ Chí Minh", "Quận 1, TP. Hồ Chí Minh","Quận Gò Vấp, TP. Hồ Chí Minh", "Quận Cầu Giấy, Hà Nội","Quận Hoàng Mai, Hà Nội"]} />
+            <label
+              className={`flex items-start gap-3 rounded-lg text-sm text-slate-700 ${validationAttempted && !ownerInfo.agreed ? "ring-2 ring-red-500" : ""}`}
+              title={validationAttempted && !ownerInfo.agreed ? "Vui lòng điền thông tin" : undefined}
+              data-booking-error={validationAttempted && !ownerInfo.agreed ? "true" : undefined}
+              tabIndex={validationAttempted && !ownerInfo.agreed ? -1 : undefined}
+            >
+              <input type="checkbox" checked={ownerInfo.agreed} onChange={(event) => updateOwnerInfo("agreed", event.target.checked)} className="mt-1" />
               <span>Tôi đồng ý với <a className="text-blue-900 underline">Chính sách Huỷ/Đổi lịch hẹn</a> tại Dr.Pet’s House</span>
             </label>
           </div>
         </Card>
       </div>
-      <FlowButtons onBack={onBack} onNext={onNext} />
+      <FlowButtons onBack={onBack} onNext={handleNext} />
       {showPetPicker && (
         <PetSelectionModal
           selectedPet={selectedPet}
           onClose={() => setShowPetPicker(false)}
           onSelect={(pet) => {
             setSelectedPet(pet);
+            setPetInfo((current) => ({
+              ...current,
+              name: pet.name || current.name,
+              breed: pet.breed || current.breed,
+              age: pet.age || current.age,
+            }));
             setShowPetPicker(false);
           }}
         />
@@ -540,9 +558,14 @@ function Field({
   className = "",
   defaultValue = "",
   type = "text",
+  value,
+  onChange,
+  showError = false,
 }) {
+  const invalid = showError && required && !String(value ?? defaultValue ?? "").trim();
+
   return (
-    <label className={className}>
+    <label className={className} title={invalid ? "Vui lòng điền thông tin" : undefined}>
       <span className="mb-2 block text-sm font-medium text-slate-900">
         {label} {required && <span className="text-red-600">*</span>}
       </span>
@@ -551,12 +574,17 @@ function Field({
         {as === "select" ? (
           <>
             <select
-              defaultValue={defaultValue}
+              value={value ?? defaultValue}
+              onChange={onChange}
               required={required}
-              className="h-10 w-full appearance-none rounded-2xl border border-slate-300 bg-white px-4 pr-12 text-sm outline-none focus:border-blue-900"
+              data-booking-error={invalid ? "true" : undefined}
+              className={`h-10 w-full appearance-none rounded-2xl border bg-white px-4 pr-12 text-sm outline-none ${
+                invalid ? "border-red-500 ring-1 ring-red-500" : "border-slate-300 focus:border-blue-900"
+              }`}
             >
+              <option value="" disabled>Chọn thông tin</option>
               {options.map((option) => (
-                <option key={option}>{option}</option>
+                <option key={option} value={option}>{option}</option>
               ))}
             </select>
 
@@ -568,9 +596,14 @@ function Field({
         ) : (
           <input
             type={type}
-            defaultValue={defaultValue}
+            value={value}
+            defaultValue={value === undefined ? defaultValue : undefined}
+            onChange={onChange}
             required={required}
-            className="h-10 w-full rounded-2xl border border-slate-300 px-4 pr-10 text-sm outline-none focus:border-blue-900"
+            data-booking-error={invalid ? "true" : undefined}
+            className={`h-10 w-full rounded-2xl border px-4 pr-10 text-sm outline-none ${
+              invalid ? "border-red-500 ring-1 ring-red-500" : "border-slate-300 focus:border-blue-900"
+            }`}
           />
         )}
 
@@ -637,7 +670,7 @@ function PetSelectionModal({ selectedPet, onSelect, onClose }) {
   );
 }
 
-function FlowButtons({ onBack, onNext, nextDisabled }) {
+function FlowButtons({ onBack, onNext }) {
   return (
     <div className="mt-6 flex items-center justify-between">
       <button
@@ -649,9 +682,8 @@ function FlowButtons({ onBack, onNext, nextDisabled }) {
       </button>
       <button
         type="button"
-        disabled={nextDisabled}
         onClick={onNext}
-        className="rounded bg-secondary px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation disabled:cursor-not-allowed disabled:opacity-50"
+        className="rounded bg-secondary px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation"
       >
         Tiếp tục ›
       </button>
@@ -662,24 +694,46 @@ function FlowButtons({ onBack, onNext, nextDisabled }) {
 function BookingPage() {
   const [step, setStep] = useState(1);
   const [selectedServiceType, setSelectedServiceType] = useState(null);
-  const [selectedServices, setSelectedServices] = useState(["trim"]);
+  const [selectedServices, setSelectedServices] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedSlot, setSelectedSlot] = useState("13:30 - 14:30");
+  const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedPet, setSelectedPet] = useState(null);
+  const [petInfo, setPetInfo] = useState({
+    name: "",
+    species: "",
+    breed: "",
+    age: "",
+    weight: "",
+    gender: "",
+    status: "",
+    notes: "",
+  });
+  const [ownerInfo, setOwnerInfo] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    branch: "",
+    agreed: false,
+  });
   const [paymentMode, setPaymentMode] = useState("store");
-  const [activeModal, setActiveModal] = useState(null);
   const [success, setSuccess] = useState(false);
 
   const handleConfirm = () => {
-    if (paymentMode === "bank") {
-      setActiveModal("bank");
-      return;
-    }
-    if (paymentMode === "card") {
-      setActiveModal("card");
-      return;
-    }
     setSuccess(true);
+  };
+
+  const handleNext = () => {
+    if (selectedServiceType && selectedServices.length > 0 && selectedDate && selectedSlot) {
+      onNext();
+      return;
+    }
+
+    setValidationAttempted(true);
+    window.setTimeout(() => {
+      const firstInvalid = document.querySelector('[data-booking-error="true"]');
+      firstInvalid?.focus();
+      firstInvalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 0);
   };
 
   return (
@@ -705,6 +759,10 @@ function BookingPage() {
             <InfoForm
               selectedPet={selectedPet}
               setSelectedPet={setSelectedPet}
+              petInfo={petInfo}
+              setPetInfo={setPetInfo}
+              ownerInfo={ownerInfo}
+              setOwnerInfo={setOwnerInfo}
               onBack={() => setStep(1)}
               onNext={() => setStep(3)}
             />
@@ -713,6 +771,9 @@ function BookingPage() {
             <BookingPaymentStep
               selectedDate={selectedDate}
               selectedSlot={selectedSlot}
+              selectedPet={selectedPet}
+              ownerInfo={ownerInfo}
+              selectedServices={BOOKING_SERVICES.filter((service) => selectedServices.includes(service.id))}
               paymentMode={paymentMode}
               setPaymentMode={setPaymentMode}
               onBack={() => setStep(2)}
@@ -723,8 +784,6 @@ function BookingPage() {
         <Footer />
       </main>
 
-      {activeModal === "bank" && <BankTransferModal onClose={() => setActiveModal(null)} />}
-      {activeModal === "card" && <CreditCardModal onClose={() => setActiveModal(null)} />}
       {success && <BookingSuccessModal />}
     </div>
   );

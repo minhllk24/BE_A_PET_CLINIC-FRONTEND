@@ -21,6 +21,7 @@ import onlineZalopayLogo from "./images/booking/online_zalopay_logo.png";
 import onlineVnpayLogo from "./images/booking/online_vnpay_logo.png";
 import onlineBankIcon from "./icons/booking/online_bank_icon.svg";
 import onlineCardIcon from "./icons/booking/online_card_icon.svg";
+import onlineCreditCardIcon from "./icons/booking/online_creditcard_icon.svg";
 
 import bankPopupQrPlaceholder from "./images/booking/bank_popup_qr_placeholder.svg";
 import bankPopupCopyIcon from "./icons/booking/bank_popup_copy_icon.svg";
@@ -60,6 +61,7 @@ export const bookingImages = {
   onlineVnpayLogo,
   onlineBankIcon,
   onlineCardIcon,
+  onlineCreditCardIcon,
 
   bankPopupQrPlaceholder,
   bankPopupCopyIcon,

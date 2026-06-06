@@ -1,41 +1,6 @@
 import { groomingImages } from "../../assets/groomingImages";
+import { GROOMING_REVIEWS } from "../../data/groomingData";
 import { groomingTitleStyles } from "./groomingTitleStyles";
-
-const REVIEWS = [
-  {
-    id: 1,
-    lines: [
-      "These are the perfect size for our small",
-      "dog. The design is cute and the rubber on",
-      "the bottom is great because it makes them",
-      "more durable. They've held up to being...",
-    ],
-    author: "Mary Douglas",
-    company: "Pet Shop Inc.",
-  },
-  {
-    id: 2,
-    lines: [
-      "These are the perfect size for our small",
-      "dog. The design is cute and the rubber on",
-      "the bottom is great because it makes them",
-      "more durable. They've held up to being...",
-    ],
-    author: "Mary Douglas",
-    company: "Pet Shop Inc.",
-  },
-  {
-    id: 3,
-    lines: [
-      "These are the perfect size for our small",
-      "dog. The design is cute and the rubber on",
-      "the bottom is great because it makes them",
-      "more durable. They've held up to being...",
-    ],
-    author: "Mary Douglas",
-    company: "Pet Shop Inc.",
-  },
-];
 
 function ReviewCard({ review }) {
   return (
@@ -119,7 +84,7 @@ function GroomingFeedback() {
           </h2>
 
           <div className="flex w-[1200px] items-center justify-center gap-[10px]">
-            {REVIEWS.map((review) => (
+            {GROOMING_REVIEWS.map((review) => (
               <ReviewCard key={review.id} review={review} />
             ))}
           </div>

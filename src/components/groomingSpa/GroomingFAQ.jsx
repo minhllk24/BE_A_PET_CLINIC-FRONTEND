@@ -1,49 +1,7 @@
 import { useState } from "react";
 import { groomingImages } from "../../assets/groomingImages";
+import { GROOMING_FAQS } from "../../data/groomingData";
 import { groomingTitleStyles } from "./groomingTitleStyles";
-
-const FAQS = [
-  {
-    id: 1,
-    question: "Bao lâu thì nên tắm cho thú cưng?",
-    answer: [
-      "Với Chó: Tắm 1 lần/tháng là tần suất lý tưởng nhất. Tránh tắm quá 1 lần/tuần trừ khi có chỉ định từ bác sĩ, vì lạm dụng sẽ làm khô da và mất đi độ bóng của lông.",
-      "Với Mèo: Mèo là loài tự làm sạch cơ thể rất giỏi. Bạn chỉ nên tắm cho chúng khi thực sự cần thiết (dính bẩn, ve rận hoặc mèo lông dài).",
-    ],
-  },
-  {
-    id: 2,
-    question: "Thú cưng chưa tiêm phòng đầy đủ có được làm spa không?",
-    answer: [
-      "Các spa thường từ chối nhận thú cưng chưa tiêm đủ mũi vắc-xin cốt lõi.",
-      "Để bảo vệ sức khỏe cho chính thú cưng của bạn và tránh lây nhiễm chéo cho các bé khác tại cửa hàng.",
-      "Bạn có thể đặt lịch và sử dụng dịch vụ tiêm phòng của chúng tôi.",
-    ],
-  },
-  {
-    id: 3,
-    question: "Bao lâu thì nên cắt móng cho thú cưng?",
-    answer: [
-      "Bạn nên cắt móng cho chó và mèo định kỳ 2 đến 4 tuần/lần. Tần suất này có thể thay đổi tùy thuộc vào mức độ hoạt động và độ mài mòn tự nhiên của móng. [1, 2]",
-    ],
-  },
-  {
-    id: 4,
-    question: "Chủ nuôi có được ở lại xem trực tiếp quá trình làm spa không?",
-    answer: [
-      "Thường là không nên vì thú cưng thấy chủ sẽ dễ phấn khích, bồn chồn và không đứng yên.",
-      "Bạn có thể quan sát qua phòng kính cách âm hoặc xem camera giám sát tại phòng chờ của cửa hàng.",
-    ],
-  },
-  {
-    id: 5,
-    question: "Thú cưng bị nhát, hung dữ hoặc sợ nước thì spa có nhận không?",
-    answer: [
-      "Spa vẫn nhận nhưng bạn cần thông báo trước với nhân viên để có biện pháp xử lý phù hợp.",
-      "Nhân viên sẽ dùng kỹ thuật trấn an, dùng loa che mắt hoặc đeo rọ mõm vải mềm để đảm bảo an toàn cho cả hai bên.",
-    ],
-  },
-];
 
 const questionTextStyle = {
   fontFamily: "Roboto, sans-serif",
@@ -129,7 +87,7 @@ function GroomingFAQ() {
       </div>
 
       <div className="absolute left-[72px] top-[186px] flex w-[639px] flex-col gap-6">
-        {FAQS.map((faq) => (
+        {GROOMING_FAQS.map((faq) => (
           <FaqItem
             key={faq.id}
             faq={faq}

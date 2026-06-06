@@ -1,89 +1,6 @@
 import { groomingImages } from "../../assets/groomingImages";
+import { GROOMING_SERVICES } from "../../data/groomingData";
 import { groomingTitleStyles } from "./groomingTitleStyles";
-
-const SERVICES = [
-  {
-    id: 1,
-    title: "Tắm & Sấy khô",
-    description:
-      "Sử dụng các dòng sữa tắm cao cấp, phù hợp với từng loại da và màu lông của bé.",
-    price: "Từ 50.000 đ",
-    image: groomingImages.serviceBath,
-    mask: groomingImages.serviceCardMask,
-  },
-  {
-    id: 2,
-    title: "Massage chuyên sâu",
-    description:
-      "Kỹ thuật massage nhẹ nhàng giúp pet giải tỏa áp lực, tăng cường sự gắn kết",
-    price: "Từ 50.000 đ",
-    image: groomingImages.serviceMassage,
-    mask: groomingImages.serviceCardMask,
-  },
-  {
-    id: 3,
-    title: "Vệ sinh răng miệng",
-    description:
-      "Đánh răng loại bỏ mảng bám và xịt thơm miệng khử mùi hôi.",
-    price: "Từ 30.000 đ",
-    image: groomingImages.serviceTeeth,
-    mask: groomingImages.serviceCardMask,
-  },
-  {
-    id: 4,
-    title: "Cắt & mài móng",
-    description:
-      "Cắt ngắn móng tránh đâm vào thịt và dùng máy mài mịn các góc sắc nhọn",
-    price: "Từ 30.000 đ",
-    image: groomingImages.serviceNail,
-    mask: groomingImages.serviceCardMaskAlt,
-  },
-  {
-    id: 5,
-    title: "Chăm sóc bàn chân",
-    description:
-      "Cạo vệ sinh kẽ móng, chăm sóc bảo vệ phần đệm thịt",
-    price: "Từ 30.000 đ",
-    image: groomingImages.servicePawCare,
-    mask: groomingImages.serviceCardMask,
-  },
-  {
-    id: 6,
-    title: "Điều trị ký sinh trùng",
-    description:
-      "Tiêu diệt ký sinh trùng và làm sạch môi trường sống để ngăn ngừa tái nhiễm",
-    price: "Từ 80.000 đ",
-    image: groomingImages.serviceParasite,
-    mask: groomingImages.serviceCardMask,
-  },
-  {
-    id: 7,
-    title: "Cắt tỉa tạo kiểu",
-    description:
-      "Cắt tỉa lông theo yêu cầu hoặc theo form chuẩn của từng giống loài",
-    price: "Từ 50.000 đ",
-    image: groomingImages.serviceGrooming,
-    mask: groomingImages.serviceCardMask,
-  },
-  {
-    id: 8,
-    title: "Nhuộm lông thời trang",
-    description:
-      "Sử dụng thuốc nhuộm organic 100% an toàn cho thú cưng, tạo điểm nhấn đặc biệt",
-    price: "Từ 80.000 đ",
-    image: groomingImages.serviceDye,
-    mask: groomingImages.serviceCardMask,
-  },
-  {
-    id: 9,
-    title: "Vắt tuyến hôi",
-    description:
-      "Giúp thú cưng không bị ngứa ngáy hậu môn, hạn chế mùi hôi đặc trưng cơ thể",
-    price: "Từ 50.000 đ",
-    image: groomingImages.serviceScent,
-    mask: groomingImages.serviceCardMask,
-  },
-];
 
 const POSITIONS = [
   { id: 1, x: 167, y: 0 },
@@ -233,7 +150,7 @@ function GroomingServices() {
           aria-hidden="true"
         />
 
-        {SERVICES.map((service) => {
+        {GROOMING_SERVICES.map((service) => {
           const pos = POSITIONS.find((p) => p.id === service.id);
           return (
             <div

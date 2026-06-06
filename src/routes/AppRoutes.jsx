@@ -28,7 +28,8 @@ const AppRoutes = () => {
       <Route path="/petshop" element={<ShopPage />} />
       <Route path="/products" element={<ProductPage />} />
       <Route path="/product-details" element={<ProductDetailsPage />} />
-      <Route path="/product-details/write-review" element={<WriteReviewPage />} />
+      <Route path="/product-details/:productId" element={<ProductDetailsPage />} />
+      <Route path="/product-details/:productId/write-review" element={<WriteReviewPage />} />
       <Route path="/cart" element={<CartOpenHandler />} />
 
       <Route path="/services/grooming-spa" element={<GroomingSpaPage />} />

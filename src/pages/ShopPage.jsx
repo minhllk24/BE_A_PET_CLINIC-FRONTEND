@@ -1,31 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { homeImages } from "../assets/homeImages";
 import { shopImages } from "../assets/shopImages";
 import Footer from "../components/layout/Footer";
 import CanvasLayout from "../components/layout/CanvasLayout";
 import ScaledCanvasLayout from "../components/layout/ScaledCanvasLayout";
 import NavBar from "../components/Navbar";
-import ProductCard from "../components/product/ProductCard";
+import ShoppingProductCard from "../components/product/ShoppingProductCard";
 import FeedbackSection from "../components/shop/FeedbackSection";
 import ShopHeroSection from "../components/shop/ShopHeroSection";
 
 import { TEST_AUTHENTICATED } from "../config/devFlags";
-
-const CATEGORIES = [
-  { label: "Thức ăn", image: homeImages.category1, slug: "thuc-an" },
-  { label: "Đồ dùng thiết yếu", image: homeImages.category2, slug: "do-dung-thiet-yeu" },
-  { label: "Chăm sóc sức khỏe", image: homeImages.category3, slug: "cham-soc-suc-khoe" },
-  { label: "Đồ chơi", image: homeImages.category4, slug: "do-choi" },
-  { label: "Phụ kiện", image: homeImages.category5, slug: "phu-kien" },
-];
-
-const PRODUCTS = Array.from({ length: 12 }, (_, i) => ({
-  id: i + 1,
-  name: "ten sp",
-  oldPrice: "$23.00",
-  price: "$13.00",
-}));
+import { FEATURED_PRODUCTS, PRODUCT_CATEGORIES, SHOP_PROMOTION_PAGES } from "../data/shopData";
 
 const SECTION_TITLE_TYPOGRAPHY = {
   fontFamily: '"Baloo Tamma 2", "Baloo 2", cursive',
@@ -36,49 +21,38 @@ const SECTION_TITLE_TYPOGRAPHY = {
   letterSpacing: "0px",
 };
 
-const PROMOTION_ITEMS = shopImages.promoBanners.map((image) => ({ image }));
-
-const PROMOTION_PAGES = [
-  [PROMOTION_ITEMS[0], PROMOTION_ITEMS[1]],
-  [PROMOTION_ITEMS[2], PROMOTION_ITEMS[3]],
-];
-
 function ShopCanvas() {
   const navigate = useNavigate();
 
   /* ---- FlashSale: horizontal carousel, slide 1 card at a time ---- */
-  const CARD_WIDTH = 170; // approx card width + gap
+  const CARD_WIDTH = 170;
+  const CARD_GAP = 20;
   const VISIBLE_COUNT = 6;
   const [flashOffset, setFlashOffset] = useState(0);
-  const [flashAnimKey, setFlashAnimKey] = useState(0);
 
   const canGoPrev = flashOffset > 0;
-  const canGoNext = flashOffset < PRODUCTS.length - VISIBLE_COUNT;
+  const canGoNext = flashOffset < FEATURED_PRODUCTS.length - VISIBLE_COUNT;
 
   const goPrevFlash = () => {
     if (!canGoPrev) return;
     setFlashOffset((prev) => prev - 1);
-    setFlashAnimKey((k) => k + 1);
   };
 
   const goNextFlash = () => {
     if (!canGoNext) return;
     setFlashOffset((prev) => prev + 1);
-    setFlashAnimKey((k) => k + 1);
   };
-
-  const visibleProducts = PRODUCTS.slice(flashOffset, flashOffset + VISIBLE_COUNT);
 
   /* ---- Promotion carousel ---- */
   const [promotionPageIndex, setPromotionPageIndex] = useState(0);
   const [promoDirection, setPromoDirection] = useState(0);
   const promoTimerRef = useRef(null);
-  const currentPromoPage = PROMOTION_PAGES[promotionPageIndex];
+  const currentPromoPage = SHOP_PROMOTION_PAGES[promotionPageIndex];
   const [leftPromotion, rightPromotion] = currentPromoPage;
 
   const advancePromo = useCallback(() => {
     setPromoDirection(1);
-    setPromotionPageIndex((prev) => (prev + 1) % PROMOTION_PAGES.length);
+    setPromotionPageIndex((prev) => (prev + 1) % SHOP_PROMOTION_PAGES.length);
   }, []);
 
   useEffect(() => {
@@ -91,21 +65,21 @@ function ShopCanvas() {
     clearInterval(promoTimerRef.current);
     const forward = idx > promotionPageIndex
       ? idx - promotionPageIndex
-      : idx + PROMOTION_PAGES.length - promotionPageIndex;
-    setPromoDirection(forward <= PROMOTION_PAGES.length / 2 ? 1 : -1);
+      : idx + SHOP_PROMOTION_PAGES.length - promotionPageIndex;
+    setPromoDirection(forward <= SHOP_PROMOTION_PAGES.length / 2 ? 1 : -1);
     setPromotionPageIndex(idx);
     promoTimerRef.current = setInterval(advancePromo, 5000);
   };
 
   const goPrevPromotion = () => {
     clearInterval(promoTimerRef.current);
-    const next = (promotionPageIndex - 1 + PROMOTION_PAGES.length) % PROMOTION_PAGES.length;
+    const next = (promotionPageIndex - 1 + SHOP_PROMOTION_PAGES.length) % SHOP_PROMOTION_PAGES.length;
     goPromoPage(next);
   };
 
   const goNextPromotion = () => {
     clearInterval(promoTimerRef.current);
-    goPromoPage((promotionPageIndex + 1) % PROMOTION_PAGES.length);
+    goPromoPage((promotionPageIndex + 1) % SHOP_PROMOTION_PAGES.length);
   };
 
   const pausePromo = useCallback(() => {
@@ -137,7 +111,7 @@ function ShopCanvas() {
         </div>
         <div className="mx-auto mt-0 w-[992px] px-0 py-[10px]">
           <div className="grid grid-cols-5">
-            {CATEGORIES.map((item) => (
+            {PRODUCT_CATEGORIES.map((item) => (
               <button
                 key={item.label}
                 type="button"
@@ -187,26 +161,28 @@ function ShopCanvas() {
               ‹
             </button>
             <div
-              key={flashAnimKey}
-              className="flex gap-5 overflow-hidden"
-              style={{ width: CARD_WIDTH * VISIBLE_COUNT + 5 * (VISIBLE_COUNT - 1) }}
+              className="overflow-hidden pt-3 pb-3"
+              style={{ width: CARD_WIDTH * VISIBLE_COUNT + CARD_GAP * (VISIBLE_COUNT - 1) }}
             >
-              {visibleProducts.map((p, idx) => (
-                <div
-                  key={p.id}
-                  className="flash-card-animate shrink-0"
-                  style={{ width: CARD_WIDTH }}
-                >
-                  <ProductCard
-                    id={p.id}
-                    variant={idx < 2 ? "tag" : "default"}
-                    name={p.name}
-                    price={p.price}
-                    oldPrice={p.oldPrice}
-                    href="/product-details"
-                  />
-                </div>
-              ))}
+              <div
+                className="flex gap-5 transition-transform duration-300 ease-in-out"
+                style={{ transform: `translateX(-${flashOffset * (CARD_WIDTH + CARD_GAP)}px)` }}
+              >
+                {FEATURED_PRODUCTS.map((p, idx) => (
+                  <div
+                    key={p.id}
+                    className="shrink-0"
+                    style={{ width: CARD_WIDTH }}
+                  >
+                    <ShoppingProductCard
+                      id={p.id}
+                      product={p}
+                      variant={idx < 2 ? "tag" : "default"}
+                      href="/product-details"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
             <button
               type="button"
@@ -232,12 +208,17 @@ function ShopCanvas() {
           </h2>
           <img src={shopImages.bestSellerSpark} alt="" className="absolute left-[717px] top-[-12px] h-[42px] w-[43px]" />
         </div>
-        <div className="mx-auto mt-5 grid w-[1200px] grid-cols-6 justify-items-center gap-y-[10px]">
-          {PRODUCTS.map((p) => (
-            <ProductCard key={`best-${p.id}`} id={p.id} name={p.name} price={p.price} oldPrice={p.oldPrice} href="/product-details" />
+        <div className="mx-auto mt-5 grid w-[1200px] grid-cols-6 justify-items-center gap-x-5 gap-y-[10px]">
+          {FEATURED_PRODUCTS.map((p) => (
+            <ShoppingProductCard
+              key={`best-${p.id}`}
+              id={p.id}
+              product={p}
+              href="/product-details"
+            />
           ))}
         </div>
-        <div className="mt-5 flex justify-center">
+        <div className="mt-5 pt-5 flex justify-center">
           <button
             type="button"
             onClick={() => navigate("/products")}
@@ -270,6 +251,7 @@ function ShopCanvas() {
               <img src={leftPromotion.image} alt="Promotion banner left" className="h-[269px] w-[570px] rounded-[30px] object-cover" />
               <button
                 type="button"
+                onClick={() => navigate(`/product-details/${leftPromotion.productId}`)}
                 className="absolute left-[40px] top-[173px] h-[54px] w-[152.27px] rounded-[50px] bg-transparent"
                 aria-label="Mua ngay banner trái"
               />
@@ -281,6 +263,7 @@ function ShopCanvas() {
               <img src={rightPromotion.image} alt="Promotion banner right" className="h-[269px] w-[570px] rounded-[30px] object-cover" />
               <button
                 type="button"
+                onClick={() => navigate(`/product-details/${rightPromotion.productId}`)}
                 className="absolute left-[40px] top-[173px] h-[54px] w-[152.27px] rounded-[50px] bg-transparent"
                 aria-label="Mua ngay banner phải"
               />
@@ -296,7 +279,7 @@ function ShopCanvas() {
           </button>
         </div>
         <div className="mt-[10px] flex items-center justify-center gap-[7px]">
-          {PROMOTION_PAGES.map((_, idx) => (
+          {SHOP_PROMOTION_PAGES.map((_, idx) => (
             <button
               key={idx}
               type="button"

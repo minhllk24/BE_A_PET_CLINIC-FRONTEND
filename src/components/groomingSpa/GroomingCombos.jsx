@@ -1,20 +1,7 @@
 import { groomingImages } from "../../assets/groomingImages";
+import { GROOMING_COMBO_STEPS } from "../../data/groomingData";
 import { cssMask } from "./groomingMaskUtils";
 import { groomingTitleStyles } from "./groomingTitleStyles";
-
-const COMBO_STEPS = [
-  "Kiểm tra lông, da",
-  "Cạo lông bàn chân",
-  "Cạo lông bụng",
-  "Cạo lông hậu môn",
-  "Vắt tuyến hôi",
-  "Vệ sinh tai",
-  "Cắt, mài móng",
-  "Tắm xả chuyên sâu 2 lần",
-  "Massage làm sạch",
-  "Sấy chải tạo độ phồng lông",
-  "Xịt thơm dưỡng bóng lông",
-];
 
 function BookButton({ className = "" }) {
   return (
@@ -156,7 +143,7 @@ function GroomingCombos() {
               Từ 150.000 đ
             </p>
             <ol className="mt-3 list-decimal pl-6 font-['Roboto'] text-[16px] leading-6 text-[#6C6D71]">
-              {COMBO_STEPS.map((step) => (
+              {GROOMING_COMBO_STEPS.map((step) => (
                 <li key={step}>{step}</li>
               ))}
             </ol>

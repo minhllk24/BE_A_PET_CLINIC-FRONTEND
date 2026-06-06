@@ -1,32 +1,5 @@
-import { footerImages } from "../../assets/footerImages";
 import { homeImages } from "../../assets/homeImages";
-
-const FOOTER_COLUMNS = [
-  {
-    title: "PRODUCT",
-    links: ["Pricing", "Overview", "Browse", "Accessibility", "Five"],
-  },
-  {
-    title: "Solutions",
-    links: ["Brainstorming", "Ideation", "Wireframing", "Research"],
-  },
-  {
-    title: "Resources",
-    links: ["Help Center", "Blog", "Tutorials"],
-  },
-  {
-    title: "Company",
-    links: ["About", "Press", "Events", "Careers"],
-  },
-];
-
-const SOCIAL = [
-  { name: "YouTube", icon: footerImages.youtube },
-  { name: "Facebook", icon: footerImages.facebook },
-  { name: "Twitter", icon: footerImages.twitter },
-  { name: "Instagram", icon: footerImages.instagram },
-  { name: "LinkedIn", icon: footerImages.linkedin },
-];
+import { FOOTER_COLUMNS, FOOTER_LEGAL_LINKS, FOOTER_SOCIALS } from "../../data/siteData";
 
 function Footer() {
   return (
@@ -70,7 +43,7 @@ function Footer() {
           </p>
 
           <div className="flex items-center justify-end gap-6">
-            {["Terms", "Privacy", "Contact"].map((link) => (
+            {FOOTER_LEGAL_LINKS.map((link) => (
               <a
                 key={link}
                 href="#"
@@ -82,7 +55,7 @@ function Footer() {
           </div>
 
           <div className="flex items-center gap-4">
-            {SOCIAL.map((item) => (
+            {FOOTER_SOCIALS.map((item) => (
               <a
                 key={item.name}
                 href="#"

@@ -2,6 +2,19 @@ import { useState } from "react";
 import { cartImages } from "../../assets/cartImages";
 import { useCart } from "../../context/CartContext";
 
+function getNumericPrice(value) {
+  if (typeof value === "number") return value;
+  return Number(String(value ?? "").replace(/[^\d.-]/g, "")) || 0;
+}
+
+function formatPrice(value) {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(getNumericPrice(value));
+}
+
 function CartItemRow({ item }) {
   const { toggleCartItem, removeCartItem, updateCartQty } = useCart();
   const [deleting, setDeleting] = useState(false);
@@ -41,8 +54,8 @@ function CartItemRow({ item }) {
       <div className="flex h-full shrink-0 items-center justify-center">
         <div className="h-full w-[80px]">
           <img
-            src={cartImages.productThumb}
-            alt=""
+            src={item.image || item.imageUrl || item.thumbnail || cartImages.productThumb}
+            alt={item.name}
             className="size-full object-cover"
           />
         </div>
@@ -70,7 +83,7 @@ function CartItemRow({ item }) {
 
         <div className="flex w-full items-center justify-between text-[#353535]">
           <p className="shrink-0 whitespace-nowrap font-['Roboto'] text-[14px] font-bold leading-[1.43] tracking-[0.17px]">
-            {item.price}
+            {formatPrice(item.price)}
           </p>
           {/* Quantity stepper */}
           <div className="flex h-[27px] w-[78px] shrink-0 items-center justify-between rounded border border-solid border-[#353535] px-[16px] py-[5px] font-['Josefin_Sans'] text-[20px] font-medium leading-normal">
@@ -97,11 +110,11 @@ function CartItemRow({ item }) {
         <div className="flex w-full items-center gap-10 whitespace-nowrap font-['Roboto'] text-[12px] leading-[1.66] tracking-[0.4px] text-[#353535]">
           <div className="flex items-center gap-[10px]">
             <span>Loại:</span>
-            <span>{item.type}</span>
+            <span>{item.type || "Mặc định"}</span>
           </div>
           <div className="flex items-center gap-[10px]">
             <span>Size:</span>
-            <span>{item.size}</span>
+            <span>{item.size || "Mặc định"}</span>
           </div>
         </div>
       </div>
@@ -114,6 +127,9 @@ function MyCartPanel({ onClose }) {
   const itemCount = cartItems.length;
   const selectedCount = cartItems.filter((i) => i.selected).length;
   const hasItems = itemCount > 0;
+  const subtotal = cartItems
+    .filter((item) => item.selected)
+    .reduce((total, item) => total + getNumericPrice(item.price) * item.qty, 0);
 
   return (
     <aside
@@ -170,14 +186,14 @@ function MyCartPanel({ onClose }) {
           <p className="shrink-0 whitespace-nowrap text-[rgba(0,0,0,0.87)]">
             Tạm tính:{" "}
           </p>
-          <p className="min-w-0 flex-1 text-[#f45757]">$35.09</p>
+          <p className="min-w-0 flex-1 text-[#f45757]">{formatPrice(subtotal)}</p>
         </div>
         <button
           type="button"
           onClick={openCheckout}
-          disabled={!hasItems}
+          disabled={selectedCount === 0}
           className={`btn-brand-cart shrink-0 transition-all duration-micro ${
-            hasItems
+            selectedCount > 0
               ? "opacity-100 hover:bg-[#ffe454] active:scale-[0.98]"
               : "opacity-50 cursor-not-allowed"
           }`}

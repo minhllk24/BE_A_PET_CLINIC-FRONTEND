@@ -119,7 +119,7 @@ body {
 
   /* ---- Product card (Figma hover 1268:2743) ---- */
   .card-product {
-    @apply relative flex h-[234px] w-[170px] flex-col items-start gap-[10px] overflow-hidden rounded-[30px] border border-[rgba(25,118,210,0.5)] bg-white px-[10px] pb-[17px] pt-[10px];
+    @apply relative flex h-[234px] w-[170px] flex-col items-start gap-[6px] overflow-hidden rounded-[30px] border border-[rgba(25,118,210,0.5)] bg-white px-[10px] pb-[10px] pt-[10px];
     @apply shadow-[5px_4px_4px_0px_rgba(0,0,0,0.25)];
     @apply transition-[box-shadow,transform,border-color] duration-300 ease-out;
   }
@@ -132,10 +132,38 @@ body {
   }
 
   .card-product-cart-btn {
-    @apply absolute left-[117px] top-[136.5px] size-10 shrink-0 rounded-full;
+    @apply absolute left-[127px] top-[134.5px] size-8 shrink-0 rounded-full;
     @apply transition-transform duration-200 ease-out;
     @apply hover:scale-110 active:scale-95;
     @apply focus-ring-brand;
+  }
+
+  .shopping-product-card {
+    @apply font-bold;
+    
+  }
+
+  .product-card-name {
+    width: 100px;
+    line-height: 1.25;
+    max-height: 40px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .product-card-price-row {
+    width: 100px;
+    overflow: hidden;
+  }
+
+  .product-card-current-price {
+    display: block;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* ---- Service / category tiles ---- */

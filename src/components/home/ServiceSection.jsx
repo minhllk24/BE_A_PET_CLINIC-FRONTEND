@@ -1,28 +1,9 @@
+import { Link } from "react-router-dom";
 import { homeImages } from "../../assets/homeImages";
+import { HOME_SERVICES } from "../../data/homeData";
 import SectionTitle from "./SectionTitle";
 
-const SERVICES = [
-  {
-    image: homeImages.service1,
-    title: "Khám & Điều trị",
-    description:
-      "Đội ngũ bác sĩ chuyên khoa cùng trang thiết bị hiện đại, chẩn đoán chính xác, điều trị tận tâm và hỗ trợ cấp cứu cho bé yêu 24/7.",
-  },
-  {
-    image: homeImages.service2,
-    title: "Grooming & Spa",
-    description:
-      "Dịch vụ tắm sấy, cắt tỉa lông và chăm sóc vệ sinh giúp thú cưng luôn sạch sẽ, khỏe mạnh và thoải mái.",
-  },
-  {
-    image: homeImages.service3,
-    title: "Pet Shop",
-    description:
-      "Cung cấp đa dạng sản phẩm dành cho thú cưng như thức ăn, phụ kiện, đồ chơi và sản phẩm chăm sóc sức khỏe từ nhiều thương hiệu uy tín.",
-  },
-];
-
-function ServiceCard({ image, title, description }) {
+function ServiceCard({ image, title, description, href }) {
   return (
     <article className="group flex flex-1 flex-col items-center transition-transform duration-component ease-premium hover:-translate-y-1">
       <div className="relative h-[513px] w-full max-w-[338px] overflow-hidden rounded-t-[189px]">
@@ -54,13 +35,13 @@ function ServiceCard({ image, title, description }) {
             <p className="text-sm leading-snug tracking-wide text-black">
               {description}
             </p>
-            <button
-              type="button"
+            <Link
+              to={href}
               className="btn-icon mt-2 flex h-12 w-[60px] items-center justify-center bg-secondary text-xl font-bold text-black hover:bg-[#FFEE58]"
               aria-label={`Xem thêm ${title}`}
             >
               →
-            </button>
+            </Link>
        
           </div>
 
@@ -132,7 +113,7 @@ function ServiceSection() {
       </div>
 
         <div className="grid w-full gap-8 md:grid-cols-2 xl:grid-cols-3">
-          {SERVICES.map((service) => (
+          {HOME_SERVICES.map((service) => (
             <ServiceCard key={service.title} {...service} />
           ))}
         </div>

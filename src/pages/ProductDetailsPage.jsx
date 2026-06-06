@@ -1,46 +1,65 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import CanvasLayout from "../components/layout/CanvasLayout";
+import Breadcrumb from "../components/layout/Breadcrumb";
 import NavBar from "../components/Navbar";
-import ProductCard from "../components/product/ProductCard";
+import ShoppingProductCard from "../components/product/ShoppingProductCard";
 import WriteReviewForm from "../components/product/WriteReviewForm";
 import Footer from "../components/layout/Footer";
 import ProductRating from "../components/product/ProductRating";
 
 import { productImages } from "../assets/productImages";
 import { TEST_AUTHENTICATED } from "../config/devFlags";
+import { useCart } from "../context/CartContext";
+import {
+  createProductReview,
+  getProductDetails,
+  getProductReviews,
+  getSimilarProducts,
+  likeProductReview,
+} from "../services/productService";
 
-const MOCK_THUMBNAILS = [
-  productImages.detailImage,
-  productImages.detailImage,
-  productImages.detailImage,
-];
+const REVIEW_PAGE_SIZE = 2;
 
-const MOCK_TYPES = ["250ml", "100ml", "50ml"];
+function formatPrice(value) {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0);
+}
 
-const SIMILAR_PRODUCTS = Array.from({ length: 12 }, (_, i) => ({
-  id: i + 1,
-  name: "ten sp",
-  oldPrice: "$23.00",
-  price: "$13.00",
-}));
+function formatReviewTime(createdAt) {
+  if (!createdAt) return "";
+  return new Intl.RelativeTimeFormat("vi", { numeric: "auto" }).format(
+    Math.round((new Date(createdAt).getTime() - Date.now()) / 60000),
+    "minute",
+  );
+}
 
 export default function ProductDetailsPage({ showWriteReview = false }) {
   const navigate = useNavigate();
+  const { productId } = useParams();
+  const { addToCart, openCart } = useCart();
   const descriptionRef = useRef(null);
+  const [product, setProduct] = useState(null);
+  const [reviewsData, setReviewsData] = useState({ items: [], totalPages: 1, totalItems: 0, averageRating: 0, ratingBreakdown: {} });
+  const [similarProducts, setSimilarProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   /* ---- Image gallery ---- */
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [thumbHovered, setThumbHovered] = useState(null);
-  const selectedImage = MOCK_THUMBNAILS[selectedImageIdx];
+  const thumbnails = product?.images?.length ? product.images : [productImages.detailImage];
+  const selectedImage = thumbnails[selectedImageIdx] || thumbnails[0];
 
   /* ---- Type / variant selection ---- */
   const [selectedTypeIdx, setSelectedTypeIdx] = useState(0);
 
   /* ---- Dropdown (100ml) ---- */
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [dropdownValue, setDropdownValue] = useState("100ml");
-  const dropdownOptions = ["100ml", "250ml", "500ml"];
+  const [dropdownValue, setDropdownValue] = useState("");
   const dropdownRef = useRef(null);
 
   /* ---- Quantity ---- */
@@ -48,12 +67,18 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
 
   /* ---- Review pagination ---- */
   const [reviewPage, setReviewPage] = useState(1);
-  const TOTAL_REVIEW_PAGES = 5;
+  const totalReviewPages = reviewsData.totalPages || 1;
 
   /* ---- Review likes ---- */
   const [likedReviews, setLikedReviews] = useState({});
 
-  const handleLike = (reviewId) => {
+  const handleLike = async (reviewId) => {
+    if (!productId) return;
+    try {
+      await likeProductReview(productId, reviewId);
+    } catch {
+      return;
+    }
     setLikedReviews((prev) => {
       const isLiked = !!prev[`_${reviewId}`];
       return {
@@ -70,6 +95,59 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
 
   /* ---- Scroll to tab ---- */
   const tabSectionRef = useRef(null);
+
+  useEffect(() => {
+    if (!productId) {
+      setLoadError("Thiếu mã sản phẩm.");
+      setIsLoading(false);
+      return;
+    }
+
+    let active = true;
+    setIsLoading(true);
+    setLoadError("");
+
+    Promise.all([
+      getProductDetails(productId),
+      getSimilarProducts(productId),
+    ])
+      .then(([detail, similar]) => {
+        if (!active) return;
+        setProduct(detail);
+        setSimilarProducts(similar?.items ?? similar ?? []);
+        const firstSize = detail?.variants?.[0]?.sizes?.[0] ?? "";
+        setDropdownValue(firstSize);
+      })
+      .catch(() => {
+        if (active) setLoadError("Không thể tải thông tin sản phẩm.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [productId]);
+
+  useEffect(() => {
+    if (!productId) return;
+    let active = true;
+    getProductReviews(productId, reviewPage, REVIEW_PAGE_SIZE)
+      .then((data) => {
+        if (active) setReviewsData(data);
+      })
+      .catch(() => {
+        if (active) setReviewsData((current) => ({ ...current, items: [] }));
+      });
+    return () => {
+      active = false;
+    };
+  }, [productId, reviewPage]);
+
+  useEffect(() => {
+    setSelectedImageIdx(0);
+  }, [productId]);
 
   const scrollToTabSection = useCallback(() => {
     tabSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -132,12 +210,20 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
   /* ---- Add to cart with feedback ---- */
   const [cartAdded, setCartAdded] = useState(false);
   const handleAddToCart = () => {
+    const variant = product?.variants?.[selectedTypeIdx];
+    addToCart({
+      id: `${product.id}:${variant?.id ?? "default"}:${dropdownValue || "default"}`,
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      image: selectedImage,
+      type: variant?.name,
+      size: dropdownValue,
+      qty: quantity,
+    });
+    openCart();
     setCartAdded(true);
     setTimeout(() => setCartAdded(false), 1800);
-    setTimeout(() => {
-      // openCart would be called here with real cart context
-      console.log("Add to cart:", { type: MOCK_TYPES[selectedTypeIdx], size: dropdownValue, qty: quantity });
-    }, 50);
   };
 
   /* ---- Buy now ---- */
@@ -152,37 +238,27 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
   };
 
   /* ---- Similar products carousel ---- */
-  const [simPage, setSimPage] = useState(0);
-  const [simSliding, setSimSliding] = useState(false);
-  const SIM_PAGE_SIZE = 6;
-  const SIM_TOTAL_PAGES = Math.ceil(SIMILAR_PRODUCTS.length / SIM_PAGE_SIZE);
-  const simSlice = SIMILAR_PRODUCTS.slice(
-    simPage * SIM_PAGE_SIZE,
-    simPage * SIM_PAGE_SIZE + SIM_PAGE_SIZE,
-  );
+  const SIM_CARD_WIDTH = 170;
+  const SIM_CARD_GAP = 20;
+  const SIM_VISIBLE_COUNT = 6;
+  const [simOffset, setSimOffset] = useState(0);
+  const canGoSimPrev = simOffset > 0;
+  const canGoSimNext = simOffset < similarProducts.length - SIM_VISIBLE_COUNT;
 
-  const handleSimPrev = useCallback(() => {
-    if (simSliding) return;
-    setSimSliding(true);
-    setTimeout(() => {
-      setSimPage((p) => (p - 1 + SIM_TOTAL_PAGES) % SIM_TOTAL_PAGES);
-      setSimSliding(false);
-    }, 250);
-  }, [SIM_TOTAL_PAGES, simSliding]);
+  const handleSimPrev = () => {
+    if (!canGoSimPrev) return;
+    setSimOffset((offset) => offset - 1);
+  };
 
-  const handleSimNext = useCallback(() => {
-    if (simSliding) return;
-    setSimSliding(true);
-    setTimeout(() => {
-      setSimPage((p) => (p + 1) % SIM_TOTAL_PAGES);
-      setSimSliding(false);
-    }, 250);
-  }, [SIM_TOTAL_PAGES, simSliding]);
+  const handleSimNext = () => {
+    if (!canGoSimNext) return;
+    setSimOffset((offset) => offset + 1);
+  };
 
   /* ---- Review pages for pagination display ---- */
   const getPageNumbers = () => {
     const pages = [];
-    const total = TOTAL_REVIEW_PAGES;
+    const total = totalReviewPages;
     const current = reviewPage;
     if (total <= 5) {
       for (let i = 1; i <= total; i++) pages.push(i);
@@ -198,10 +274,35 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
     return pages;
   };
 
+  const handleReviewSubmit = async ({ rating, review }) => {
+    await createProductReview(productId, { rating, content: review });
+    const updated = await getProductReviews(productId, 1, REVIEW_PAGE_SIZE);
+    setReviewPage(1);
+    setReviewsData(updated);
+  };
+
+  if (isLoading) {
+    return <div className="flex min-h-screen items-center justify-center text-[#0D47A1]">Đang tải sản phẩm...</div>;
+  }
+
+  if (loadError || !product) {
+    return <div className="flex min-h-screen items-center justify-center text-[#D32F2F]">{loadError || "Không tìm thấy sản phẩm."}</div>;
+  }
+
+  const selectedVariant = product.variants?.[selectedTypeIdx];
+  const dropdownOptions = selectedVariant?.sizes ?? [];
+
   return (
     <div className="min-h-screen bg-white">
       <CanvasLayout>
         <NavBar isAuthenticated={TEST_AUTHENTICATED} />
+        <Breadcrumb
+          items={[
+            { label: "Mua sắm", to: "/petshop" },
+            { label: "Danh mục sản phẩm", to: "/products" },
+            { label: product?.name || (isLoading ? "Đang tải..." : "Chi tiết sản phẩm") },
+          ]}
+        />
 
         {/* ---- Product detail section ---- */}
         <section className="relative h-[778px] w-[1440px]">
@@ -214,7 +315,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
               Product Listing
             </Link>
             <img src={productImages.chevronRight} alt="" className="h-5 w-5 pointer-events-none opacity-50" aria-hidden="true" />
-            <span className="text-[rgba(0,0,0,0.87)] cursor-default">Dummy Product Page</span>
+            <span className="text-[rgba(0,0,0,0.87)] cursor-default">{product.name}</span>
           </nav>
 
           {/* Product layout */}
@@ -224,7 +325,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
               <div className="flex w-[626px] gap-[24px] pl-[15px] pt-[8.5px]">
                 {/* Thumbnails */}
                 <div className="flex h-[626px] flex-col justify-between rounded-[16px]">
-                  {MOCK_THUMBNAILS.map((thumb, i) => (
+                  {thumbnails.map((thumb, i) => (
                     <button
                       key={i}
                       type="button"
@@ -254,7 +355,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                 {/* Main image */}
                 <img
                   src={selectedImage}
-                  alt="Product main view"
+                  alt={product.name}
                   className="h-[627px] w-[460px] rounded-[4px] object-cover"
                 />
               </div>
@@ -266,18 +367,22 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                     {/* Title + stars */}
                     <div className="flex flex-col gap-[12px]">
                       <h1 className="w-[494px] font-['Roboto'] text-[32px] font-bold leading-[1.235] tracking-[0.25px] text-[#0D47A1]">
-                        Double Bed & Side Tables
+                        {product.name}
                       </h1>
                       <div className="flex items-center gap-[10px]">
-                        <ProductRating />
-                        <span className="font-['Oxygen'] text-[14px] leading-[23.87px] text-[#414141]">( 32 review )</span>
+                        <ProductRating value={product.rating} />
+                        <span className="font-['Oxygen'] text-[14px] leading-[23.87px] text-[#414141]">( {product.reviewCount || 0} review )</span>
                       </div>
                       <div className="flex items-center gap-[10px]">
-                        <span className="font-['Roboto'] text-[32px] font-normal leading-[39.52px] tracking-[0.25px] text-[#D32F2F]">$54.98</span>
-                        <span className="font-['Roboto'] text-[24px] font-normal leading-[32.02px] text-[rgba(0,0,0,0.38)] line-through">$54.98</span>
-                        <span className="inline-flex h-[21px] w-[50px] items-center justify-center rounded-[40px] bg-[#D32F2F] font-['Roboto'] text-[12px] font-bold leading-[19.92px] tracking-[0.4px] text-white">
-                          -18%
-                        </span>
+                        <span className="font-['Roboto'] text-[32px] font-normal leading-[39.52px] tracking-[0.25px] text-[#D32F2F]">{formatPrice(product.price)}</span>
+                        {product.originalPrice > product.price && (
+                          <>
+                            <span className="font-['Roboto'] text-[24px] font-normal leading-[32.02px] text-[rgba(0,0,0,0.38)] line-through">{formatPrice(product.originalPrice)}</span>
+                            <span className="inline-flex h-[21px] w-[50px] items-center justify-center rounded-[40px] bg-[#D32F2F] font-['Roboto'] text-[12px] font-bold leading-[19.92px] tracking-[0.4px] text-white">
+                              -{product.discountPercent || Math.round((1 - product.price / product.originalPrice) * 100)}%
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -286,8 +391,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                     {/* Description + "Đọc thêm" scroll */}
                     <div ref={descriptionRef} className="w-[494px] text-[16px] leading-[1.5] tracking-[0.15px] text-[#414141]">
                       <p className="mb-0">
-                        Lorem ipsum dolor sit amet, consectetuer adipi scing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore
-                        magn.
+                        {product.shortDescription || product.description}
                       </p>
                       <br />
                       <button
@@ -305,11 +409,14 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                     <div className="flex items-center gap-[24px]">
                       <span className="font-['Roboto'] text-[20px] font-medium leading-[32px] tracking-[0.15px] text-[#1D2939]">Loại</span>
                       <div className="flex gap-[24px]">
-                        {MOCK_TYPES.map((type, i) => (
+                        {(product.variants ?? []).map((variant, i) => (
                           <button
-                            key={type}
+                            key={variant.id ?? variant.name}
                             type="button"
-                            onClick={() => setSelectedTypeIdx(i)}
+                            onClick={() => {
+                              setSelectedTypeIdx(i);
+                              setDropdownValue(variant.sizes?.[0] ?? "");
+                            }}
                             className={`group h-[78px] w-[83px] rounded-[12px] transition-all duration-micro focus-ring-brand active:scale-95 ${
                               i === selectedTypeIdx
                                 ? "border-2 border-[#90CAF9] bg-[#F2F4F7] shadow-[0_0_0_1px_#90CAF9]"
@@ -318,7 +425,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                             aria-pressed={i === selectedTypeIdx}
                           >
                             <span className="font-['Roboto'] text-[14px] font-medium leading-[32px] tracking-[0.15px] text-[#1D2939]">
-                              {type}
+                              {variant.name}
                             </span>
                           </button>
                         ))}
@@ -331,7 +438,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                 <div className="flex w-[494px] flex-col gap-[15px]">
                   <div className="flex h-[49px] gap-[15px]">
                     {/* Dropdown: 100ml */}
-                    <div ref={dropdownRef} className="relative">
+                    {dropdownOptions.length > 0 && <div ref={dropdownRef} className="relative">
                       <button
                         type="button"
                         onClick={() => setDropdownOpen((o) => !o)}
@@ -347,7 +454,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                         <img
                           src={productImages.chevronDownSmall}
                           alt=""
-                          className={`h-6 w-6 transition-transform duration-micro ${dropdownOpen ? "rotate-180" : ""}`}
+                          className={`h-2 w-3 transition-transform duration-micro ${dropdownOpen ? "rotate-180" : ""}`}
                         />
                       </button>
                       {dropdownOpen && (
@@ -375,7 +482,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                           ))}
                         </ul>
                       )}
-                    </div>
+                    </div>}
 
                     {/* Quantity stepper */}
                     <div className="flex h-[49px] w-[94px] items-center justify-between rounded-[4px] border border-[#D7D7D7] bg-white px-[14px] py-[10px]">
@@ -433,11 +540,13 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                 <div className="w-[350px] space-y-[16px] pb-[2px] font-['Oxygen'] text-[14px] leading-[normal] text-[#424242]">
                   <div className="flex items-center gap-[20px]">
                     <img src={productImages.truck} alt="" className="h-6 w-[26px]" />
-                    Free worldwide shipping on all orders over $100
+                    {product.shipping?.freeShippingThreshold
+                      ? `Miễn phí vận chuyển cho đơn từ ${formatPrice(product.shipping.freeShippingThreshold)}`
+                      : "Chính sách miễn phí vận chuyển đang cập nhật"}
                   </div>
                   <div className="flex items-center gap-[20px] whitespace-nowrap">
                     <img src={productImages.rotate3d} alt="" className="h-[26px] w-[26px]" />
-                    Delivers in: 3-7 Working Days{" "}
+                    Giao hàng trong: {product.shipping?.deliveryEstimate || "Đang cập nhật"}{" "}
                     <button
                       type="button"
                       onClick={handleReadMore}
@@ -501,27 +610,8 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
               /* ---- Description content ---- */
               <div className="w-full font-['Roboto'] text-[16px] font-normal leading-[24px] tracking-[0.15px] text-[#575757]">
                 <p className="mb-0">
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum
-                  dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-                  minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet,
-                  consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                  quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                  {product.description}
                 </p>
-                <p className="mb-0 h-[24px]" />
-                <ul className="list-disc">
-                  <li className="ml-[24px]">
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  </li>
-                  <li className="ml-[24px]">
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                  </li>
-                  <li className="ml-[24px]">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</li>
-                  <li className="ml-[24px]">
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  </li>
-                </ul>
               </div>
             ) : (
               /* ---- Review content ---- */
@@ -529,10 +619,10 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                 {/* Summary */}
                 <div className="flex h-[139px] w-[1198px] items-start justify-center gap-[51px] self-center">
                   <div className="w-[198px]">
-                    <div className="font-['Roboto'] text-[32px] font-medium leading-[32px] tracking-[0.15px] text-black">126 Đánh giá</div>
+                    <div className="font-['Roboto'] text-[32px] font-medium leading-[32px] tracking-[0.15px] text-black">{reviewsData.totalItems || 0} Đánh giá</div>
                     <div className="mt-[16px] h-[87px] rounded-[14px] bg-white px-[22px] py-[11px]">
-                      <div className="font-['Roboto'] text-[40px] font-bold leading-[40px] tracking-[0.25px] text-black">4.6</div>
-                      <ProductRating />
+                      <div className="font-['Roboto'] text-[40px] font-bold leading-[40px] tracking-[0.25px] text-black">{reviewsData.averageRating || 0}</div>
+                      <ProductRating value={reviewsData.averageRating} />
                     </div>
                   </div>
 
@@ -546,44 +636,45 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                         </div>
                         <div className="relative h-[22px] w-[200px]">
                           <div className="absolute left-4 right-4 top-[9px] h-[6px] rounded-[3px] bg-[rgba(120,120,120,0.2)]" />
-                          <div className="absolute left-4 right-[31.62%] top-[9px] h-[6px] rounded-[3px] bg-[#FFB70A]" />
+                          <div
+                            className="absolute left-4 top-[9px] h-[6px] rounded-[3px] bg-[#FFB70A]"
+                            style={{ width: `${Math.min(100, reviewsData.ratingBreakdown?.[value] || 0) * 1.68}px` }}
+                          />
                         </div>
-                        <span className="font-['Roboto'] text-[14px] leading-[20px] tracking-[0.17px] text-[rgba(0,0,0,0.7)]">70%</span>
+                        <span className="font-['Roboto'] text-[14px] leading-[20px] tracking-[0.17px] text-[rgba(0,0,0,0.7)]">{reviewsData.ratingBreakdown?.[value] || 0}%</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Review items */}
-                {[1, 2].map((item) => (
+                {reviewsData.items.map((review) => (
                   <div
-                    key={item}
+                    key={review.id}
                     className="group w-full rounded-[14px] border border-[#90CAF9] bg-white px-4 py-[15px] transition-shadow duration-micro hover:shadow-[0_2px_12px_rgba(144,202,249,0.4)]"
                   >
                     <div className="flex gap-5">
-                      <img src={productImages.reviewAvatarBlock} alt="" className="h-[52px] w-[52px] shrink-0" />
+                      <img src={review.authorAvatar || productImages.reviewAvatarBlock} alt="" className="h-[52px] w-[52px] shrink-0 rounded-full object-cover" />
                       <div className="flex min-w-0 flex-1 flex-col gap-5">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between">
-                            <span className="font-['Oxygen'] text-[16px] leading-[normal] text-[#3D3D3D]">Mike Johnson</span>
-                            <ProductRating />
+                            <span className="font-['Oxygen'] text-[16px] leading-[normal] text-[#3D3D3D]">{review.authorName}</span>
+                            <ProductRating value={review.rating} />
                           </div>
                           <p className="font-['Oxygen'] text-[16px] leading-[1.705] text-[#949494]">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Diam nisi, cras neque, lorem vel vulputate vitae aliquam.
-                            Pretium tristique nisi, ut commodo fames. Porttitor et sagittis egestas vitae metus, odio tristique amet, duis. Nunc
-                            tortor elit aliquet quis in mauris.
+                            {review.content}
                           </p>
                         </div>
                         {/* Actions: Like + time */}
                         <div className="flex items-center gap-[15px] font-['Oxygen'] text-[16px] leading-[1.705] text-[#949494]">
                           <button
                             type="button"
-                            onClick={() => handleLike(item)}
+                            onClick={() => handleLike(review.id)}
                             className="flex items-center gap-[6px] focus-ring-brand transition-colors duration-micro active:scale-90"
                             aria-label="Thích đánh giá này"
-                            aria-pressed={!!likedReviews[`_${item}`]}
+                            aria-pressed={!!likedReviews[`_${review.id}`]}
                           >
-                            {likedReviews[`_${item}`] ? (
+                            {likedReviews[`_${review.id}`] ? (
                               <svg className="h-4 w-4 shrink-0 text-[#D32F2F]" viewBox="0 0 16 16" fill="#D32F2F" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M8 14C8 14 2 9.5 2 5C2 3.34315 3.34315 2 5 2C6.10457 2 7.07843 2.55414 7.625 3.4C7.95386 3.99269 8.47193 4.47328 9.10862 4.77682C9.7453 5.08035 10.4686 5.19269 11.1796 5.09882C11.8905 5.00494 12.5539 4.7087 13.0799 4.24981C13.6058 3.79092 13.9677 3.19041 14.115 2.53277C14.2624 1.87514 14.1879 1.19261 13.9021 0.581797C13.6163 -0.0290182 13.1346 -0.507642 12.5 0.5L8 14Z"/>
                               </svg>
@@ -592,12 +683,12 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                                 <path d="M8 14C8 14 2 9.5 2 5C2 3.34315 3.34315 2 5 2C6.10457 2 7.07843 2.55414 7.625 3.4C7.95386 3.99269 8.47193 4.47328 9.10862 4.77682C9.7453 5.08035 10.4686 5.19269 11.1796 5.09882C11.8905 5.00494 12.5539 4.7087 13.0799 4.24981C13.6058 3.79092 13.9677 3.19041 14.115 2.53277C14.2624 1.87514 14.1879 1.19261 13.9021 0.581797C13.6163 -0.0290182 13.1346 -0.507642 12.5 0.5L8 14Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
                               </svg>
                             )}
-                            <span className={likedReviews[`_${item}`] ? "text-[#D32F2F]" : ""}>
-                              {likedReviews[`_${item}`] ? "Đã thích" : "Thích"}
+                            <span className={likedReviews[`_${review.id}`] ? "text-[#D32F2F]" : ""}>
+                              {likedReviews[`_${review.id}`] ? "Đã thích" : "Thích"}
                             </span>
-                            <span>({likedReviews[item] || 0})</span>
+                            <span>({(review.likeCount || 0) + (likedReviews[review.id] || 0)})</span>
                           </button>
-                          <span>5m</span>
+                          <span>{formatReviewTime(review.createdAt)}</span>
                         </div>
                       </div>
                     </div>
@@ -641,8 +732,8 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleReviewPage(Math.min(TOTAL_REVIEW_PAGES, reviewPage + 1))}
-                    disabled={reviewPage === TOTAL_REVIEW_PAGES}
+                    onClick={() => handleReviewPage(Math.min(totalReviewPages, reviewPage + 1))}
+                    disabled={reviewPage === totalReviewPages}
                     className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-[4px] border border-transparent p-2 transition-all duration-micro disabled:cursor-not-allowed disabled:opacity-30 hover:border-[#90CAF9] hover:bg-[#E3F2FD] focus-ring-brand"
                     aria-label="Trang sau"
                   >
@@ -652,7 +743,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
 
                 {showWriteReview && (
                   <div className="mt-[50px] w-full">
-                    <WriteReviewForm />
+                    <WriteReviewForm targetId={product.id} targetName={product.name} onSubmit={handleReviewSubmit} />
                   </div>
                 )}
               </div>
@@ -661,18 +752,18 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
         </section>
 
         {/* ---- Similar Products ---- */}
-        <section className="flex h-auto w-[1440px] flex-col items-center justify-center gap-[36px] px-[120px] py-[60px]">
+        <section className="flex h-auto w-[1440px] flex-col items-center justify-center gap-[36px] px-[80px] py-[60px]">
           <div className="w-full">
             <h3 className="text-[32px] font-bold leading-[1.235] tracking-[0.25px] text-[#0D47A1]">Sản phẩm tương tự</h3>
           </div>
 
-          <div className="relative flex w-full items-center gap-[28px]">
+          <div className="relative flex w-full items-center gap-5">
             {/* Prev button */}
             <button
               type="button"
               onClick={handleSimPrev}
-              disabled={simSliding}
-              className="flex h-[50px] w-[50px] shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#90CAF9] bg-white text-[24px] text-[#0D47A1] transition-all duration-micro hover:bg-[#E5F6FD] hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 focus-ring-brand"
+              disabled={!canGoSimPrev}
+              className="btn-carousel disabled:opacity-30"
               aria-label="Sản phẩm trước"
             >
               ‹
@@ -680,47 +771,38 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
 
             {/* Cards */}
             <div
-              className={`flex flex-1 gap-[28px] transition-all duration-250 ${simSliding ? "opacity-0 translate-x-2" : "opacity-100 translate-x-0"}`}
+              className="overflow-hidden py-3"
+              style={{ width: SIM_CARD_WIDTH * SIM_VISIBLE_COUNT + SIM_CARD_GAP * (SIM_VISIBLE_COUNT - 1) }}
             >
-              {simSlice.map((product) => (
-                <ProductCard key={product.id} href="/product-details" />
-              ))}
+              <div
+                className="flex gap-5 transition-transform duration-300 ease-in-out"
+                style={{ transform: `translateX(-${simOffset * (SIM_CARD_WIDTH + SIM_CARD_GAP)}px)` }}
+              >
+                {similarProducts.map((product) => (
+                  <div
+                  key={product.id}
+                    className="shrink-0"
+                    style={{ width: SIM_CARD_WIDTH }}
+                  >
+                    <ShoppingProductCard
+                      product={product}
+                      href="/product-details"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Next button */}
             <button
               type="button"
               onClick={handleSimNext}
-              disabled={simSliding}
-              className="flex h-[50px] w-[50px] shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#90CAF9] bg-white text-[24px] text-[#0D47A1] transition-all duration-micro hover:bg-[#E5F6FD] hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 focus-ring-brand"
+              disabled={!canGoSimNext}
+              className="btn-carousel disabled:opacity-30"
               aria-label="Sản phẩm tiếp"
             >
               ›
             </button>
-          </div>
-
-          {/* Dots */}
-          <div className="flex items-center justify-center gap-[7px]">
-            {Array.from({ length: SIM_TOTAL_PAGES }).map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => {
-                  if (i === simPage || simSliding) return;
-                  setSimSliding(true);
-                  setTimeout(() => {
-                    setSimPage(i);
-                    setSimSliding(false);
-                  }, 250);
-                }}
-                className={`focus-ring-brand transition-all duration-200 ${
-                  i === simPage
-                    ? "h-[8px] w-[24px] rounded-[20px] bg-[#0D47A1]"
-                    : "h-[8px] w-[8px] rounded-full bg-[#90CAF9] hover:h-[8px] hover:w-[16px] hover:rounded-[20px] hover:bg-[#0D47A1]"
-                }`}
-                aria-label={`Trang ${i + 1} sản phẩm tương tự`}
-              />
-            ))}
           </div>
         </section>
 
