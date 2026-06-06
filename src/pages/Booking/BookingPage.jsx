@@ -270,6 +270,20 @@ function ServiceSelection({
     );
   };
 
+  const handleNext = () => {
+    if (selectedServiceType && selectedServices.length > 0 && selectedDate && selectedSlot) {
+      onNext();
+      return;
+    }
+
+    setValidationAttempted(true);
+    window.setTimeout(() => {
+      const firstInvalid = document.querySelector('[data-booking-error="true"]');
+      firstInvalid?.focus();
+      firstInvalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 0);
+  };
+
   return (
     <>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_320px]">
@@ -720,20 +734,6 @@ function BookingPage() {
 
   const handleConfirm = () => {
     setSuccess(true);
-  };
-
-  const handleNext = () => {
-    if (selectedServiceType && selectedServices.length > 0 && selectedDate && selectedSlot) {
-      onNext();
-      return;
-    }
-
-    setValidationAttempted(true);
-    window.setTimeout(() => {
-      const firstInvalid = document.querySelector('[data-booking-error="true"]');
-      firstInvalid?.focus();
-      firstInvalid?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 0);
   };
 
   return (
