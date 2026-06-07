@@ -526,6 +526,13 @@ function AppointmentHistoryPage() {
 
   return (
     <div className="relative mx-auto flex w-full max-w-[939px] flex-col gap-8 pb-10">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-[28px] font-bold leading-9 text-[#031635]">Lịch sử đặt lịch</h1>
+        <p className="text-[15px] leading-6 text-[#667085]">
+          Theo dõi lịch hẹn, trạng thái thanh toán và các dịch vụ đã đặt cho thú cưng.
+        </p>
+      </div>
+
       <div className="flex w-full items-center gap-2 overflow-x-auto pb-1 pt-1">
         {APPOINTMENT_FILTERS.map((filter) => {
           const active = activeFilter === filter.value;

@@ -9,7 +9,7 @@ html {
 }
 
 body {
-  margin: 0;
+  margin: 120;
   font-family: Roboto, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
