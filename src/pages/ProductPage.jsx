@@ -109,9 +109,15 @@ function FilterSidebar({
   );
 }
 
-function SearchAndSort({ search, onSearchChange, sortOrder, onSortChange }) {
+function SearchAndSort({ search, onSearchChange, onSearch, sortOrder, onSortChange }) {
   return (
-    <div className="flex gap-[10px]">
+    <form
+      className="flex gap-[10px]"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSearch();
+      }}
+    >
       <label className="flex h-[56px] w-[749px] items-center justify-between rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white/80 py-2 pl-5 pr-2 backdrop-blur-[11px]">
         <input
           value={search}
@@ -119,9 +125,13 @@ function SearchAndSort({ search, onSearchChange, sortOrder, onSortChange }) {
           placeholder="Bạn đang tìm kiếm gì?"
           className="min-w-0 flex-1 bg-transparent text-[16px] text-[#5F5F5F] outline-none placeholder:text-[#5F5F5F]"
         />
-        <span className="flex h-10 w-10 items-center justify-center rounded-full">
+        <button
+          type="submit"
+          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[#FFF176]"
+          aria-label="Tìm kiếm sản phẩm"
+        >
           <img src={productImages.searchIcon} alt="" className="h-6 w-6" />
-        </span>
+        </button>
       </label>
 
       <label className="flex h-[56px] w-[187px] cursor-pointer items-center gap-[14px] rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white px-[17px]">
@@ -139,7 +149,7 @@ function SearchAndSort({ search, onSearchChange, sortOrder, onSortChange }) {
           <option value="desc">Giá giảm dần</option>
         </select>
       </label>
-    </div>
+    </form>
   );
 }
 
@@ -196,6 +206,7 @@ export default function ProductPage() {
   const { isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("default");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedPrice, setSelectedPrice] = useState(null);
@@ -208,11 +219,12 @@ export default function ProductPage() {
     const categoryIndex = CATEGORIES.findIndex((category) => category.slug === categorySlug);
     if (categoryIndex >= 0) setSelectedCategory(categoryIndex);
     setSearch(keyword ?? "");
+    setSearchQuery(keyword ?? "");
     setDisplayCount(PAGE_SIZE);
   }, [searchParams]);
 
   const filteredProducts = useMemo(() => {
-    const normalizedSearch = search.trim().toLocaleLowerCase("vi");
+    const normalizedSearch = searchQuery.trim().toLocaleLowerCase("vi");
     const products = ALL_PRODUCTS.filter((product) => {
       if (selectedCategory !== null && product.categoryIdx !== selectedCategory) return false;
       if (selectedPrice !== null) {
@@ -225,7 +237,7 @@ export default function ProductPage() {
     if (sortOrder === "asc") return [...products].sort((a, b) => a.price - b.price);
     if (sortOrder === "desc") return [...products].sort((a, b) => b.price - a.price);
     return products;
-  }, [search, selectedCategory, selectedPrice, sortOrder]);
+  }, [searchQuery, selectedCategory, selectedPrice, sortOrder]);
 
   const displayedProducts = filteredProducts.slice(0, displayCount);
 
@@ -277,14 +289,17 @@ export default function ProductPage() {
               <div className="mt-[32px]">
                 <SearchAndSort
                   search={search}
-                  onSearchChange={(value) => resetDisplayCount(setSearch, value)}
+                  onSearchChange={setSearch}
+                  onSearch={() => resetDisplayCount(setSearchQuery, search.trim())}
                   sortOrder={sortOrder}
                   onSortChange={(value) => resetDisplayCount(setSortOrder, value)}
                 />
               </div>
-              <p className="mt-[27px] text-[16px] leading-[27px] text-[#414141]">
-                Kết quả tìm kiếm cho {search ? `"${search}"` : "..."}
-              </p>
+              {searchQuery && (
+                <p className="mt-[27px] text-[16px] leading-[27px] text-[#414141]">
+                  Kết quả tìm kiếm cho &quot;{searchQuery}&quot;
+                </p>
+              )}
               <div className="mt-[32px]">
                 <ProductGrid products={displayedProducts} />
               </div>
