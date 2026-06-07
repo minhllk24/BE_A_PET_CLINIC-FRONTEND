@@ -1,8 +1,6 @@
 import NavBar from "../../components/Navbar";
 import Footer from "../../components/Footer/Footer";
-
-/** TEST navbar đã đăng nhập: đổi `true` / `false` rồi lưu file */
-const TEST_AUTHENTICATED_NAVBAR = true;
+import { useAuth } from "../../context/AuthContext";
 import HeroSection from "../../components/home/HeroSection";
 import AboutSection from "../../components/home/AboutSection";
 import ServiceSection from "../../components/home/ServiceSection";
@@ -11,9 +9,10 @@ import DoctorSection from "../../components/home/DoctorSection";
 import BlogSection from "../../components/home/BlogSection";
 
 function HomePage() {
+  const { isAuthenticated } = useAuth();
   return (
     <div className="min-h-screen bg-white">
-      <NavBar isAuthenticated={TEST_AUTHENTICATED_NAVBAR} />
+      <NavBar isAuthenticated={isAuthenticated} />
       <main>
         <HeroSection />
         <AboutSection />

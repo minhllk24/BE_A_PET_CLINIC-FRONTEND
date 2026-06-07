@@ -9,7 +9,7 @@ import Footer from "../components/layout/Footer";
 import ProductRating from "../components/product/ProductRating";
 
 import { productImages } from "../assets/productImages";
-import { TEST_AUTHENTICATED } from "../config/devFlags";
+import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import {
   createProductReview,
@@ -39,6 +39,7 @@ function formatReviewTime(createdAt) {
 
 export default function ProductDetailsPage({ showWriteReview = false }) {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const { productId } = useParams();
   const { addToCart, openCart } = useCart();
   const descriptionRef = useRef(null);
@@ -112,7 +113,6 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
       getSimilarProducts(productId),
     ])
       .then(([detail, similar]) => {
-        if (!active) return;
         setProduct(detail);
         setSimilarProducts(similar?.items ?? similar ?? []);
         const firstSize = detail?.variants?.[0]?.sizes?.[0] ?? "";
@@ -295,7 +295,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
   return (
     <div className="min-h-screen bg-white">
       <CanvasLayout>
-        <NavBar isAuthenticated={TEST_AUTHENTICATED} />
+        <NavBar isAuthenticated={isAuthenticated} />
         <Breadcrumb
           items={[
             { label: "Mua sắm", to: "/petshop" },

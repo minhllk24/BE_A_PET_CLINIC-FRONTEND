@@ -6,7 +6,7 @@ import Footer from "../components/layout/Footer";
 import NavBar from "../components/Navbar";
 import ShoppingProductCard from "../components/product/ShoppingProductCard";
 import { productImages } from "../assets/productImages";
-import { TEST_AUTHENTICATED } from "../config/devFlags";
+import { useAuth } from "../context/AuthContext";
 import {
   PRODUCT_CATEGORIES as CATEGORIES,
   PRODUCT_PRICE_RANGES as PRICE_RANGES,
@@ -193,6 +193,7 @@ function LoadMore({ shown, total, hasMore, isLoading, onLoadMore }) {
 }
 
 export default function ProductPage() {
+  const { isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState("default");
@@ -250,7 +251,7 @@ export default function ProductPage() {
   return (
     <div className="min-h-screen bg-white">
       <CanvasLayout>
-        <NavBar isAuthenticated={TEST_AUTHENTICATED} />
+        <NavBar isAuthenticated={isAuthenticated} />
 
         <Breadcrumb
           items={[

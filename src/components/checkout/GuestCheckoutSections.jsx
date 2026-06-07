@@ -22,16 +22,19 @@ function PillInput({ id, type = "text", className = "", ...props }) {
 
 export function GuestLoginBanner() {
   return (
-    <section className="flex h-[73px] items-center justify-between rounded-[8px] border border-solid border-[#c2c7d1] bg-white p-[25px]">
-      <p className="font-['Roboto'] text-[16px] leading-[1.5] tracking-[0.15px] text-[#42474f]">
+    <section className="flex h-[73px] items-center justify-between gap-4 rounded-[8px] border border-solid border-[#c2c7d1] bg-white p-[25px]">
+      <p
+        className="min-w-0 flex-1 font-['Roboto'] text-[14px] font-medium leading-[24px] tracking-[0.17px] text-[#42474f]"
+        style={{ lineHeight: "24px" }}
+      >
         Đăng nhập tài khoản để mua hàng và theo dõi đơn hàng thuận tiện hơn
       </p>
-      <button
-        type="button"
-        className="btn-brand-yellow-sm h-9 w-[125px] shrink-0 uppercase tracking-[0.4px]"
+      <a
+        href="/sign-in"
+        className="btn-brand-yellow-sm shrink-0 w-[125px] text-center"
       >
         Đăng nhập
-      </button>
+      </a>
     </section>
   );
 }

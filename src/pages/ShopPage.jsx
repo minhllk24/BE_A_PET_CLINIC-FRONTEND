@@ -8,8 +8,7 @@ import NavBar from "../components/Navbar";
 import ShoppingProductCard from "../components/product/ShoppingProductCard";
 import FeedbackSection from "../components/shop/FeedbackSection";
 import ShopHeroSection from "../components/shop/ShopHeroSection";
-
-import { TEST_AUTHENTICATED } from "../config/devFlags";
+import { useAuth } from "../context/AuthContext";
 import { FEATURED_PRODUCTS, PRODUCT_CATEGORIES, SHOP_PROMOTION_PAGES } from "../data/shopData";
 
 const SECTION_TITLE_TYPOGRAPHY = {
@@ -305,9 +304,10 @@ function ShopCanvas() {
 }
 
 function ShopPage() {
+  const { isAuthenticated } = useAuth();
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
-      <NavBar isAuthenticated={TEST_AUTHENTICATED} />
+      <NavBar isAuthenticated={isAuthenticated} />
       <ScaledCanvasLayout className="bg-white">
         <ShopCanvas />
         <Footer />

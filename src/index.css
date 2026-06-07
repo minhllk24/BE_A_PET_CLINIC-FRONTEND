@@ -74,8 +74,8 @@ body {
   }
 
   .btn-brand-yellow-sm {
-    @apply btn-brand-yellow h-[38px] rounded-[8px] bg-[#fff176] px-[22px] py-[7px] shadow-[0px_3px_0.5px_rgba(0,0,0,0.2),0px_2px_1px_rgba(0,0,0,0.14),0px_1px_2.5px_rgba(0,0,0,0.12)];
-    @apply hover:bg-[#FFEE58];
+    @apply btn-brand-yellow h-[38px] rounded-[8px] bg-[#fdd835] px-[22px] py-[7px] shadow-[0px_3px_0.5px_rgba(0,0,0,0.2),0px_2px_1px_rgba(0,0,0,0.14),0px_1px_2.5px_rgba(0,0,0,0.12)];
+    @apply hover:bg-[#FBC02D];
   }
 
   .btn-brand-cart {

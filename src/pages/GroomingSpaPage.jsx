@@ -8,7 +8,7 @@ import GroomingFeedbackSection from "../components/groomingSpa/GroomingFeedbackS
 import GroomingHero from "../components/groomingSpa/GroomingHero";
 import GroomingServices from "../components/groomingSpa/GroomingServices";
 import GroomingWhyUs from "../components/groomingSpa/GroomingWhyUs";
-import { TEST_AUTHENTICATED } from "../config/devFlags";
+import { useAuth } from "../context/AuthContext";
 
 function GroomingCanvas() {
   return (
@@ -26,9 +26,10 @@ function GroomingCanvas() {
 }
 
 function GroomingSpaPage() {
+  const { isAuthenticated } = useAuth();
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
-      <NavBar isAuthenticated={TEST_AUTHENTICATED} />
+      <NavBar isAuthenticated={isAuthenticated} />
       <ScaledCanvasLayout className="bg-white">
         <GroomingCanvas />
       </ScaledCanvasLayout>
