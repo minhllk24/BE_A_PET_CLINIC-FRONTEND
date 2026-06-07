@@ -18,6 +18,7 @@ import MyPetPage from "../pages/Pet/MyPetPage";
 import PetDetailPage from "../pages/Pet/PetDetailPage";
 import PetFormPage from "../pages/Pet/PetFormPage";
 import { MyOrdersPage, OrderDetailsPage } from "../pages/Order/OrderPages";
+import UserProfilePage from "../pages/User/UserProfilePage";
 
 const AppRoutes = () => {
   return (
@@ -39,6 +40,8 @@ const AppRoutes = () => {
 
       {/* 2. Các trang thuộc nhóm quản lý thú cưng có layout riêng */}
       <Route element={<LayoutManagePet />}>
+        <Route path="/user-profile" element={<UserProfilePage />} />
+        <Route path="/profile" element={<UserProfilePage />} />
         <Route path="/my-pets" element={<MyPetPage />} />
         <Route path="/my-pets/new" element={<PetFormPage />} />
         <Route path="/my-pets/:id" element={<PetDetailPage />} />

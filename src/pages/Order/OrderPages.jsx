@@ -263,6 +263,13 @@ export function MyOrdersPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[943px] flex-col gap-6 pb-10">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-[28px] font-bold leading-9 text-[#031635]">Đơn hàng của tôi</h1>
+        <p className="text-[15px] leading-6 text-[#667085]">
+          Quản lý đơn hàng, theo dõi vận chuyển và xem lại hóa đơn mua sắm của bạn.
+        </p>
+      </div>
+
       <div className="flex gap-2 overflow-x-auto pb-2 pt-2">
         {ORDER_FILTERS.map(({ value, label }) => {
           const count = value === "all" ? ORDERS.length : ORDERS.filter((order) => order.status === value).length;

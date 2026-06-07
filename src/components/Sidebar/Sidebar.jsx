@@ -1,4 +1,4 @@
-import { useNavigate, useLocation, NavLink } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   UserOutlined,
   CalendarOutlined,
@@ -25,7 +25,7 @@ const Sidebar = () => {
       id: "profile",
       label: "Thông tin người dùng",
       icon: UserOutlined,
-      path: "/profile",
+      path: "/user-profile",
     },
     {
       id: "pets",

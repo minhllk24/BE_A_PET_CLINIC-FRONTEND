@@ -10,6 +10,7 @@ import {
   GuestLoginBanner,
   GuestShippingForm,
 } from "./GuestCheckoutSections";
+import AddressFormModal from "../address/AddressFormModal";
 
 function getNumericPrice(value) {
   if (typeof value === "number") return value;
@@ -286,34 +287,6 @@ function AuthenticatedAddressCard({ onChange, address }) {
   );
 }
 
-const EMPTY_ADDRESS = { name: "", phone: "", email: "", country: "", address: "", city: "" };
-
-function AddressFormField({ label, required, className = "", value, showError = false, ...inputProps }) {
-  const invalid = showError && required && !String(value ?? "").trim();
-
-  return (
-    <label
-      className={`flex flex-col gap-[10px] ${className}`}
-      title={invalid ? "Vui lòng điền thông tin" : undefined}
-    >
-      <span className="text-[14px] leading-[20px] tracking-[0.17px] text-[#3D3D3D]">
-        {label}{required && <span className="text-[#C62828]">*</span>}
-      </span>
-      <input
-        {...inputProps}
-        value={value}
-        required={required}
-        data-address-error={invalid ? "true" : undefined}
-        className={`h-[43px] w-full rounded-[4px] border bg-white px-3 text-[14px] text-[#191C1E] outline-none transition-colors ${
-          invalid
-            ? "border-[#C62828] ring-1 ring-[#C62828]"
-            : "border-[#E0E0E0] focus:border-[#0D47A1]"
-        }`}
-      />
-    </label>
-  );
-}
-
 function AddressList({ addresses, onEdit, onSelect }) {
   return (
     <div className="flex flex-col gap-[16px]">
@@ -333,34 +306,26 @@ function AddressList({ addresses, onEdit, onSelect }) {
 
 function AddressChangeModal({ addresses, onClose, onSave, onSelect }) {
   const [mode, setMode] = useState("list");
-  const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState(EMPTY_ADDRESS);
-  const [validationAttempted, setValidationAttempted] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
 
   const openForm = (address) => {
-    setEditingId(address?.id ?? null);
-    setForm(address ? { ...address } : EMPTY_ADDRESS);
-    setValidationAttempted(false);
+    setEditingAddress(address ?? null);
     setMode(address ? "edit" : "add");
   };
 
-  const updateField = (field, value) => setForm((current) => ({ ...current, [field]: value }));
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const formElement = event.currentTarget;
-    const requiredFields = ["name", "phone", "country", "address", "city"];
-    if (requiredFields.some((field) => !String(form[field] ?? "").trim())) {
-      setValidationAttempted(true);
-      window.setTimeout(() => {
-        const firstInvalid = formElement.querySelector('[data-address-error="true"]');
-        firstInvalid?.focus();
-      }, 0);
-      return;
-    }
-    onSave({ ...form, id: editingId });
-    setMode("list");
-  };
+  if (mode !== "list") {
+    return (
+      <AddressFormModal
+        mode={mode}
+        address={editingAddress}
+        onClose={() => setMode("list")}
+        onSave={(address) => {
+          onSave(address);
+          setMode("list");
+        }}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(6,16,90,0.2)] p-6 backdrop-blur-[2px]" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
@@ -374,27 +339,7 @@ function AddressChangeModal({ addresses, onClose, onSave, onSelect }) {
           <AddressList addresses={addresses} onEdit={openForm} onSelect={onSelect} />
         </section>
 
-        {mode === "list" ? (
-          <button type="button" onClick={() => openForm(null)} className="h-[42px] rounded-[4px] bg-[#FFF176] px-[22px] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] text-[rgba(0,0,0,0.87)] shadow-elevation hover:bg-[#FDD835]">+ Thêm mới</button>
-        ) : (
-          <section className="w-full rounded-[8px] border border-[#C2C7D1] bg-white p-[11px]">
-            <div className="mb-[10px] flex h-[37px] items-center gap-2">
-              <img src={checkoutImages.locationPin} alt="" className="h-5 w-4 shrink-0" />
-              <h3 className="text-[20px] font-bold leading-[32px] tracking-[0.15px] text-[#00355F]">{mode === "add" ? "Thêm địa chỉ mới" : "Thay đổi địa chỉ"}</h3>
-            </div>
-            <form noValidate onSubmit={handleSubmit} className="flex flex-col items-center gap-[10px]">
-              <div className="grid w-full grid-cols-2 gap-x-[46px] gap-y-[10px]">
-                <AddressFormField label="Họ tên" required showError={validationAttempted} value={form.name} onChange={(event) => updateField("name", event.target.value)} />
-                <AddressFormField label="Số điện thoại" required showError={validationAttempted} type="tel" value={form.phone} onChange={(event) => updateField("phone", event.target.value)} />
-                <AddressFormField label="Email" type="email" value={form.email} onChange={(event) => updateField("email", event.target.value)} />
-                <AddressFormField label="Quốc gia" required showError={validationAttempted} value={form.country} onChange={(event) => updateField("country", event.target.value)} />
-                <AddressFormField label="Địa chỉ cụ thể" required showError={validationAttempted} value={form.address} onChange={(event) => updateField("address", event.target.value)} className="col-span-2" />
-                <AddressFormField label="Tỉnh/Thành phố" required showError={validationAttempted} value={form.city} onChange={(event) => updateField("city", event.target.value)} className="col-span-2" />
-              </div>
-              <button type="submit" className="h-[33px] rounded-[4px] bg-[#FFF176] px-[22px] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] text-[rgba(0,0,0,0.87)] shadow-elevation hover:bg-[#FDD835]">Lưu</button>
-            </form>
-          </section>
-        )}
+        <button type="button" onClick={() => openForm(null)} className="h-[42px] rounded-[4px] bg-[#FFF176] px-[22px] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] text-[rgba(0,0,0,0.87)] shadow-elevation hover:bg-[#FDD835]">+ Thêm mới</button>
       </div>
     </div>
   );

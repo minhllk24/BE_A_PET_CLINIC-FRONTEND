@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { MOCK_PETS } from "../../data/mockPets";
 
@@ -154,11 +154,66 @@ const getLatestCheckupDate = (pet) => {
   return pet.lastCheckup || "Chưa khám";
 };
 
+const PET_STATUS_FILTERS = ["Tất cả", "Bình thường", "Đang điều trị", "Có bệnh nền", "Cần tái khám"];
+
+function SearchAndSort({
+  searchInput,
+  onSearchInputChange,
+  onSearch,
+  sortBy,
+  onSortChange,
+}) {
+  return (
+    <form
+      className="flex w-full gap-[10px]"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSearch();
+      }}
+    >
+      <label className="flex h-[52px] min-w-0 flex-1 items-center justify-between rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white/80 py-2 pl-5 pr-2">
+        <input
+          type="text"
+          placeholder="Tìm kiếm theo tên thú cưng hoặc giống"
+          value={searchInput}
+          onChange={(event) => onSearchInputChange(event.target.value)}
+          className="min-w-0 flex-1 bg-transparent text-[15px] text-[#5f5f5f] outline-none placeholder:text-[#5f5f5f]"
+        />
+        <button
+          type="submit"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[#fff176]"
+          aria-label="Tìm kiếm thú cưng"
+        >
+          <svg className="h-5 w-5 text-[#06105a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+      </label>
+
+      <label className="flex h-[52px] w-[180px] cursor-pointer items-center gap-[8px] rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white px-[14px]">
+        <svg className="h-4 w-[18px] shrink-0 text-[#414141]" viewBox="0 0 18 12" aria-hidden="true">
+          <path d="M1 1h16M1 6h10M1 11h5" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+        <select
+          value={sortBy}
+          onChange={(event) => onSortChange(event.target.value)}
+          className="w-full cursor-pointer appearance-none bg-transparent text-center text-[14px] font-medium outline-none"
+          aria-label="Sắp xếp thú cưng"
+        >
+          <option value="name">Tên A-Z</option>
+          <option value="age">Tuổi giảm dần</option>
+        </select>
+      </label>
+    </form>
+  );
+}
+
 function PetListPage() {
   const [pets, setPets] = useState([]);
+  const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("Tất cả");
-  const [sortBy, setSortBy] = useState("Tên");
+  const [sortBy, setSortBy] = useState("name");
 
   useEffect(() => {
     const storedPets = localStorage.getItem("petsData");
@@ -170,84 +225,91 @@ function PetListPage() {
     }
   }, []);
 
-  let filteredPets = pets;
+  const counts = useMemo(() => {
+    return PET_STATUS_FILTERS.reduce((acc, status) => {
+      acc[status] =
+        status === "Tất cả"
+          ? pets.length
+          : pets.filter((pet) => {
+              const displayStatus = pet.healthStatus === "Khỏe mạnh" ? "Bình thường" : (pet.healthStatus || "Bình thường");
+              return displayStatus === status;
+            }).length;
+      return acc;
+    }, {});
+  }, [pets]);
 
-  if (searchQuery) {
-    filteredPets = filteredPets.filter(
-      (pet) =>
-        pet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        pet.breed.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }
+  const filteredPets = useMemo(() => {
+    const normalizedSearch = searchQuery.trim().toLocaleLowerCase("vi");
+    const result = pets.filter((pet) => {
+      const displayStatus = pet.healthStatus === "Khỏe mạnh" ? "Bình thường" : (pet.healthStatus || "Bình thường");
+      const matchesFilter = filterStatus === "Tất cả" || displayStatus === filterStatus;
+      const matchesSearch =
+        !normalizedSearch ||
+        [pet.name, pet.breed, pet.species]
+          .join(" ")
+          .toLocaleLowerCase("vi")
+          .includes(normalizedSearch);
 
-  if (filterStatus !== "Tất cả") {
-    filteredPets = filteredPets.filter((pet) => {
-      const stat = pet.healthStatus === "Khỏe mạnh" ? "Bình thường" : (pet.healthStatus || "Bình thường");
-      return stat === filterStatus;
+      return matchesFilter && matchesSearch;
     });
-  }
 
-  if (sortBy === "Tên") {
-    filteredPets = [...filteredPets].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-  } else if (sortBy === "Tuổi") {
-    filteredPets = [...filteredPets].sort((a, b) => {
-      const ageDaysA = parseAgeToDays(a.age);
-      const ageDaysB = parseAgeToDays(b.age);
-      return ageDaysB - ageDaysA;
-    });
-  }
+    if (sortBy === "age") {
+      return [...result].sort((a, b) => parseAgeToDays(b.age) - parseAgeToDays(a.age));
+    }
+
+    return [...result].sort((a, b) => a.name.localeCompare(b.name, "vi"));
+  }, [filterStatus, pets, searchQuery, sortBy]);
 
   return (
     <div className="font-sans">
       <div className="mb-6 flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-slate-900">Danh sách hồ sơ thú cưng</h1>
-        <p className="text-sm text-slate-600">
+        <h1 className="text-[28px] font-bold leading-9 text-[#031635]">Danh sách hồ sơ thú cưng</h1>
+        <p className="text-[15px] leading-6 text-[#667085]">
           Quản lý và xem thông tin chi tiết của tất cả thú cưng trong hệ thống.
         </p>
       </div>
 
-      <div className="mb-6 flex gap-3 items-center">
-        <div className="flex-1 relative">
-          <input
-            type="text"
-            placeholder="Tìm kiếm thú cưng..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-slate-200 rounded-md pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-          />
-          <svg className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
+      <div className="mb-4 flex w-full items-center gap-2 overflow-x-auto pb-1 pt-1">
+        {PET_STATUS_FILTERS.map((status) => {
+          const active = filterStatus === status;
+          return (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setFilterStatus(status)}
+              className={`focus-ring-brand shrink-0 rounded-full px-6 py-2 text-sm font-semibold leading-5 tracking-[0.14px] transition ${
+                active
+                  ? "bg-[#0d47a1] text-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]"
+                  : "border border-[#c2c6d4] bg-white text-[#424752] hover:border-[#0d47a1]"
+              }`}
+            >
+              {status} ({counts[status] || 0})
+            </button>
+          );
+        })}
+      </div>
 
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="border border-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm min-w-[140px]">
-          <option>Tất cả</option>
-          <option>Bình thường</option>
-          <option>Đang điều trị</option>
-          <option>Có bệnh nền</option>
-          <option>Cần tái khám</option>
-        </select>
+      <div className="mb-6 flex items-center gap-[10px]">
+        <SearchAndSort
+          searchInput={searchInput}
+          onSearchInputChange={setSearchInput}
+          onSearch={() => setSearchQuery(searchInput.trim())}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+        />
 
-        <button 
-          onClick={() => setSortBy(prev => prev === "Tên" ? "Tuổi" : "Tên")}
-          className="flex items-center justify-center gap-2 border border-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white hover:bg-slate-50 shadow-sm transition min-w-[140px]"
-        >
-          <svg className="w-4 h-4 text-slate-600" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M3 6h18v2H3V6zm0 5h12v2H3v-2zm0 5h6v2H3v-2z" />
-          </svg>
-          <span className="font-medium text-slate-700">
-            {sortBy === "Tên" ? "Tên A-Z" : "Tuổi giảm dần"}
-          </span>
-        </button>
-
-        <Link to="/my-pets/new">
-          <button className="bg-yellow-400 hover:bg-yellow-500 rounded-md px-4 py-2 font-medium text-sm text-slate-900 transition flex items-center gap-1 shadow-sm">
-            <span>+</span> Tạo mới
+        <Link to="/my-pets/new" className="shrink-0">
+          <button className="flex h-[52px] items-center gap-2 rounded-[42px] bg-[#fff176] px-5 text-[14px] font-bold text-[#031635] shadow-elevation transition hover:bg-[#fdd835]">
+            <span className="text-xl leading-none">+</span> Tạo mới
           </button>
         </Link>
       </div>
+
+      {searchQuery && (
+        <p className="mb-6 text-[16px] leading-[27px] text-[#414141]">
+          Kết quả tìm kiếm cho &quot;{searchQuery}&quot;
+        </p>
+      )}
 
       <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredPets.map((pet) => {
