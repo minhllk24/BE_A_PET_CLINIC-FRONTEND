@@ -7,6 +7,7 @@ export const MOCK_APPOINTMENTS = [
     status: "pending_payment",
     paymentMethod: "vnpay",
     paymentStatus: "unpaid",
+    paymentExpiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
     canCancel: false,
     canReschedule: false,
     canReview: false,

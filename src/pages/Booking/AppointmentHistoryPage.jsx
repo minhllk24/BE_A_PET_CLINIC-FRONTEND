@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { appointmentImages } from "../../assets/appointmentImages";
 import WriteReviewForm from "../../components/product/WriteReviewForm";
 import { MOCK_APPOINTMENTS } from "../../data/mockAppointments";
@@ -30,6 +30,12 @@ const paymentMethodLabels = {
   online: "Thanh toán trực tuyến",
 };
 
+const getAppointmentDate = (appointment) => {
+  const [day, month, year] = appointment.service.dateText.split("/").map(Number);
+  const [hour, minute] = appointment.service.timeRange.split(" - ")[0].split(":").map(Number);
+  return new Date(year, month - 1, day, hour, minute);
+};
+
 const actionClasses = {
   yellow:
     "bg-[#fff176] text-black shadow-elevation hover:bg-[#fdd835]",
@@ -39,18 +45,51 @@ const actionClasses = {
     "border border-[#c62828] bg-white text-[#c62828] shadow-[0px_1px_3px_rgba(0,0,0,0.12),0px_1px_1px_rgba(0,0,0,0.14),0px_2px_1px_rgba(0,0,0,0.2)] hover:bg-[#ffdad6]",
 };
 
+function usePaymentCountdown(expiresAt) {
+  const getRemainingSeconds = () =>
+    expiresAt
+      ? Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000))
+      : 0;
+  const [remainingSeconds, setRemainingSeconds] = useState(getRemainingSeconds);
+
+  useEffect(() => {
+    if (!expiresAt) return undefined;
+
+    const updateRemaining = () => setRemainingSeconds(getRemainingSeconds());
+    updateRemaining();
+    const intervalId = window.setInterval(updateRemaining, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [expiresAt]);
+
+  return remainingSeconds;
+}
+
+function PaymentCountdown({ remainingSeconds }) {
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+
+  return (
+    <span className={`text-xs font-semibold ${remainingSeconds ? "text-[#c62828]" : "text-[#75777f]"}`}>
+      {remainingSeconds
+        ? `Thanh toán trong ${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
+        : "Đã hết thời gian thanh toán"}
+    </span>
+  );
+}
+
 function SmallIcon({ src, alt = "", className = "" }) {
   return (
     <img src={src} alt={alt} className={`h-[14px] w-[14px] shrink-0 object-contain ${className}`} />
   );
 }
 
-function ActionButton({ action, onClick }) {
+function ActionButton({ action, onClick, disabled = false }) {
   return (
     <button
       type="button"
       onClick={() => onClick(action.key)}
-      className={`focus-ring-brand inline-flex h-[38px] items-center justify-center rounded px-[22px] py-2 font-['Roboto'] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] transition ${actionClasses[action.variant]}`}
+      disabled={disabled}
+      className={`focus-ring-brand inline-flex h-[38px] items-center justify-center rounded px-[22px] py-2 font-['Roboto'] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] transition disabled:cursor-not-allowed disabled:border-transparent disabled:bg-[#e4e7ec] disabled:text-[#98a2b3] disabled:shadow-none ${actionClasses[action.variant]}`}
     >
       {action.label}
     </button>
@@ -60,10 +99,12 @@ function ActionButton({ action, onClick }) {
 function AppointmentCard({ appointment, active, onSelect, onAction }) {
   const status = getAppointmentDisplayStatus(appointment);
   const actions = getAppointmentActions(appointment);
+  const remainingSeconds = usePaymentCountdown(appointment.paymentExpiresAt);
+  const paymentExpired = status.value === "pending_payment" && remainingSeconds === 0;
 
   return (
     <article
-      className={`flex w-full cursor-pointer items-center justify-between rounded-2xl border-l-4 bg-white py-6 pl-7 pr-6 shadow-[0_4px_10px_rgba(26,43,75,0.05)] transition hover:shadow-[0_8px_20px_rgba(26,43,75,0.09)] ${status.border} ${
+      className={`flex w-full cursor-pointer items-center justify-between rounded-[16px] border border-[#C2C6D4] bg-white py-6 pl-7 pr-6 transition hover:border-[#1976D2] hover:shadow-md ${
         active ? "ring-2 ring-[#90caf9]" : ""
       } ${status.value === "cancelled" ? "opacity-80" : ""}`}
       onClick={() => onSelect(appointment)}
@@ -103,12 +144,14 @@ function AppointmentCard({ appointment, active, onSelect, onAction }) {
         <div className="text-xl font-bold leading-7 text-[#031635]">
           {formatMoney(appointment.service.price)}
         </div>
+        {status.value === "pending_payment" && <PaymentCountdown remainingSeconds={remainingSeconds} />}
         <div className="flex flex-wrap justify-end gap-2">
           {actions.map((action) => (
             <ActionButton
               key={action.key}
               action={action}
               onClick={(key) => onAction(key, appointment)}
+              disabled={action.key === "pay" && paymentExpired}
             />
           ))}
         </div>
@@ -164,6 +207,8 @@ function Timeline({ appointment }) {
 function DetailPanel({ appointment, onClose, onAction }) {
   const status = getAppointmentDisplayStatus(appointment);
   const actions = getAppointmentActions(appointment);
+  const remainingSeconds = usePaymentCountdown(appointment.paymentExpiresAt);
+  const paymentExpired = status.value === "pending_payment" && remainingSeconds === 0;
   const showDeadline =
     (appointment.canCancel || appointment.canReschedule) &&
     appointment.freeChangeDaysLeft > 0 &&
@@ -298,6 +343,11 @@ function DetailPanel({ appointment, onClose, onAction }) {
       </div>
 
       <footer className="border-t border-[#c2c6d4] bg-white px-6 pb-6 pt-5">
+        {status.value === "pending_payment" && (
+          <div className="mb-4 text-center">
+            <PaymentCountdown remainingSeconds={remainingSeconds} />
+          </div>
+        )}
         {showDeadline && (
           <div className="mb-4 flex items-center justify-center gap-2 text-center text-sm font-semibold leading-5 tracking-[0.14px] text-[rgba(0,0,0,0.87)]">
             <img src={appointmentImages.infoIcon} alt="" className="h-4 w-4" />
@@ -310,6 +360,7 @@ function DetailPanel({ appointment, onClose, onAction }) {
               key={action.key}
               action={action}
               onClick={(key) => onAction(key, appointment)}
+              disabled={action.key === "pay" && paymentExpired}
             />
           ))}
         </div>
@@ -341,10 +392,61 @@ function ReviewModal({ appointment, onClose, onSubmit }) {
   );
 }
 
+function SearchAndSort({
+  searchInput,
+  onSearchInputChange,
+  onSearch,
+  sortOrder,
+  onSortChange,
+}) {
+  return (
+    <form
+      className="flex w-full gap-[10px]"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSearch();
+      }}
+    >
+      <label className="flex h-[52px] min-w-0 flex-1 items-center justify-between rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white/80 py-2 pl-5 pr-2 backdrop-blur-[11px]">
+        <input
+          value={searchInput}
+          onChange={(event) => onSearchInputChange(event.target.value)}
+          placeholder="Tìm kiếm theo Mã lịch hẹn, Thời gian, tên thú cưng hoặc dịch vụ"
+          className="min-w-0 flex-1 bg-transparent text-[15px] text-[#5f5f5f] outline-none placeholder:text-[#5f5f5f]"
+        />
+        <button
+          type="submit"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[#fff176]"
+          aria-label="Tìm kiếm lịch hẹn"
+        >
+          <img src={appointmentImages.searchIcon} alt="" className="h-5 w-5" />
+        </button>
+      </label>
+
+      <label className="flex h-[52px] w-[170px] cursor-pointer items-center gap-[8px] rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white px-[14px]">
+        <svg className="h-4 w-[18px] shrink-0 text-[#414141]" viewBox="0 0 18 12" aria-hidden="true">
+          <path d="M1 1h16M1 6h10M1 11h5" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+        <select
+          value={sortOrder}
+          onChange={(event) => onSortChange(event.target.value)}
+          className="w-full cursor-pointer appearance-none bg-transparent text-center text-[14px] font-medium outline-none"
+          aria-label="Sắp xếp lịch hẹn"
+        >
+          <option value="newest">Mới nhất</option>
+          <option value="oldest">Cũ nhất</option>
+        </select>
+      </label>
+    </form>
+  );
+}
+
 function AppointmentHistoryPage() {
   const [appointments, setAppointments] = useState(MOCK_APPOINTMENTS);
   const [activeFilter, setActiveFilter] = useState("all");
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState("newest");
   const [selectedId, setSelectedId] = useState(null);
   const [reviewAppointmentId, setReviewAppointmentId] = useState(null);
 
@@ -362,21 +464,35 @@ function AppointmentHistoryPage() {
   }, [appointments]);
 
   const filteredAppointments = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
+    const normalizedSearch = searchQuery.trim().toLocaleLowerCase("vi");
 
-    return appointments.filter((appointment) => {
+    const result = appointments.filter((appointment) => {
       const status = getAppointmentDisplayStatus(appointment).value;
       const matchesFilter = activeFilter === "all" || status === activeFilter;
       const matchesSearch =
         !normalizedSearch ||
-        [appointment.pet.name, appointment.service.name, appointment.code]
+        [
+          appointment.code,
+          appointment.pet.name,
+          appointment.service.name,
+          appointment.service.date,
+          appointment.service.dateText,
+          appointment.service.time,
+          appointment.service.timeRange,
+        ]
           .join(" ")
-          .toLowerCase()
+          .toLocaleLowerCase("vi")
           .includes(normalizedSearch);
 
       return matchesFilter && matchesSearch;
     });
-  }, [activeFilter, appointments, search]);
+
+    return [...result].sort((a, b) =>
+      sortOrder === "oldest"
+        ? getAppointmentDate(a) - getAppointmentDate(b)
+        : getAppointmentDate(b) - getAppointmentDate(a),
+    );
+  }, [activeFilter, appointments, searchQuery, sortOrder]);
 
   const handleAction = (actionKey, appointment) => {
     if (actionKey === "review" && appointment.canReview && !appointment.reviewed) {
@@ -430,37 +546,43 @@ function AppointmentHistoryPage() {
         })}
       </div>
 
-      <label className="flex w-full items-center justify-between rounded-[42px] border border-[#c2c6d4] bg-white py-2 pl-5 pr-2 backdrop-blur-[11px]">
-        <input
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Tìm kiếm lịch hẹn của bạn..."
-          className="min-w-0 flex-1 bg-transparent text-base leading-6 tracking-[0.15px] text-[#5f5f5f] outline-none placeholder:text-[#5f5f5f]"
-        />
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fdd835] text-[#06105a]">
-          <img src={appointmentImages.searchIcon} alt="" className="h-5 w-5" />
-        </span>
-      </label>
+      <SearchAndSort
+        searchInput={searchInput}
+        onSearchInputChange={setSearchInput}
+        onSearch={() => setSearchQuery(searchInput.trim())}
+        sortOrder={sortOrder}
+        onSortChange={setSortOrder}
+      />
+
+      {searchQuery && (
+        <p className="text-[16px] leading-[27px] text-[#414141]">
+          Kết quả tìm kiếm cho &quot;{searchQuery}&quot;
+        </p>
+      )}
 
       <div className="flex flex-col gap-4">
-        {filteredAppointments.map((appointment) => (
-          <AppointmentCard
-            key={appointment.id}
-            appointment={appointment}
-            active={selectedId === appointment.id}
-            onSelect={(item) => setSelectedId(item.id)}
-            onAction={handleAction}
-          />
-        ))}
+        {filteredAppointments.length ? (
+          filteredAppointments.map((appointment) => (
+            <AppointmentCard
+              key={appointment.id}
+              appointment={appointment}
+              active={selectedId === appointment.id}
+              onSelect={(item) => setSelectedId(item.id)}
+              onAction={handleAction}
+            />
+          ))
+        ) : (
+          <p className="py-16 text-center text-[#667085]">Không tìm thấy lịch hẹn phù hợp.</p>
+        )}
       </div>
 
-      <button
+      {/* <button
         type="button"
         className="focus-ring-brand mx-auto inline-flex items-center gap-2 text-sm leading-5 text-[#031635]"
       >
         <img src={appointmentImages.chevronDown} alt="" className="h-2 w-3" />
         Tải thêm lịch sử
-      </button>
+      </button> */}
 
       <a
         href="/booking"

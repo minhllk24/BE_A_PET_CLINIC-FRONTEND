@@ -43,7 +43,7 @@ const Sidebar = () => {
       id: "orders",
       label: "Đơn hàng của tôi",
       icon: ShoppingOutlined,
-      path: "/orders",
+      path: "/my-orders",
     },
   ];
 
