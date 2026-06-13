@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
 import {
   GUEST_ACCOUNT_CREDENTIALS,
   guestSuccessImages,
@@ -7,6 +8,7 @@ import {
 
 function GuestOrderSuccessOverlay() {
   const { isGuestSuccessOpen, closeGuestSuccess } = useCart();
+  const { openAuth } = useAuth();
   const navigate = useNavigate();
 
   if (!isGuestSuccessOpen) {
@@ -20,7 +22,7 @@ function GuestOrderSuccessOverlay() {
 
   const handleLogin = () => {
     closeGuestSuccess();
-    navigate("/sign-in");
+    openAuth("login");
   };
 
   return (

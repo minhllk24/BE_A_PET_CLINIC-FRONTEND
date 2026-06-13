@@ -1,7 +1,7 @@
 export const NAV_LINKS = [
   { label: "Trang chủ", href: "/" },
   {
-    label: "Dịch vụ thú y",
+    label: "Dịch vụ",
     href: "/services",
     children: [
       { label: "Khám & Điều trị", href: "/services/kham-dieu-tri" },
@@ -23,10 +23,10 @@ export const NAV_LINKS = [
   {
     label: "Cứu trợ",
     href: "/rescue",
-    children: [
-      { label: "Thông tin cứu trợ", href: "/rescue/info" },
-      { label: "Nhận nuôi", href: "/rescue/adoption" },
-    ],
+    // children: [
+    //   { label: "Thông tin cứu trợ", href: "/rescue/info" },
+    //   { label: "Nhận nuôi", href: "/rescue/adoption" },
+    // ],
   },
   {
     label: "Blog",

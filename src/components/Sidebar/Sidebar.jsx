@@ -5,6 +5,7 @@ import {
   ShoppingOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
+import { useAuth } from "../../context/AuthContext";
 
 const PawIcon = (props) => (
   <svg {...props} viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em">
@@ -19,6 +20,7 @@ const PawIcon = (props) => (
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
 
   const menuItems = [
     {
@@ -57,8 +59,8 @@ const Sidebar = () => {
   };
 
   const handleLogout = () => {
-    console.log("Logout");
-    // navigate("/login");
+    logout();
+    navigate("/");
   };
 
   return (

@@ -1,4 +1,5 @@
 import { checkoutImages } from "./checkoutAssets";
+import { useAuth } from "../../context/AuthContext";
 
 function FieldLabel({ children, required = false }) {
   return (
@@ -21,6 +22,8 @@ function PillInput({ id, type = "text", className = "", ...props }) {
 }
 
 export function GuestLoginBanner() {
+  const { openAuth } = useAuth();
+
   return (
     <section className="flex h-[73px] items-center justify-between gap-4 rounded-[8px] border border-solid border-[#c2c7d1] bg-white p-[25px]">
       <p
@@ -29,12 +32,13 @@ export function GuestLoginBanner() {
       >
         Đăng nhập tài khoản để mua hàng và theo dõi đơn hàng thuận tiện hơn
       </p>
-      <a
-        href="/sign-in"
+      <button
+        type="button"
+        onClick={() => openAuth("login")}
         className="btn-brand-yellow-sm shrink-0 w-[125px] text-center"
       >
         Đăng nhập
-      </a>
+      </button>
     </section>
   );
 }

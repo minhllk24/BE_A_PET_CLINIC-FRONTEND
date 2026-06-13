@@ -1,18 +1,17 @@
 import { navbarImages } from "../../assets/navbarImages";
 import { USER_MENU_LINKS, USER_MENU_LOGOUT } from "./userMenuLinks";
+import { useAuth } from "../../context/AuthContext";
 
 const linkClass =
   "block rounded-xl px-4 py-3 text-[15px] text-gray-700 transition hover:bg-yellow-50 hover:text-yellow-600";
 
 function NavUserMenu({ avatarSrc, onLogout }) {
+  const { logout } = useAuth();
   const avatar = avatarSrc ?? navbarImages.avatarPlaceholder;
 
   const handleLogout = (e) => {
-    if (onLogout) {
-      e.preventDefault();
-      onLogout();
-    }
-    // TODO: gọi API logout + clear Redux khi có userSlice
+    e.preventDefault();
+    (onLogout ?? logout)();
   };
 
   return (

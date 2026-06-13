@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import NavBarAuthenticated from "../../components/Navbar/NavBarAuthenticated";
+import { useEffect, useMemo, useState } from "react";
+import NavBar from "../../components/Navbar";
 import Footer from "../../components/Footer/Footer";
 import BookingPaymentStep from "../../components/booking/BookingPaymentStep";
 import BookingSuccessModal from "../../components/booking/BookingSuccessModal";
@@ -12,10 +12,9 @@ import {
 import { bookingImages } from "../../assets/bookingImages";
 
 import buddyImg from "../../assets/images/pets/buddy.jpg";
+import { useAuth } from "../../context/AuthContext";
 
 const {
-  serviceSpaGroomingIcon,
-  serviceVeterinaryClinicIcon,
   serviceListIcon,
   serviceInputSearchIcon,
   serviceSelectedCheck,
@@ -24,17 +23,6 @@ const {
   petPickerMaxPhoto,
   petPickerLunaPhoto,
   petPickerCloseIcon,
-  paymentCalendarIcon,
-  paymentPersonIcon,
-  paymentPetIcon,
-  paymentPhoneIcon,
-  onlineMomoLogo,
-  onlineZalopayLogo,
-  onlineVnpayLogo,
-  onlineBankIcon,
-  onlineCardIcon,
-  successPanelBackground,
-  successCheckGroup,
 } = bookingImages;
 
 const petImages = {
@@ -53,14 +41,6 @@ const formatMoney = (value) =>
 
 const getDateKey = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-
-const formatAppointmentDate = (date, slot) => {
-  if (!date) {
-    return slot ? `Chưa chọn ngày • ${slot}` : "Chưa chọn ngày";
-  }
-
-  return `${date.getDate()} tháng ${date.getMonth() + 1}, ${date.getFullYear()}${slot ? ` • ${slot}` : ""}`;
-};
 
 function AssetIcon({ src, alt = "", className = "h-5 w-5" }) {
   return <img src={src} alt={alt} className={className} />;
@@ -706,6 +686,7 @@ function FlowButtons({ onBack, onNext }) {
 }
 
 function BookingPage() {
+  const { isAuthenticated, requireAuth, userProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedServiceType, setSelectedServiceType] = useState(null);
   const [selectedServices, setSelectedServices] = useState([]);
@@ -732,13 +713,23 @@ function BookingPage() {
   const [paymentMode, setPaymentMode] = useState("store");
   const [success, setSuccess] = useState(false);
 
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    setOwnerInfo((current) => ({
+      ...current,
+      name: current.name || userProfile.fullName || "",
+      phone: current.phone || userProfile.phone || "",
+      email: current.email || userProfile.email || "",
+    }));
+  }, [isAuthenticated, userProfile]);
+
   const handleConfirm = () => {
     setSuccess(true);
   };
 
   return (
     <div className="min-h-screen bg-white font-sans">
-      <NavBarAuthenticated />
+      <NavBar />
       <main className="bg-[#e5f6fd]">
         <Stepper step={step} />
         <div className="mx-auto w-full max-w-[1280px] px-6 pb-8 pt-6">
@@ -752,7 +743,7 @@ function BookingPage() {
               setSelectedDate={setSelectedDate}
               selectedSlot={selectedSlot}
               setSelectedSlot={setSelectedSlot}
-              onNext={() => setStep(2)}
+              onNext={() => requireAuth(() => setStep(2))}
             />
           )}
           {step === 2 && (
