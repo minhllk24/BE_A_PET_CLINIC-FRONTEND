@@ -8,5 +8,5 @@ export const USER_MENU_LINKS = [
 
 export const USER_MENU_LOGOUT = {
   label: "Đăng xuất",
-  href: "/sign-in",
+  href: "/",
 };

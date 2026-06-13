@@ -10,6 +10,9 @@ import ProductPage from "../pages/ProductPage";
 import ProductDetailsPage from "../pages/ProductDetailsPage";
 import WriteReviewPage from "../pages/WriteReviewPage";
 import CartOpenHandler from "../pages/CartOpenHandler";
+import BlogPage from "../pages/Blog/BlogPage";
+import BlogDetailPage from "../pages/Blog/BlogDetailPage";
+import CommunityPage from "../pages/Blog/CommunityPage";
 
 import GroomingSpaPage from "../pages/GroomingSpaPage";
 import CheckoutPage from "../pages/CheckoutPage";
@@ -33,6 +36,11 @@ const AppRoutes = () => {
       <Route path="/product-details/:productId" element={<ProductDetailsPage />} />
       <Route path="/product-details/:productId/write-review" element={<WriteReviewPage />} />
       <Route path="/cart" element={<CartOpenHandler />} />
+      <Route path="/blog" element={<BlogPage />} />
+      <Route path="/blog/kien-thuc" element={<BlogPage />} />
+      <Route path="/blog/so-cuu" element={<BlogPage />} />
+      <Route path="/blog/community" element={<CommunityPage />} />
+      <Route path="/blog/:postId" element={<BlogDetailPage />} />
 
       <Route path="/services/grooming-spa" element={<GroomingSpaPage />} />
       <Route path="/services/groomng-spa" element={<GroomingSpaPage />} />

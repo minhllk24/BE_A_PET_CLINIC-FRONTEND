@@ -314,7 +314,7 @@ export default function ProductPage() {
           </div>
         </main>
 
-        <Footer />
+        <Footer variant="white" />
       </CanvasLayout>
     </div>
   );

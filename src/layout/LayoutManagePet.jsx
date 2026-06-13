@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import NavBarAuthenticated from "../components/Navbar/NavBarAuthenticated";
+import NavBar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/layout/Footer";
 
@@ -10,7 +10,7 @@ const LayoutManagePet = () => {
       
       {/* Header */}
       <div className="flex-shrink-0 z-50 bg-white shadow-sm relative">
-        <NavBarAuthenticated />
+        <NavBar />
       </div>
 
       {/* Phần thân dưới */}

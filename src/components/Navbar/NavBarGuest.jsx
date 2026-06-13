@@ -6,9 +6,12 @@ import cartIcon from "../../assets/images/cart_icon.svg";
 import YellowButton from "../home/YellowButton";
 import NavLinks from "./NavLinks";
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
+import NavSearchBar from "./NavSearchBar";
 
 function NavBarGuest() {
   const { openCart } = useCart();
+  const { openAuth } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white">
@@ -23,21 +26,22 @@ function NavBarGuest() {
 
         <NavLinks />
 
-        <div className="flex shrink-0 items-center gap-6">
+        <div className="flex shrink-0 items-center gap-3">
+          <NavSearchBar className="hidden lg:block" />
+
           <a href="/booking">
-            <YellowButton className="hidden h-10 w-[150px] sm:inline-flex">
+            <YellowButton className="h-[35px] min-w-[109px] px-[22px] py-2 text-base tracking-[0.15px]">
               ĐẶT LỊCH
             </YellowButton>
           </a>
 
-          <a href="/sign-in">
-            <YellowButton
-              variant="outline"
-              className="hidden h-10 w-[150px] sm:inline-flex"
-            >
-              ĐĂNG NHẬP
-            </YellowButton>
-          </a>
+          <YellowButton
+            variant="outline"
+            onClick={() => openAuth("login")}
+            className="h-[35px] min-w-[109px] px-[22px] py-2 text-base tracking-[0.15px]"
+          >
+            ĐĂNG NHẬP
+          </YellowButton>
 
           <button
             type="button"

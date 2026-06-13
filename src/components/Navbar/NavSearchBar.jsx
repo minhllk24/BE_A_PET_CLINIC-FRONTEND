@@ -2,7 +2,7 @@ import { navbarImages } from "../../assets/navbarImages";
 
 function NavSearchBar({ className = "" }) {
   return (
-    <div className={`group relative h-[37px] w-[204px] shrink-0 ${className}`}>
+    <div className={`group relative h-[37px] w-[200px] shrink-0 ${className}`}>
       <div className="absolute inset-0 rounded border border-secondary transition-colors duration-micro group-focus-within:border-[#1976D2]" />
       <img
         src={navbarImages.dogSearch}

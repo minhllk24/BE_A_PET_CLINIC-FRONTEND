@@ -8,6 +8,7 @@ import {
   DEFAULT_USER_PROFILE,
   PROFILE_STORAGE_KEYS,
 } from "../../data/userProfileData";
+import { useAuth } from "../../context/AuthContext";
 
 const inputClass =
   "input-brand h-12 w-full rounded-lg border-[#c1c6d5] px-3 text-base text-black";
@@ -74,6 +75,7 @@ function AddressCard({ address, onEdit, onDelete, onSetDefault }) {
 }
 
 function UserProfilePage() {
+  const { updateUserProfile } = useAuth();
   const fileInputRef = useRef(null);
   const [profile, setProfile] = useState(() =>
     loadStoredData(PROFILE_STORAGE_KEYS.profile, DEFAULT_USER_PROFILE),
@@ -98,7 +100,7 @@ function UserProfilePage() {
 
   const saveProfile = (event) => {
     event.preventDefault();
-    localStorage.setItem(PROFILE_STORAGE_KEYS.profile, JSON.stringify(profile));
+    updateUserProfile(profile);
     setMessage("Đã lưu thông tin người dùng.");
   };
 
