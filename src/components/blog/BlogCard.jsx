@@ -1,9 +1,11 @@
-import { ArrowRight, CalendarDays, Cross, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarDays, Cross, Sparkles, HeartPlus, Bubbles } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function CategoryIcon({ category, className = "h-3 w-3" }) {
   if (category === "health") return <Cross className={className} />;
   if (category === "nutrition") return <Sparkles className={className} />;
+  if (category === "psychology") return <HeartPlus className={className} />;
+  if (category === "grooming") return <Bubbles className={className} />;  
   return <span className={`${className} inline-block rounded-full border border-current`} />;
 }
 

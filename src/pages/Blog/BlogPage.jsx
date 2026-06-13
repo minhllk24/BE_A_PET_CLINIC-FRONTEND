@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import {
-  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
   ArrowRight,
   CalendarDays,
   Sparkles,
@@ -84,7 +85,7 @@ function TrendingSection() {
               className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FDD835] text-[#0D47A1] transition-transform hover:scale-105"
               aria-label={direction < 0 ? "Bài trước" : "Bài tiếp theo"}
             >
-              {direction < 0 ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+              {direction < 0 ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </button>
           ))}
         </div>
@@ -151,22 +152,6 @@ export default function BlogPage() {
               </h1>
               <p className="mt-2 text-[16px] leading-6 text-[#4B5563]">Kiến thức chăm sóc thú cưng từ chuyên gia!!</p>
             </div>
-            <div className="flex gap-3">
-              {BLOG_CATEGORIES.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => selectCategory(item.id)}
-                  className={`rounded-full border px-5 py-2 text-[16px] leading-6 transition-all ${
-                    category === item.id
-                      ? "border-[#0D47A1] bg-[#0D47A1] font-bold text-white shadow-md"
-                      : "border-[#0D47A1] bg-white text-[rgba(0,0,0,0.87)] hover:bg-[#E3F2FD]"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
           </section>
 
           <FeaturedPost />
@@ -176,6 +161,22 @@ export default function BlogPage() {
             <div className="flex w-full items-center gap-2">
               <h2 className="shrink-0 text-[24px] font-bold leading-8 text-[#111827]">Bài viết mới nhất</h2>
               <div className="ml-2 h-1 flex-1 bg-[#FDD835]" />
+              <div className="flex gap-3">
+                {BLOG_CATEGORIES.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => selectCategory(item.id)}
+                    className={`rounded-full border px-5 py-2 text-[16px] leading-6 transition-all ${
+                      category === item.id
+                        ? "border-[#0D47A1] bg-[#0D47A1] font-bold text-white shadow-md"
+                        : "border-[#0D47A1] bg-white text-[rgba(0,0,0,0.87)] hover:bg-[#E3F2FD]"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>              
             </div>
             <div className="grid w-full grid-cols-4 gap-x-[16px] gap-y-8">
               {posts.map((post) => <BlogCard key={post.id} post={post} />)}

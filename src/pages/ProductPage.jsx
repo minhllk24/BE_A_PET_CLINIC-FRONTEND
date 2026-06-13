@@ -122,7 +122,7 @@ function SearchAndSort({ search, onSearchChange, onSearch, sortOrder, onSortChan
         <input
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Bạn đang tìm kiếm gì?"
+          placeholder="Bạn đang tìm kiếm sản phẩm nào?"
           className="min-w-0 flex-1 bg-transparent text-[16px] text-[#5F5F5F] outline-none placeholder:text-[#5F5F5F]"
         />
         <button
