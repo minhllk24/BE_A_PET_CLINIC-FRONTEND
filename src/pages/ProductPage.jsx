@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import CanvasLayout from "../components/layout/CanvasLayout";
 import Breadcrumb from "../components/layout/Breadcrumb";
-import Footer from "../components/layout/Footer";
+import Footer from "../components/Footer/Footer";
 import NavBar from "../components/Navbar";
 import ShoppingProductCard from "../components/product/ShoppingProductCard";
 import { productImages } from "../assets/productImages";

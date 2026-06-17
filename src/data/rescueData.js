@@ -1,0 +1,130 @@
+import { rescueImages } from "../assets/rescueImages";
+
+export const RESCUE_PETS = [
+  {
+    id: "mimi-1",
+    name: "Mimi",
+    description: "Mimi được cứu vào một chiều mưa và đang tìm một gia đình thật dịu dàng.",
+    status: "Mèo Tam Thể đang phục hồi tốt sau khi được chăm sóc.",
+    need: "Cần hạt, pate và người nhận nuôi có kinh nghiệm.",
+    image: rescueImages.rescuePlaceholder,
+    ribbon: "CÒN CHỜ",
+    state: "waiting",
+  },
+  {
+    id: "mimi-2",
+    name: "Mimi",
+    description: "Mimi là cô mèo nhỏ nhắn, thích sưởi nắng và rất quấn người.",
+    status: "Mèo Tam Thể đã tiêm phòng cơ bản.",
+    need: "Cần người chăm sóc lâu dài và vật dụng vệ sinh.",
+    image: rescueImages.rescuePlaceholder,
+    ribbon: "CÒN CHỜ",
+    state: "waiting",
+  },
+  {
+    id: "lucy",
+    name: "Lucy",
+    description: "Một bé mèo hiền, quen sống trong nhà và đang học tin người trở lại.",
+    status: "Đang theo dõi sức khỏe, ăn uống ổn định.",
+    need: "Cần hỗ trợ chi phí khám định kỳ.",
+    image: rescueImages.rescuePlaceholder,
+    ribbon: "ĐÃ CÓ TỔ ẤM",
+    state: "adopted",
+  },
+  {
+    id: "nau",
+    name: "Nâu",
+    description: "Nâu được đón về từ khu chợ nhỏ, ngoan và hợp với gia đình yên tĩnh.",
+    status: "Đã tẩy giun, đang tăng cân tốt.",
+    need: "Cần thức ăn mềm và nhà tạm.",
+    image: rescueImages.rescuePlaceholder,
+    ribbon: "ĐÃ CÓ TỔ ẤM",
+    state: "adopted",
+  },
+  {
+    id: "bong",
+    name: "Bông",
+    description: "Bông thân thiện, thích được vuốt ve và có thể hòa nhập với mèo khác.",
+    status: "Sức khỏe ổn định, còn hơi nhát.",
+    need: "Cần người nhận nuôi kiên nhẫn.",
+    image: rescueImages.rescuePlaceholder,
+    ribbon: "CÒN CHỜ",
+    state: "waiting",
+  },
+  {
+    id: "miu",
+    name: "Miu",
+    description: "Miu nhỏ người, sạch sẽ, phù hợp căn hộ và người mới nuôi mèo.",
+    status: "Đã khám tổng quát, không phát hiện bất thường.",
+    need: "Cần cát vệ sinh, hạt kitten và đồ chơi.",
+    image: rescueImages.rescuePlaceholder,
+    ribbon: "ĐÃ CÓ TỔ ẤM",
+    state: "adopted",
+  },
+];
+
+export const RESCUE_PARTNERS = [
+  {
+    id: "vawa",
+    name: "Vietnam Animal Welfare Association",
+    href: "https://www.facebook.com/vawa.org/",
+    region: "Khu vực miền Nam",
+    address: "675B, Nguyễn Kiệm, phường 9, Quận Phú Nhuận, Ho Chi Minh City, Vietnam, 700000",
+    description:
+      "Hội Bảo vệ Động vật Việt Nam (VAWA) là tổ chức phi lợi nhuận đã đăng ký và được Bộ Nội vụ Việt Nam cấp phép hoạt động.",
+    image: rescueImages.partners.vawa,
+  },
+  {
+    id: "backyard",
+    name: "Nhóm cứu hộ chó mèo Sân Nhà Nhiều Chó",
+    href: "https://www.facebook.com/Sannhanhieucho",
+    region: "Khu vực miền Bắc",
+    address: "Ngõ 15 đường Cột Mốc, Đoài Phương, Hà Nội 100000",
+    description:
+      "Thành lập từ 2021, nhóm cứu hộ Sân nhà nhiều chó (SNNC) hoạt động tích cực giúp đỡ thú cưng bị bỏ rơi.",
+    image: rescueImages.partners.backyard,
+  },
+  {
+    id: "nong-nghiep",
+    name: "Trạm Cứu Hộ Động Vật Nông Nghiệp Hà Nội",
+    href: "https://www.facebook.com/Tramcuuhodongvatnongnghiephanoi",
+    region: "Khu vực miền Bắc",
+    address: "Ngô Xuân Quảng_ Gia Lâm, Hanoi, Vietnam",
+    description:
+      "Trạm cứu hộ động vật - Nơi cưu mang, chăm sóc, điều trị, nhận chủ cho các chó mèo hoang, bị bỏ rơi.",
+    image: rescueImages.partners.nongNghiep,
+  },
+  {
+    id: "saigon-time",
+    name: "Trạm Cứu Hộ Chó Mèo Sài Gòn Time",
+    href: "https://www.facebook.com/savesgt",
+    region: "Khu vực miền Nam",
+    address: "Foster House, Ho Chi Minh City, Vietnam",
+    description: [
+      "Giải cứu các bé chó mèo :",
+      "- Trong hoàn cảnh cận kề với cái chết",
+      "- Bị bỏ rơi vì già nua, bệnh tật",
+    ],
+    image: rescueImages.partners.saigonTime,
+  },
+  {
+    id: "we-act",
+    name: "We Act For Animals",
+    href: "https://www.facebook.com/wafavn/?ref=page_internal",
+    region: "Khu vực miền Trung",
+    address: "Nha Trang, Vietnam, 650000",
+    description:
+      "We act for animals (WAFA) - A non-profit and voluntary Animal Rescue organization in Nha Trang city - Khanh Hoa - Vietnam.",
+    image: rescueImages.partners.weAct,
+  },
+  {
+    id: "laws-for-paws",
+    name: "Laws for Paws Vietnam",
+    href: "https://www.facebook.com/lawsforpawsvietnam",
+    region: "Khu vực miền Nam",
+    address: "Ho Chi Minh City, Vietnam",
+    description:
+      "We aim to improve the welfare of dogs in Vietnam, making a better life for animals and the community they live in",
+    image: rescueImages.partners.lawsForPaws,
+  },
+];

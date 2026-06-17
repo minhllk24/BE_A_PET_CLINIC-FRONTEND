@@ -21,21 +21,15 @@ export const NAV_LINKS = [
     ],
   },
   {
-    label: "Cứu trợ",
-    href: "/rescue",
-    // children: [
-    //   { label: "Thông tin cứu trợ", href: "/rescue/info" },
-    //   { label: "Nhận nuôi", href: "/rescue/adoption" },
-    // ],
-  },
-  {
     label: "Blog",
     href: "/blog",
     children: [
-      { label: "Chia sẻ kiến thức", href: "/blog/kien-thuc" },
+      { label: "Kiến thức thú cưng", href: "/blog/kien-thuc" },
+      { label: "Cộng đồng chia sẻ", href: "/blog/cong-dong" },
       { label: "Cẩm nang sơ cứu", href: "/blog/so-cuu" },
     ],
   },
+  { label: "Cứu trợ", href: "/rescue" },
   { label: "Về chúng tôi", href: "/about" },
   { label: "Liên hệ", href: "/contact" },
 ];

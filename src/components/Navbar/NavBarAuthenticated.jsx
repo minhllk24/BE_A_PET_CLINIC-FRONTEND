@@ -14,7 +14,8 @@ function NavBarAuthenticated({ avatarSrc, onLogout }) {
   const { openCart } = useCart();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white">
+    <>
+    <header className="fixed inset-x-0 top-0 z-[70] w-full bg-white">
       <div className="mx-auto flex max-w-page items-center gap-2.5 px-10 py-3">
         <a href="/" className="shrink-0">
           <img
@@ -64,6 +65,8 @@ function NavBarAuthenticated({ avatarSrc, onLogout }) {
         </div>
       </div>
     </header>
+    <div className="h-[88px] shrink-0" aria-hidden="true" />
+    </>
   );
 }
 

@@ -133,7 +133,7 @@ function MyCartPanel({ onClose }) {
 
   return (
     <aside
-      className="panel-slide-in absolute right-[94px] top-0 flex w-[551px] flex-col items-center gap-[10px] overflow-x-clip overflow-y-auto rounded bg-[#fffde7] px-5 py-[10px] shadow-[0_4px_24px_rgba(0,0,0,0.12)]"
+      className="panel-slide-in absolute right-[94px] top-0 flex h-[638px] max-h-[calc(100vh-104px)] w-[551px] flex-col items-center gap-[10px] overflow-hidden rounded bg-[#fffde7] px-5 py-[10px] shadow-[0_4px_24px_rgba(0,0,0,0.12)]"
       data-name="my cart"
       role="dialog"
       aria-label="Giỏ hàng"
@@ -159,7 +159,7 @@ function MyCartPanel({ onClose }) {
       </div>
 
       {/* Item list */}
-      <div className="flex h-[508px] w-full shrink-0 flex-col items-start overflow-x-clip overflow-y-auto">
+      <div className="flex min-h-0 w-full flex-1 flex-col items-start overflow-x-clip overflow-y-auto">
         {hasItems ? (
           cartItems.map((item) => (
             <CartItemRow key={item.id} item={item} />

@@ -16,12 +16,12 @@ function NavSearchBar({ className = "" }) {
         className="input-search pl-10 pr-13 text-xs tracking-[0.4px] text-black/87"
         aria-label="Tìm kiếm"
       />
-      <img
+      {/* <img
         src={navbarImages.searchIcon}
         alt=""
         className="pointer-events-none absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 opacity-70 transition-opacity duration-micro group-focus-within:opacity-100"
         aria-hidden
-      />
+      /> */}
     </div>
   );
 }

@@ -14,7 +14,8 @@ function NavBarGuest() {
   const { openAuth } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white">
+    <>
+    <header className="fixed inset-x-0 top-0 z-[70] w-full bg-white">
       <div className="mx-auto flex max-w-page items-center justify-between gap-6 px-6 py-3 md:px-20">
         <a href="/" className="shrink-0">
           <img
@@ -54,6 +55,8 @@ function NavBarGuest() {
         </div>
       </div>
     </header>
+    <div className="h-[88px] shrink-0" aria-hidden="true" />
+    </>
   );
 }
 

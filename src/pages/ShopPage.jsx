@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { shopImages } from "../assets/shopImages";
-import Footer from "../components/layout/Footer";
+import Footer from "../components/Footer/Footer";
 import CanvasLayout from "../components/layout/CanvasLayout";
 import ScaledCanvasLayout from "../components/layout/ScaledCanvasLayout";
 import NavBar from "../components/Navbar";
