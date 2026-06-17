@@ -5,7 +5,7 @@ import Breadcrumb from "../components/layout/Breadcrumb";
 import NavBar from "../components/Navbar";
 import ShoppingProductCard from "../components/product/ShoppingProductCard";
 import WriteReviewForm from "../components/product/WriteReviewForm";
-import Footer from "../components/layout/Footer";
+import Footer from "../components/Footer/Footer";
 import ProductRating from "../components/product/ProductRating";
 
 import { productImages } from "../assets/productImages";

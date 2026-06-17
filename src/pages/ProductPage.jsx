@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import CanvasLayout from "../components/layout/CanvasLayout";
 import Breadcrumb from "../components/layout/Breadcrumb";
-import Footer from "../components/layout/Footer";
+import Footer from "../components/Footer/Footer";
 import NavBar from "../components/Navbar";
 import ShoppingProductCard from "../components/product/ShoppingProductCard";
 import { productImages } from "../assets/productImages";
@@ -122,7 +122,7 @@ function SearchAndSort({ search, onSearchChange, onSearch, sortOrder, onSortChan
         <input
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Bạn đang tìm kiếm sản phẩm nào?"
+          placeholder="Bạn đang tìm kiếm gì?"
           className="min-w-0 flex-1 bg-transparent text-[16px] text-[#5F5F5F] outline-none placeholder:text-[#5F5F5F]"
         />
         <button

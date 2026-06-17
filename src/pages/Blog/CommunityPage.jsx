@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import CanvasLayout from "../../components/layout/CanvasLayout";
-import Footer from "../../components/layout/Footer";
+import Footer from "../../components/Footer/Footer";
 import NavBar from "../../components/Navbar";
 import { blogImages } from "../../assets/blogImages";
 import { useAuth } from "../../context/AuthContext";
@@ -255,7 +255,7 @@ export default function CommunityPage() {
   });
   const openPost = (id) => setSelectedId(id);
   const sharePost = async (post) => {
-    const url = `${window.location.origin}/blog/community#${post.id}`;
+    const url = `${window.location.origin}/blog/cong-dong#${post.id}`;
     if (navigator.share) await navigator.share({ title: post.title || "Bài viết cộng đồng", url }).catch(() => {});
     else await navigator.clipboard?.writeText(url);
     setShareNotice("Đã sao chép liên kết bài viết");
@@ -283,7 +283,7 @@ export default function CommunityPage() {
                 onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
                 className="my-4 h-[42px] rounded-[4px] bg-[#FFF176] px-[22px] text-[15px] font-medium uppercase tracking-[0.46px] text-black shadow-elevation hover:bg-[#FDD835]"
               >
-                Xem thêm bài đăng
+                Xem thêm
               </button>
         </main>
         <Footer variant="white" />

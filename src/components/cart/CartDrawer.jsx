@@ -12,7 +12,7 @@ function CartDrawer() {
     <div className="pointer-events-none fixed inset-0 z-[60]" role="presentation">
       <button
         type="button"
-        className="overlay-fade-in pointer-events-auto absolute inset-0 top-[88px] bg-black/10"
+        className="pointer-events-auto absolute inset-0 top-[88px] bg-transparent"
         onClick={closeCart}
         aria-label="Đóng giỏ hàng"
       />

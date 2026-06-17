@@ -13,6 +13,9 @@ import CartOpenHandler from "../pages/CartOpenHandler";
 import BlogPage from "../pages/Blog/BlogPage";
 import BlogDetailPage from "../pages/Blog/BlogDetailPage";
 import CommunityPage from "../pages/Blog/CommunityPage";
+import FirstAidPage from "../pages/Blog/FirstAidPage";
+import FirstAidDetailPage from "../pages/Blog/FirstAidDetailPage";
+import RescuePage from "../pages/Rescue/RescuePage";
 
 import GroomingSpaPage from "../pages/GroomingSpaPage";
 import CheckoutPage from "../pages/CheckoutPage";
@@ -38,9 +41,11 @@ const AppRoutes = () => {
       <Route path="/cart" element={<CartOpenHandler />} />
       <Route path="/blog" element={<BlogPage />} />
       <Route path="/blog/kien-thuc" element={<BlogPage />} />
-      <Route path="/blog/so-cuu" element={<BlogPage />} />
-      <Route path="/blog/community" element={<CommunityPage />} />
+      <Route path="/blog/so-cuu" element={<FirstAidPage />} />
+      <Route path="/blog/so-cuu/:postId" element={<FirstAidDetailPage />} />
+      <Route path="/blog/cong-dong" element={<CommunityPage />} />
       <Route path="/blog/:postId" element={<BlogDetailPage />} />
+      <Route path="/rescue" element={<RescuePage />} />
 
       <Route path="/services/grooming-spa" element={<GroomingSpaPage />} />
       <Route path="/services/groomng-spa" element={<GroomingSpaPage />} />

@@ -1,15 +1,23 @@
 import { blogImages } from "../assets/blogImages";
 
+export const BLOG_SECTIONS = {
+  knowledge: { label: "Kiến thức thú cưng", href: "/blog/kien-thuc" },
+  community: { label: "Cộng đồng chia sẻ", href: "/blog/cong-dong" },
+  firstAid: { label: "Cẩm nang sơ cứu", href: "/blog/so-cuu" },
+};
+
 export const BLOG_CATEGORIES = [
   { id: "all", label: "Tất cả" },
   { id: "health", label: "Sức khỏe" },
   { id: "nutrition", label: "Dinh dưỡng" },
   { id: "psychology", label: "Tâm lý" },
   { id: "grooming", label: "Vệ sinh & Làm đẹp" },
+  // { id: "care", label: "Chăm sóc" },
 ];
 
 export const FEATURED_BLOG_POST = {
   id: "vaccine-5-in-1",
+  section: "knowledge",
   category: "health",
   categoryLabel: "Sức khỏe",
   title: "Lịch tiêm phòng 5-trong-1 cần thiết cho chó con từ 2 tháng tuổi",
@@ -35,11 +43,14 @@ export const FEATURED_BLOG_POST = {
 };
 
 export const QUICK_READ_POSTS = [
-  ["quick-cold", "Chó mèo bị cảm lạnh: Dấu hiệu và cách chăm sóc", "12 Tháng 5, 2024"],
-  ["quick-winter", "Tips Giữ Ấm Cho Thú Cưng Trong Mùa Đông", "08 Tháng 5, 2024"],
-  ["quick-puppy", "Những Bệnh Nguy Hiểm Trên Chó Con Cần Lưu Ý", "01 Tháng 5, 2024"],
-].map(([id, title, publishedAt]) => ({
+  ["quick-cold", "health", "Sức khỏe", "Chó mèo bị cảm lạnh: Dấu hiệu và cách chăm sóc", "12 Tháng 5, 2024"],
+  ["quick-winter", "care", "Chăm sóc", "Tips Giữ Ấm Cho Thú Cưng Trong Mùa Đông", "08 Tháng 5, 2024"],
+  ["quick-puppy", "health", "Sức khỏe", "Những Bệnh Nguy Hiểm Trên Chó Con Cần Lưu Ý", "01 Tháng 5, 2024"],
+].map(([id, category, categoryLabel, title, publishedAt]) => ({
   id,
+  section: "knowledge",
+  category,
+  categoryLabel,
   title,
   publishedAt,
   image: blogImages.postPlaceholder,
@@ -47,19 +58,20 @@ export const QUICK_READ_POSTS = [
 
 export const TRENDING_BLOG_POSTS = [
   ["nutrition", "DINH DƯỠNG", "Chế độ dinh dưỡng cho mèo con: Nên chọn hạt nào?"],
-  ["care", "CHĂM SÓC", "Cách chăm sóc mèo sơ sinh bị bỏ rơi: Cẩm nang cần biết"],
+  ["health", "SỨC KHỎE", "Cách chăm sóc mèo sơ sinh bị bỏ rơi: Cẩm nang cần biết"],
   ["grooming", "VỆ SINH", "5 cách khử mùi khay vệ sinh mèo hiệu quả nhất"],
   ["nutrition", "DINH DƯỠNG", "Top 5 loại pate dinh dưỡng giúp mèo tăng cân"],
   ["health", "SỨC KHỎE", "Dấu hiệu thú cưng cần được bác sĩ kiểm tra"],
 ].map(([category, categoryLabel, title], index) => ({
   id: `trending-${index + 1}`,
+  section: "knowledge",
   category,
   categoryLabel,
   title,
   image: blogImages.trendingPlaceholder,
 }));
 
-const RECENT_POST_CONTENT = [
+const ALL_POST_CONTENT = [
   ["health", "Sức khỏe", "Lịch chăm sóc sức khỏe định kỳ cho thú cưng"],
   ["nutrition", "Dinh dưỡng", "Chọn khẩu phần phù hợp theo độ tuổi của mèo"],
   ["psychology", "Tâm lý", "Giúp thú cưng làm quen với môi trường mới"],
@@ -74,9 +86,10 @@ const RECENT_POST_CONTENT = [
   ["grooming", "Vệ sinh & Làm đẹp", "Chăm sóc móng giúp thú cưng vận động tốt hơn"],
 ];
 
-export const RECENT_BLOG_POSTS = RECENT_POST_CONTENT.map(
+export const ALL_BLOG_POSTS = ALL_POST_CONTENT.map(
   ([category, categoryLabel, title], index) => ({
     id: `recent-${index + 1}`,
+    section: "knowledge",
     category,
     categoryLabel,
     title,

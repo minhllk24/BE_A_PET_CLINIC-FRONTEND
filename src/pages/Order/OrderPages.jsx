@@ -388,7 +388,17 @@ export function OrderDetailsPage() {
 
   return (
     <div className="mx-auto w-full max-w-[960px] pb-10">
-      <Link to="/my-orders" className="inline-flex items-center gap-3 py-4 text-[24px] font-bold">← <span>Tất cả đơn hàng</span></Link>
+      <div className="flex items-center gap-3 mb-5 flex-shrink-0">
+        <Link 
+          to="/my-pets"
+          className="text-slate-500 hover:text-slate-900 transition"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </Link>
+        <h1 className="text-2xl font-bold text-slate-900">Tất cả đơn hàng</h1>
+      </div>
       <section className="rounded-[14px] bg-white px-6 py-[30px]">
         <div className="flex items-center justify-between gap-4">
           <div>
