@@ -1,0 +1,200 @@
+const aboutImage = (name) =>
+  new URL(`../assets/images/about/${name}`, import.meta.url).href;
+
+const figmaImage = (name) => aboutImage(`figma/${name}`);
+
+export const commitmentBenefits = [
+  ["Đội ngũ có tay nghề cao", "commitment-icon-team.png"],
+  ["Bác sĩ giàu kinh nghiệm", "commitment-icon-doctor.png"],
+  ["Sản phẩm xuất xứ rõ ràng", "commitment-icon-food.png"],
+  ["Thực phẩm chất lượng", "commitment-icon-treats.png"],
+  ["Tư vấn tận tình", "commitment-icon-house.png"],
+  ["Cấp cứu khẩn cấp", "commitment-icon-emergency.png"],
+].map(([label, icon]) => ({
+  label,
+  icon: figmaImage(icon),
+}));
+
+export const aboutDecorations = {
+  journeyConnector: figmaImage("journey-connector.png"),
+  journeyShapes: [
+    figmaImage("journey-shape-3.png"),
+    figmaImage("journey-shape-4.png"),
+    figmaImage("journey-shape-5.png"),
+    figmaImage("journey-shape-6.png"),
+  ],
+  servicesWaveTop: figmaImage("services-wave-top.png"),
+  servicesWaveBottom: figmaImage("services-wave-bottom.png"),
+  servicesBone: figmaImage("services-decor-bone.png"),
+  servicesPaw: figmaImage("services-decor-paw.png"),
+  servicesBadgeIcon: figmaImage("services-badge-icon.svg"),
+  servicesCheckIcon: figmaImage("services-check-icon.svg"),
+  doctorsUnderline: figmaImage("doctors-underline.svg"),
+  doctorsShape: figmaImage("doctors-shape.png"),
+};
+
+export const aboutMilestones = [
+  {
+    year: "2020",
+    image: aboutImage("timeline2020.png"),
+    copy: "Thành lập 2020, chúng tôi khởi đầu từ một cửa hàng, cung cấp dịch vụ khám & chữa bệnh cho thú cưng. Với các trang thiết bị hiện đại và đội ngũ bác sĩ giàu kinh nghiệm.",
+  },
+  {
+    year: "2021",
+    image: aboutImage("timeline2021.png"),
+    copy: "Năm 2021, chúng tôi kinh doanh thêm sản phẩm dành cho thú cưng. Khi có sự tin tưởng và ủng hộ của các khách hàng thân thiết, chúng tôi đã mở 10 cửa hàng trong chỉ trong 1 năm và có 3 cửa hàng.",
+  },
+  {
+    year: "2023",
+    image: aboutImage("timeline2023.png"),
+    copy: "Năm 2023, cung cấp thêm dịch vụ Spa & Grooming, đáp ứng nhu cầu làm đẹp và chăm sóc cho thú cưng của khách hàng. Ngoài ra chúng tôi nghiên cứu những ngành liên quan của mình. Mở rộng ra 6 cửa hàng.",
+  },
+  {
+    year: "2026",
+    image: aboutImage("timeline2026.png"),
+    copy: "Năm 2026, hệ thống Dr. Pet's House đã có 10 chi nhánh ở HCM. Hơn 10.000 ca chữa bệnh thành công với lượt đánh giá 98% khách hàng hài lòng.",
+  },
+];
+
+export const aboutServices = [
+  {
+    id: "medical",
+    title: "KHÁM & ĐIỀU TRỊ",
+    image: aboutImage("service-medical.png"),
+    href: "/booking",
+    copy: "Đội ngũ bác sĩ thú y giàu kinh nghiệm của chúng tôi cung cấp các dịch vụ từ kiểm tra sức khỏe định kỳ đến phẫu thuật chuyên sâu, đảm bảo thú cưng của bạn luôn trong trạng thái tốt nhất.",
+    points: [
+      "Tiêm phòng và tẩy giun định kỳ",
+      "Chẩn đoán hình ảnh siêu âm, X-quang",
+      "Xét nghiệm máu và vi sinh",
+    ],
+  },
+  {
+    id: "grooming",
+    title: "GROOMING & SPA",
+    image: aboutImage("service-grooming.png"),
+    href: "/services/grooming-spa",
+    copy: "Giúp thú cưng của bạn luôn sạch sẽ và xinh xắn với dịch vụ làm đẹp chuyên nghiệp. Chúng tôi sử dụng các sản phẩm cao cấp, an toàn cho làn da nhạy cảm của các bé.",
+    points: [
+      "Tắm, sấy và vệ sinh tai móng",
+      "Cắt tỉa lông tạo kiểu chuyên nghiệp",
+      "Massage thư giãn cho thú cưng",
+    ],
+  },
+  {
+    id: "shop",
+    title: "PET SHOP",
+    image: aboutImage("service-shop.png"),
+    href: "/petshop",
+    copy: "Cung cấp đầy đủ các nhu yếu phẩm chất lượng cao từ thức ăn dinh dưỡng, phụ kiện thời trang đến đồ chơi thông minh dành riêng cho chó và mèo.",
+    points: [
+      "Thức ăn hạt và Pate nhập khẩu",
+      "Phụ kiện vòng cổ, chuồng và nệm",
+      "Vitamin và thực phẩm chức năng",
+    ],
+  },
+];
+
+export const aboutTestimonials = Array.from({ length: 3 }, () => ({
+  quote: "These are the perfect size for our small dog. The design is cute and the rubber on the bottom is great because it makes them durable. They've held up to being...",
+  name: "Mary Douglas",
+  company: "Pet Shop Inc.",
+}));
+
+export const aboutGallerySlides = [
+  {
+    id: "lobby",
+    title: "Khu vực tiền sảnh và quầy lễ tân",
+    images: [
+      aboutImage("lobby-main.png"),
+      aboutImage("lobby-thumb1.png"),
+      aboutImage("lobby-thumb2.png"),
+      aboutImage("lobby-thumb3.png"),
+    ],
+    paragraphs: [
+      "Dr.Pet’s House cho bạn trải nghiệm cao cấp với mức giá bình dân.",
+      "Sảnh đón tiếp rộng và thoáng có thể tiếp nhận nhanh những chuyến xe cấp cứu.",
+      "Quầy lễ tân sẵn sàng đón tiếp bạn và thú cưng đến làm thủ tục. Check-in nhanh, thông tin bé được lưu sẵn.",
+      "Bạn có thể thưởng thức nước và bánh tại khu vực lễ tân trong lúc chờ đợi.",
+    ],
+  },
+  {
+    id: "shop",
+    title: "Không gian mua sắm tiện lợi",
+    images: [
+      figmaImage("shop-main.png"),
+      figmaImage("shop-thumb-1.png"),
+      figmaImage("shop-thumb-2.png"),
+      figmaImage("shop-thumb-3.png"),
+    ],
+    paragraphs: [
+      "Không gian mua sắm tại Dr.Pet’s House mang đến trải nghiệm tiện lợi, dễ tìm kiếm nhờ hệ thống kệ tủ phân khu khoa học.",
+      "Chúng tôi cung cấp đa dạng sản phẩm với đầy đủ mặt hàng, mẫu mã được cập nhật liên tục. Thỏa sức mua sắm, vừa tiết kiệm thời gian, vừa an tâm về chất lượng.",
+      "Nhân viên luôn túc trực để tư vấn tận tình, giúp bạn nhanh chóng chọn được sản phẩm phù hợp với mức giá bình dân nhất.",
+    ],
+  },
+  {
+    id: "spa",
+    title: "Không gian spa thư giãn",
+    images: [
+      figmaImage("spa-main.png"),
+      figmaImage("spa-thumb-1.png"),
+      figmaImage("spa-thumb-2.png"),
+      figmaImage("spa-thumb-3.png"),
+    ],
+    paragraphs: [
+      "Khu vực Spa & Grooming được thiết kế riêng giúp thú cưng cảm thấy bình tĩnh và thoải mái từ khoảnh khắc đầu tiên bước vào.",
+      "Không gian thoáng mát, sạch sẽ, không có tiếng ồn lớn. Mỗi bé đều được phục vụ riêng. Các Sen có thể quan sát toàn bộ quá trình làm đẹp từ bên ngoài. Bạn hoàn toàn có thể yên tâm rằng Boss nhà mình luôn có những phút giây thư giãn nhất tại Dr. Pet's House.",
+    ],
+  },
+  {
+    id: "clinic",
+    title: "Không gian khám bệnh chuyên nghiệp",
+    images: [
+      figmaImage("clinic-main.png"),
+      figmaImage("clinic-thumb-1.png"),
+      figmaImage("clinic-thumb-2.png"),
+      figmaImage("clinic-thumb-3.png"),
+    ],
+    paragraphs: [
+      "Không gian khám và điều trị đạt tiêu chuẩn vô trùng y khoa và khử khuẩn nghiêm ngặt, tránh trường hợp lây nhiễm chéo. Mang lại sự an tâm tuyệt đối cho khách hàng.",
+      "Thiết kế cách âm yên tĩnh giúp Boss giảm sợ hãi, bớt căng thẳng.",
+      "Các Boss nhà mình sẽ được sử dụng các trang thiết bị máy móc hiện đại, dịch vụ y tế chuyên nghiệp, chẩn đoán chính xác, với một mức giá minh bạch & hợp lý.",
+    ],
+  },
+  {
+    id: "branches",
+    title: "9 chi nhánh khác",
+    images: Array.from({ length: 9 }, (_, index) =>
+      figmaImage(`branch-${index + 1}.png`),
+    ),
+    paragraphs: [
+      "Đến năm 2026, hệ thống Dr.Pet’s House đã đạt cột mốc 10 chi nhánh và có mặt ở khắp các khu vực trong TP.HCM (Thủ Đức, Bình Dương, Vũng Tàu).",
+      "Điều này chứng tỏ có rất nhiều khách hàng tin dùng về chất lượng dịch vụ của Dr.Pet’s House. Nhờ sự ủng hộ của quý khách hàng, đã đóng góp rất lớn vào việc phát triển hệ thống Dr.Pet’s House lớn mạnh như ngày hôm nay.",
+    ],
+    layout: "grid",
+  },
+];
+
+export const aboutDoctors = [
+  ["Bs. Trần Văn Nhân", "Kinh nghiệm 20 năm", "Tốt nghiệp Trường Đại Học Nông Lâm, ĐHQG TPHCM", "doctor-1.png"],
+  ["Bs. Võ Công Nam", "Kinh nghiệm 14 năm", "Tốt nghiệp Trường Đại Học Nông Lâm, ĐHQG TPHCM", "doctor-2.png"],
+  ["Bs. Nguyễn Thu Hồng", "Kinh nghiệm 5 năm", "Tốt nghiệp Trường Đại học Công Nghệ TPHCM", "doctor-3.png"],
+  ["Bs. Trần Phương Trâm", "Kinh nghiệm 7 năm", "Tốt nghiệp Trường Đại Học Nông Lâm, ĐHQG TPHCM", "doctor-4.png"],
+  ["Bs. Đỗ Nhất Tâm", "Kinh nghiệm 7 năm", "Tốt nghiệp Trường Đại Học Nông Lâm, ĐHQG TPHCM", "doctor-5.png"],
+  ["Bs. Huỳnh Gia Khánh", "Kinh nghiệm 7 năm", "Tốt nghiệp Trường Đại học Công Nghệ TPHCM", "doctor-6.png"],
+  ["Bs. Nguyễn Phương Nhi", "Kinh nghiệm 5 năm", "Tốt nghiệp Trường Đại học Công Nghệ TPHCM", "doctor-7.png"],
+  ["Bs. Nguyễn Minh Anh", "Kinh nghiệm 10 năm", "Tốt nghiệp Trường Đại Học Nông Lâm, ĐHQG TPHCM", "doctor-8.png"],
+].map(([name, role, school, image]) => ({
+  name,
+  role,
+  school,
+  image: figmaImage(image),
+}));
+
+export const feedbackAssets = {
+  avatar: figmaImage("feedback-avatar.png"),
+  paws: [1, 2, 3, 4].map((index) =>
+    figmaImage(`feedback-paw-${index}.png`),
+  ),
+};

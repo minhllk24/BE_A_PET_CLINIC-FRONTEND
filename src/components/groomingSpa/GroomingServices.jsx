@@ -31,16 +31,16 @@ function ServiceCard({ service }) {
   const mask = maskStyle(service.mask);
 
   return (
-    <div className="relative h-[422px] w-[355px] shrink-0">
+    <div className="group relative h-[422px] w-[355px] shrink-0 transition-[transform,filter] duration-300 ease-out hover:-translate-y-1 hover:drop-shadow-[0_12px_18px_rgba(13,71,161,0.18)]">
       <div className="absolute inset-0 h-[422px] w-[355px]" style={mask}>
         <img
           src={service.image}
           alt={service.title}
-          className="size-full object-cover"
+          className="size-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.025]"
         />
       </div>
       <div
-        className="absolute inset-0 bg-gradient-to-b from-[rgba(2,0,15,0)] to-[rgba(2,0,15,0.7)]"
+        className="absolute inset-0 bg-gradient-to-b from-[rgba(2,0,15,0)] to-[rgba(2,0,15,0.72)] transition-colors duration-300"
         style={mask}
       />
 

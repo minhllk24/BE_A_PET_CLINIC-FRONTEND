@@ -176,8 +176,8 @@ function Footer({ variant = "auto" }) {
 
         <FooterColumn title="Thông tin Trung tâm">
           <ul>
-            <FooterLink>Về chúng tôi</FooterLink>
-            <FooterLink>Liên hệ</FooterLink>
+            <FooterLink to="/about">Về chúng tôi</FooterLink>
+            <FooterLink to="/contact">Liên hệ</FooterLink>
             <FooterLink>
               <span className="flex items-center gap-2">
                 Danh sách chi nhánh <span aria-hidden="true">→</span>

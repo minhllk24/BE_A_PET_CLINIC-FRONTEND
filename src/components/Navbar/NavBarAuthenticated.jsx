@@ -16,29 +16,29 @@ function NavBarAuthenticated({ avatarSrc, onLogout }) {
   return (
     <>
     <header className="fixed inset-x-0 top-0 z-[70] w-full bg-white">
-      <div className="mx-auto flex max-w-page items-center gap-2.5 px-10 py-3">
+      <div className="mx-auto flex max-w-page items-center gap-2 px-3 py-3 sm:gap-2.5 sm:px-6 lg:px-10">
         <a href="/" className="shrink-0">
           <img
             src={homeImages.logo}
             alt="Dr. Pet's House"
-            className="h-[59px] w-[136px] object-contain"
+            className="h-[52px] w-[112px] object-contain sm:h-[59px] sm:w-[136px]"
           />
         </a>
 
         <NavLinks />
 
-        <div className="ml-auto flex items-center gap-6">
+        <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-4 lg:gap-6">
           <NavSearchBar className="hidden lg:block" />
 
           <a href="/booking" className="shrink-0">
-            <YellowButton className="h-[35px] min-w-[109px] px-[22px] py-2 text-base tracking-[0.15px]">
+            <YellowButton className="h-[35px] min-w-[82px] px-3 py-2 text-[13px] tracking-[0.1px] sm:min-w-[109px] sm:px-[22px] sm:text-base sm:tracking-[0.15px]">
               ĐẶT LỊCH
             </YellowButton>
           </a>
 
           <button
             type="button"
-            className="btn-icon shrink-0 p-1"
+            className="btn-icon hidden shrink-0 p-1 sm:block"
             aria-label="Thông báo"
           >
             <img
@@ -51,7 +51,7 @@ function NavBarAuthenticated({ avatarSrc, onLogout }) {
           <button
             type="button"
             onClick={openCart}
-            className="btn-icon shrink-0 p-1"
+            className="btn-icon hidden shrink-0 p-1 min-[520px]:block"
             aria-label="Giỏ hàng"
           >
             <img

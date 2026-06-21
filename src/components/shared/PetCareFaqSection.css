@@ -1,0 +1,173 @@
+.pet-care-faq {
+  position: relative;
+  width: 1440px;
+  height: 908px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.pet-care-faq > h2 {
+  position: absolute;
+  left: 63px;
+  top: 94px;
+  width: 661px;
+  height: 68px;
+  margin: 0;
+  font-family: "Baloo Tamma", sans-serif;
+  font-size: 56px;
+  font-weight: 400;
+  line-height: 68px;
+}
+
+.pet-care-faq__icon {
+  position: absolute;
+  left: 529px;
+  top: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 81px;
+  height: 81px;
+}
+
+.pet-care-faq__icon img {
+  width: 57px;
+  height: 57px;
+  object-fit: contain;
+  transform: rotate(39deg);
+}
+
+.pet-care-faq__list {
+  position: absolute;
+  left: 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  width: 640px;
+}
+
+.pet-care-faq__item {
+  overflow: hidden;
+  border-radius: 8px;
+  background: #e5f4fc;
+  transition: box-shadow 220ms ease, transform 220ms ease;
+}
+
+.pet-care-faq__item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(13, 71, 161, 0.08);
+}
+
+.pet-care-faq__item button {
+  display: grid;
+  grid-template-columns: 34px 1fr 22px;
+  align-items: center;
+  width: 100%;
+  min-height: 78px;
+  border: 0;
+  padding: 0 25px;
+  background: transparent;
+  color: #02000f;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pet-care-faq__item button:focus-visible {
+  outline: 3px solid rgba(25, 118, 210, 0.45);
+  outline-offset: -3px;
+}
+
+.pet-care-faq__item button span,
+.pet-care-faq__item button strong {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 26px;
+}
+
+.pet-care-faq__item button b {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: right;
+  transition: transform 220ms ease;
+}
+
+.pet-care-faq__item.is-open button b {
+  transform: rotate(180deg);
+}
+
+.pet-care-faq__answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease;
+}
+
+.pet-care-faq__answer > div {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pet-care-faq__answer p,
+.pet-care-faq__answer ul {
+  margin: 0;
+  padding: 0 42px 22px;
+  color: #6c6d71;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 28px;
+}
+
+.pet-care-faq__answer ul {
+  padding-left: 66px;
+}
+
+.pet-care-faq__item.is-open button {
+  min-height: 48px;
+}
+
+.pet-care-faq__item.is-open .pet-care-faq__answer {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.pet-care-faq__gallery {
+  position: absolute;
+  left: 788px;
+  top: 139px;
+  display: grid;
+  grid-template-columns: 283px 283px;
+  grid-template-rows: 266px 356px;
+  gap: 25px 18px;
+  width: 584px;
+}
+
+.pet-care-faq__gallery img {
+  width: 283px;
+  height: 266px;
+  border-radius: 52px;
+  object-fit: cover;
+  transition: transform 320ms ease;
+}
+
+.pet-care-faq__gallery img:hover {
+  transform: scale(1.018);
+}
+
+.pet-care-faq__gallery img:nth-child(2) {
+  object-position: 50% 38%;
+}
+
+.pet-care-faq__gallery img:nth-child(3) {
+  grid-column: 1 / 3;
+  width: 584px;
+  height: 356px;
+  border-radius: 55px;
+}
+
+.pet-care-faq__ornament {
+  position: absolute;
+  left: 679px;
+  top: 835px;
+  width: 290px;
+  height: 29px;
+}
