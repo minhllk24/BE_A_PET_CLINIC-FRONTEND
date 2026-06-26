@@ -1,13 +1,8 @@
-import { useState } from "react";
-import "./PetCareFaqSection.css";
+import { useState } from 'react'
+import './PetCareFaqSection.css'
 
-function PetCareFaqSection({
-  faqs,
-  assets,
-  listTop = 186,
-  renderAnswer,
-}) {
-  const [openId, setOpenId] = useState(faqs[0]?.id ?? 1);
+function PetCareFaqSection({ faqs, assets, listTop = 186, renderAnswer }) {
+  const [openId, setOpenId] = useState(faqs[0]?.id ?? 1)
 
   return (
     <section className="pet-care-faq">
@@ -18,32 +13,41 @@ function PetCareFaqSection({
 
       <div className="pet-care-faq__list" style={{ top: listTop }}>
         {faqs.map((faq) => {
-          const isOpen = openId === faq.id;
+          const isOpen = openId === faq.id
           return (
             <article
-              className={`pet-care-faq__item ${isOpen ? "is-open" : ""}`}
+              className={`pet-care-faq__item ${isOpen ? 'is-open' : ''}`}
               key={faq.id}
             >
               <button
                 type="button"
                 onClick={() => setOpenId(isOpen ? null : faq.id)}
                 aria-expanded={isOpen}
+                aria-controls={`pet-care-faq-answer-${faq.id}`}
               >
                 <span>{faq.id}.</span>
                 <strong>{faq.question}</strong>
-                <b aria-hidden="true">{isOpen ? "−" : "+"}</b>
+                <b aria-hidden="true">{isOpen ? '−' : '+'}</b>
               </button>
-              <div className="pet-care-faq__answer">
+              <div
+                className="pet-care-faq__answer"
+                id={`pet-care-faq-answer-${faq.id}`}
+                aria-hidden={!isOpen}
+              >
                 <div>
                   {renderAnswer ? (
                     renderAnswer(faq)
                   ) : (
-                    <p>{Array.isArray(faq.answer) ? faq.answer.join(" ") : faq.answer}</p>
+                    <p>
+                      {Array.isArray(faq.answer)
+                        ? faq.answer.join(' ')
+                        : faq.answer}
+                    </p>
                   )}
                 </div>
               </div>
             </article>
-          );
+          )
         })}
       </div>
 
@@ -54,7 +58,7 @@ function PetCareFaqSection({
       </div>
       <img className="pet-care-faq__ornament" src={assets.ornament} alt="" />
     </section>
-  );
+  )
 }
 
-export default PetCareFaqSection;
+export default PetCareFaqSection

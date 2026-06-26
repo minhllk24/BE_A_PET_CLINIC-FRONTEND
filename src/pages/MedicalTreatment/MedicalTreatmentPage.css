@@ -19,7 +19,18 @@
   top: -103px;
   width: 1700px;
   height: 751px;
-  transform: scaleX(-1);
+  transform: translateZ(0) scaleX(-1);
+  transform-origin: center;
+  pointer-events: none;
+}
+
+.medical-hero__bg img {
+  position: absolute;
+  inset: 1.84% 0 0;
+  display: block;
+  width: 100%;
+  height: 98.16%;
+  max-width: none;
 }
 
 .medical-hero__copy {
@@ -32,7 +43,7 @@
 
 .medical-hero__copy h1 {
   margin: 0;
-  font-family: "Baloo Tamma", sans-serif;
+  font-family: 'Baloo Tamma', sans-serif;
   font-size: 70px;
   font-weight: 400;
   line-height: 0.971;
@@ -65,16 +76,18 @@
   width: 60px;
   height: 66px;
   object-fit: contain;
-  transform: rotate(-25deg);
+  transform: translateY(8px) rotate(-25deg);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 300ms ease, transform 300ms ease;
+  transition:
+    opacity 300ms ease,
+    transform 300ms ease;
 }
 
 .medical-hero__booking:hover > img,
 .medical-hero__booking:focus-within > img {
   opacity: 1;
-  transform: rotate(-25deg) translateY(-8px);
+  transform: translateY(0) rotate(-25deg);
 }
 
 .medical-button {
@@ -90,8 +103,14 @@
   letter-spacing: 0.46px;
   line-height: 26px;
   text-decoration: none;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.12), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
-  transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+  box-shadow:
+    0 1px 5px rgba(0, 0, 0, 0.12),
+    0 2px 2px rgba(0, 0, 0, 0.14),
+    0 3px 1px -2px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .medical-button:hover {
@@ -151,7 +170,7 @@
 
 .medical-section-title h2 {
   margin: 17px 0 0;
-  font-family: "Baloo Tamma", sans-serif;
+  font-family: 'Baloo Tamma', sans-serif;
   font-size: 64px;
   font-weight: 400;
   line-height: 1.1;
@@ -167,6 +186,8 @@
 }
 
 .medical-services__grid {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(3, 355px);
   gap: 33px 15px;
@@ -179,7 +200,9 @@
   width: 355px;
   height: 422px;
   color: #fff;
-  transition: transform 220ms ease, box-shadow 220ms ease;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease;
 }
 
 .medical-service-card:hover {
@@ -206,12 +229,24 @@
   transition: transform 350ms ease;
 }
 
-.medical-service-card:nth-child(1) .medical-service-card__media > img { object-position: 48% center; }
-.medical-service-card:nth-child(2) .medical-service-card__media > img { object-position: 50% 45%; }
-.medical-service-card:nth-child(3) .medical-service-card__media > img { object-position: 72% center; }
-.medical-service-card:nth-child(4) .medical-service-card__media > img { object-position: 44% center; }
-.medical-service-card:nth-child(5) .medical-service-card__media > img { object-position: center; }
-.medical-service-card:nth-child(6) .medical-service-card__media > img { object-position: center; }
+.medical-service-card:nth-child(1) .medical-service-card__media > img {
+  object-position: 48% center;
+}
+.medical-service-card:nth-child(2) .medical-service-card__media > img {
+  object-position: 50% 45%;
+}
+.medical-service-card:nth-child(3) .medical-service-card__media > img {
+  object-position: 72% center;
+}
+.medical-service-card:nth-child(4) .medical-service-card__media > img {
+  object-position: 44% center;
+}
+.medical-service-card:nth-child(5) .medical-service-card__media > img {
+  object-position: center;
+}
+.medical-service-card:nth-child(6) .medical-service-card__media > img {
+  object-position: center;
+}
 
 .medical-service-card:hover .medical-service-card__media > img {
   transform: scale(1.035);
@@ -221,10 +256,11 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    to bottom,
-    rgba(2, 0, 15, 0) 0%,
-    rgba(2, 0, 15, 0.7) 79.5%,
-    rgba(2, 0, 15, 0.7) 100%
+    180deg,
+    rgba(2, 0, 15, 0.14) 0%,
+    rgba(2, 0, 15, 0.2) 46%,
+    rgba(2, 0, 15, 0.58) 72%,
+    rgba(2, 0, 15, 0.82) 100%
   );
 }
 
@@ -237,18 +273,22 @@
   justify-content: center;
   width: 79px;
   height: 59px;
-  border: 1px solid #a1a4b1;
-  border-radius: 28px;
-  color: #a1a4b1;
   transform: rotate(-36.71deg) skewX(16.58deg);
 }
 
-.medical-service-card__number span {
+.medical-service-card__number > div {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 46px;
+  width: 100%;
+  height: 100%;
+  border: 1px solid #a1a4b1;
+  border-radius: 28px;
+  padding: 4px 7px;
+}
+
+.medical-service-card__number span {
+  color: #a1a4b1;
   font-size: 24px;
   font-weight: 400;
   line-height: 1.334;
@@ -302,21 +342,19 @@
 
 .medical-services__decor {
   position: absolute;
-  left: 0;
-  top: 571px;
-  width: 155px;
-  height: 113px;
-  overflow: hidden;
-  transform: rotate(3deg);
+  left: -172px;
+  top: 432px;
+  z-index: 0;
+  width: 510px;
+  height: 390px;
+  pointer-events: none;
 }
 
 .medical-services__decor img {
-  position: absolute;
-  left: -34px;
-  top: -139px;
-  width: 353px;
-  height: 251px;
-  max-width: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .medical-cta {
@@ -373,8 +411,13 @@
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 0.25px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.12), 0 2px 2px rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
-  transition: background 180ms ease, transform 180ms ease;
+  box-shadow:
+    0 1px 5px rgba(0, 0, 0, 0.12),
+    0 2px 2px rgba(0, 0, 0, 0.14),
+    0 3px 1px -2px rgba(0, 0, 0, 0.2);
+  transition:
+    background 180ms ease,
+    transform 180ms ease;
 }
 
 .medical-cta__item:hover span {
@@ -432,7 +475,7 @@
   display: block;
   height: 88px;
   color: #0d47a1;
-  font-family: "Baloo Tamma", sans-serif;
+  font-family: 'Baloo Tamma', sans-serif;
   font-size: 70px;
   font-weight: 400;
   line-height: 88px;
@@ -449,12 +492,14 @@
   height: 784px;
   padding-top: 14px;
   background: #fff;
+  z-index: 2;
+  overflow: visible;
 }
 
 .medical-why > h2 {
   height: 79px;
   margin: 0;
-  font-family: "Baloo Tamma", sans-serif;
+  font-family: 'Baloo Tamma', sans-serif;
   font-size: 64px;
   font-weight: 400;
   line-height: 79px;
@@ -466,6 +511,7 @@
   grid-template-columns: 500px 400px 500px;
   gap: 10px;
   justify-content: center;
+  margin-top: 10px;
   height: 671px;
 }
 
@@ -486,7 +532,7 @@
 
 .medical-why__item {
   display: grid;
-  align-items: center;
+  align-items: start;
   min-height: 132px;
 }
 
@@ -510,6 +556,10 @@
   grid-template-columns: 62px 1fr;
 }
 
+.medical-why__item--right .medical-why__icon {
+  margin-left: 7px;
+}
+
 .medical-why__item h3 {
   margin: 0 0 10px;
   color: #01579b;
@@ -526,24 +576,36 @@
 }
 
 .medical-why__icon {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: 1.5px;
   width: 48px;
   height: 48px;
   border-radius: 50%;
 }
 
 .medical-why__icon img {
+  display: block;
   width: 32px;
   height: 32px;
   object-fit: contain;
 }
 
-.medical-why__icon--blue { background: #dbeafe; }
-.medical-why__icon--green { background: #dcfce7; }
-.medical-why__icon--red { background: rgba(239, 83, 80, 0.27); }
-.medical-why__icon--purple { background: #f3e8ff; }
+.medical-why__icon--blue {
+  background: #dbeafe;
+}
+.medical-why__icon--green {
+  background: #dcfce7;
+}
+.medical-why__icon--red {
+  background: rgba(239, 83, 80, 0.27);
+}
+.medical-why__icon--purple {
+  background: #f3e8ff;
+}
 
 .medical-why__main {
   position: relative;
@@ -573,12 +635,13 @@
 
 .medical-why__main-photo img {
   position: absolute;
-  left: -360px;
+  left: 0;
   top: 0;
-  width: 908px;
-  height: 606px;
+  width: 100%;
+  height: 100%;
   max-width: none;
   object-fit: cover;
+  object-position: center;
 }
 
 .medical-why__decor {
@@ -588,78 +651,83 @@
 }
 
 .medical-why__decor--paw {
-  left: 239px;
-  top: 359px;
-  width: 81px;
-  height: 86px;
+  left: 238.98px;
+  top: 358.59px;
+  width: 81.01px;
+  height: 85.93px;
 }
 
 .medical-why__decor--group-left {
-  left: 65px;
-  top: 135px;
-  width: 76px;
-  height: 70px;
+  left: 65.39px;
+  top: 124px;
+  width: 75.98px;
+  height: 70.22px;
 }
 
 .medical-why__decor--group-right {
-  left: 1318px;
-  top: 204px;
-  width: 63px;
-  height: 45px;
+  left: 1317.55px;
+  top: 203.64px;
+  width: 62.91px;
+  height: 44.69px;
 }
 
 .medical-why__decor--vector {
   left: 1140px;
-  top: 550px;
+  top: 550.17px;
   width: 50px;
-  height: 52px;
+  height: 51.96px;
 }
 
 .medical-why__decor--vector-1 {
   left: 1159px;
-  top: 574px;
+  top: 573.98px;
   width: 9px;
-  height: 8px;
+  height: 7.58px;
 }
 
 .medical-why__decor--vector-2 {
   left: 1166px;
-  top: 570px;
+  top: 569.65px;
   width: 5px;
-  height: 7px;
+  height: 6.5px;
 }
 
 .medical-why__decor--vector-3 {
   left: 1157px;
-  top: 570px;
+  top: 569.65px;
   width: 5px;
-  height: 7px;
+  height: 6.5px;
 }
 
 .medical-why__decor--vector-4 {
   left: 1162px;
-  top: 568px;
+  top: 567.49px;
   width: 4px;
-  height: 7px;
+  height: 6.5px;
 }
 
 .medical-why__decor--image-88 {
   left: 0;
-  top: 721px;
-  width: 58px;
-  height: 66px;
+  top: 642px;
+  z-index: 5;
+  width: 125.5px;
+  height: 142px;
   overflow: hidden;
 }
 
 .medical-why__decor--image-88 img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  position: absolute;
+  left: -44.85%;
+  top: -84.16%;
+  width: 176.5%;
+  height: 277.12%;
+  max-width: none;
 }
 
 .medical-doctors {
   height: 818px;
   background: #fff;
+  z-index: 1;
 }
 
 .medical-doctors__bg {
@@ -669,14 +737,15 @@
   width: 1453px;
   height: 821px;
   z-index: 0;
+  object-fit: fill;
 }
 
 .medical-doctors__shape {
   position: absolute;
-  right: 19px;
-  top: 221px;
-  width: 58px;
-  height: 46px;
+  right: 13px;
+  top: 217px;
+  width: 102.4px;
+  height: 57.2px;
   object-fit: contain;
 }
 
@@ -689,7 +758,7 @@
 
 .medical-doctors h2 {
   margin: 0;
-  font-family: "Baloo Tamma", sans-serif;
+  font-family: 'Baloo Tamma', sans-serif;
   font-size: 64px;
   font-weight: 400;
   line-height: 1.1;
@@ -717,28 +786,38 @@
 }
 
 .medical-doctors__grid {
-  position: relative;
+  position: absolute;
   z-index: 1;
+  left: 110.69px;
+  top: 319px;
   display: grid;
-  grid-template-columns: repeat(4, 275px);
-  gap: 40px;
-  width: 1220px;
-  margin: 37px auto 0;
+  grid-template-columns: repeat(4, 274.57px);
+  gap: 40.22px;
+  width: 1219.31px;
+  margin: 0;
   animation: medical-doctors-in 350ms ease both;
 }
 
 @keyframes medical-doctors-in {
-  from { opacity: 0; transform: translateX(22px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .medical-doctor-card {
-  height: 375px;
+  height: 374.72px;
   overflow: hidden;
   border-radius: 5px;
   background: #fff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.16);
-  transition: transform 200ms ease, box-shadow 200ms ease;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
 }
 
 .medical-doctor-card:hover {
@@ -747,7 +826,7 @@
 }
 
 .medical-doctor-card__photo {
-  height: 228px;
+  height: 227.54px;
   overflow: hidden;
   background: #d7effa;
 }
@@ -799,7 +878,9 @@
   font-size: 42px;
   line-height: 1;
   cursor: pointer;
-  transition: transform 180ms ease, background-color 180ms ease;
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease;
 }
 
 .medical-doctors__arrow:hover {
@@ -807,8 +888,12 @@
   transform: scale(1.08);
 }
 
-.medical-doctors__arrow--left { left: 0; }
-.medical-doctors__arrow--right { right: 0; }
+.medical-doctors__arrow--left {
+  left: 19px;
+}
+.medical-doctors__arrow--right {
+  right: 19px;
+}
 
 .medical-doctors__dots {
   position: absolute;
@@ -828,7 +913,10 @@
   padding: 0;
   background: #0d47a1;
   cursor: pointer;
-  transition: width 180ms ease, border-radius 180ms ease, background 180ms ease;
+  transition:
+    width 180ms ease,
+    border-radius 180ms ease,
+    background 180ms ease;
 }
 
 .medical-doctors__dots button.is-active {

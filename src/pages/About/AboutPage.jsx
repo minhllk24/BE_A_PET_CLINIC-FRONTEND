@@ -4,11 +4,9 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
-  Scissors,
-  ShoppingBag,
-  Stethoscope,
 } from "lucide-react";
 import NavBar from "../../components/Navbar";
+import ScaledCanvasLayout from "../../components/layout/ScaledCanvasLayout";
 import {
   aboutDecorations,
   aboutDoctors,
@@ -24,17 +22,14 @@ import "./AboutPage.css";
 
 const imageUrl = (name) =>
   new URL(`../../assets/images/about/${name}`, import.meta.url).href;
-
-const serviceIcons = {
-  medical: Stethoscope,
-  grooming: Scissors,
-  shop: ShoppingBag,
-};
+const figmaImageUrl = (name) =>
+  new URL(`../../assets/images/about/figma/${name}`, import.meta.url).href;
 
 function AboutPage() {
   const [activeSpace, setActiveSpace] = useState(0);
   const [activeSpacePhoto, setActiveSpacePhoto] = useState(0);
   const [doctorSlide, setDoctorSlide] = useState(0);
+  const [previewImage, setPreviewImage] = useState(null);
   const activeGallery = aboutGallerySlides[activeSpace];
   const doctorPage = doctorSlide % 2;
   const visibleDoctors = aboutDoctors.slice(doctorPage * 4, doctorPage * 4 + 4);
@@ -55,8 +50,15 @@ function AboutPage() {
     <div className="about-page">
       <NavBar />
 
+      <ScaledCanvasLayout className="bg-white">
       <main>
         <section className="about-hero">
+          <img
+            className="about-hero__vector"
+            src={figmaImageUrl("hero-vector-2.svg")}
+            alt=""
+            aria-hidden="true"
+          />
           <div className="about-hero__content">
             <p className="about-hero__eyebrow">TRUNG TÂM CHĂM SÓC THÚ CƯNG</p>
             <img
@@ -126,16 +128,38 @@ function AboutPage() {
               {activeGallery.layout === "grid" ? (
                 <div className="about-space__branch-grid">
                   {activeGallery.images.map((image, index) => (
-                    <img src={image} alt={`Chi nhánh ${index + 1}`} key={image} />
+                    <button
+                      type="button"
+                      className="about-space__image-button"
+                      key={image}
+                      onClick={() =>
+                        setPreviewImage({
+                          src: image,
+                          alt: `Chi nhánh ${index + 1}`,
+                        })
+                      }
+                    >
+                      <img src={image} alt={`Chi nhánh ${index + 1}`} />
+                    </button>
                   ))}
                 </div>
               ) : (
                 <>
-                  <img
+                  <button
+                    type="button"
                     className="about-space__main"
-                    src={activeGallery.images[activeSpacePhoto]}
-                    alt={activeGallery.title}
-                  />
+                    onClick={() =>
+                      setPreviewImage({
+                        src: activeGallery.images[activeSpacePhoto],
+                        alt: activeGallery.title,
+                      })
+                    }
+                  >
+                    <img
+                      src={activeGallery.images[activeSpacePhoto]}
+                      alt={activeGallery.title}
+                    />
+                  </button>
                   <div className="about-space__thumbs">
                     {activeGallery.images.slice(1).map((image, index) => (
                       <button
@@ -165,7 +189,7 @@ function AboutPage() {
               {activeGallery.paragraphs.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
-              <Link to="/booking">DANH SÁCH CHI NHÁNH <ArrowRight size={15} /></Link>
+              <Link to="/contact">DANH SÁCH CHI NHÁNH <ArrowRight size={15} /></Link>
             </div>
           </div>
         </section>
@@ -219,9 +243,7 @@ function AboutPage() {
             </div>
 
             <div className="about-services__list">
-              {aboutServices.map(({ id, title, image, href, copy, points }, index) => {
-                const Icon = serviceIcons[id];
-                return (
+              {aboutServices.map(({ title, image, href, copy, points }, index) => (
                 <article
                   className={`about-service ${index % 2 ? "about-service--reverse" : ""}`}
                   key={title}
@@ -237,7 +259,7 @@ function AboutPage() {
                     )}
                   </div>
                   <div className="about-service__copy">
-                    <h3><Icon size={28} />{title}</h3>
+                    <h3>{title}</h3>
                     <p>{copy}</p>
                     <ul>
                       {points.map((point) => (
@@ -252,8 +274,7 @@ function AboutPage() {
                     </Link>
                   </div>
                 </article>
-                );
-              })}
+              ))}
             </div>
           </div>
         </section>
@@ -317,6 +338,26 @@ function AboutPage() {
         <FeedbackSection layout="flow" />
       </main>
       <Footer />
+      </ScaledCanvasLayout>
+      {previewImage && (
+        <div
+          className="about-image-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Xem ảnh không gian"
+          onClick={() => setPreviewImage(null)}
+        >
+          <button
+            type="button"
+            className="about-image-modal__close"
+            onClick={() => setPreviewImage(null)}
+            aria-label="Đóng ảnh"
+          >
+            ×
+          </button>
+          <img src={previewImage.src} alt={previewImage.alt} />
+        </div>
+      )}
     </div>
   );
 }

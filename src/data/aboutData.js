@@ -95,12 +95,6 @@ export const aboutServices = [
   },
 ];
 
-export const aboutTestimonials = Array.from({ length: 3 }, () => ({
-  quote: "These are the perfect size for our small dog. The design is cute and the rubber on the bottom is great because it makes them durable. They've held up to being...",
-  name: "Mary Douglas",
-  company: "Pet Shop Inc.",
-}));
-
 export const aboutGallerySlides = [
   {
     id: "lobby",
@@ -191,10 +185,3 @@ export const aboutDoctors = [
   school,
   image: figmaImage(image),
 }));
-
-export const feedbackAssets = {
-  avatar: figmaImage("feedback-avatar.png"),
-  paws: [1, 2, 3, 4].map((index) =>
-    figmaImage(`feedback-paw-${index}.png`),
-  ),
-};

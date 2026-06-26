@@ -1,6 +1,6 @@
-import { groomingImages } from "../../assets/groomingImages";
-import { GROOMING_FAQS } from "../../data/groomingData";
-import PetCareFaqSection from "../shared/PetCareFaqSection";
+import { groomingImages } from '../../assets/groomingImages'
+import { GROOMING_FAQS } from '../../data/groomingData'
+import PetCareFaqSection from '../shared/PetCareFaqSection'
 
 function GroomingFAQ() {
   return (
@@ -21,11 +21,11 @@ function GroomingFAQ() {
             ))}
           </ul>
         ) : (
-          <p>{faq.answer.join(" ")}</p>
+          <p>{faq.answer.join(' ')}</p>
         )
       }
     />
-  );
+  )
 }
 
-export default GroomingFAQ;
+export default GroomingFAQ

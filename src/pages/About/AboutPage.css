@@ -23,6 +23,7 @@
   --blue: #164f9b;
   --sky: #dff4ff;
   --yellow: #fdd835;
+  --title-yellow: #fbc02d;
   --yellow-light: #fff176;
   --ink: #0f172a;
   background: #fff;
@@ -42,14 +43,14 @@
   margin-inline: auto;
 }
 
-.about-page > main h1,
-.about-page > main h2,
-.about-page > main h3,
-.about-page > main p {
+.about-page main h1,
+.about-page main h2,
+.about-page main h3,
+.about-page main p {
   margin-top: 0;
 }
 
-.about-page > main h2 {
+.about-page main h2 {
   font-family: "Baloo Tamma", "Baloo Tamma 2", "About Jakarta", sans-serif;
   font-size: 64px;
   font-weight: 400;
@@ -57,21 +58,32 @@
   text-align: center;
 }
 
-.about-page > main h2 span {
-  color: var(--yellow);
+.about-page main h2 span {
+  color: var(--title-yellow);
 }
 
 .about-hero {
   position: relative;
   min-height: 846px;
-  margin-top: 19px;
-  background: #dff5ff;
-  border-radius: 0 0 145px 145px;
+  margin-top: 0;
+  background: #fff;
+  overflow: visible;
+}
+
+.about-hero__vector {
+  position: absolute;
+  z-index: 0;
+  left: 0;
+  top: -1px;
+  width: 1440px;
+  height: 747px;
+  object-fit: fill;
+  pointer-events: none;
 }
 
 .about-hero__content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: min(1200px, calc(100% - 48px));
   height: 759px;
   margin: 0 auto;
@@ -176,12 +188,12 @@
 .about-hero__pets {
   position: absolute;
   z-index: 0;
-  top: 310px;
+  top: 291px;
   left: 50%;
-  width: 905px;
-  height: 557px;
-  opacity: 0.86;
-  filter: blur(0.9px);
+  width: 970px;
+  height: 594px;
+  opacity: 1;
+  filter: none;
   object-fit: cover;
   object-position: center top;
   transform: translateX(-50%);
@@ -221,8 +233,10 @@
 
 .about-metrics strong {
   color: #0d47a1;
-  font-family: "About Jakarta", sans-serif;
-  font-size: 40px;
+  font-family: "About Jakarta", "Baloo Tamma", sans-serif;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .about-metrics span {
@@ -331,10 +345,26 @@
 }
 
 .about-space__main {
+  display: block;
   width: 100%;
   height: 440px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
   border-radius: 24px;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.about-space__main > img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  transition: transform 220ms ease;
+}
+
+.about-space__main:hover > img {
+  transform: scale(1.025);
 }
 
 .about-space__thumbs {
@@ -465,11 +495,26 @@
   gap: 24px;
 }
 
+.about-space__image-button {
+  width: 199px;
+  height: 215px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 24px;
+  background: transparent;
+  cursor: zoom-in;
+}
+
 .about-space__branch-grid img {
   width: 199px;
   height: 215px;
-  border-radius: 24px;
   object-fit: cover;
+  transition: transform 220ms ease;
+}
+
+.about-space__image-button:hover img {
+  transform: scale(1.04);
 }
 
 .about-journey {
@@ -551,6 +596,7 @@
 .about-services {
   position: relative;
   min-height: 1952px;
+  margin-bottom: -1px;
   overflow: hidden;
   background: #e3f2fd;
 }
@@ -569,7 +615,7 @@
 }
 
 .about-services__wave--bottom {
-  bottom: 0;
+  bottom: -1px;
   height: 215px;
 }
 
@@ -594,18 +640,24 @@
 .about-services__title {
   position: relative;
   display: inline-block;
+  width: 610px;
   margin: 0 0 20px 40px;
+  text-align: left;
 }
 
-.about-services__title h2 {
+.about-page .about-services__title h2 {
   margin: 0;
-  color: rgba(0, 0, 0, 0.87);
   font-family: "Baloo Tamma", "Baloo Tamma 2", sans-serif;
   font-size: 64px;
   font-style: normal;
   font-weight: 400;
   line-height: 1.1;
+  color: rgba(0, 0, 0, 0.87);
   text-align: left;
+}
+
+.about-page .about-services__title h2 span {
+  color: #fbc02d;
 }
 
 .about-services__title > img {
@@ -712,7 +764,6 @@
 .about-service__copy h3 {
   display: flex;
   align-items: center;
-  gap: 12px;
   margin-bottom: 18px;
   color: #0d47a1;
   font-family: "About Jakarta", sans-serif;
@@ -761,7 +812,9 @@
   position: relative;
   width: 100%;
   min-height: 821px;
+  margin-top: -1px;
   padding: 46px 0 58px;
+  border-top: 0;
   text-align: center;
 }
 
@@ -820,15 +873,16 @@
 }
 
 .about-team__slider {
-  display: grid;
-  width: min(1440px, 100%);
-  margin: 0 auto;
-  grid-template-columns: 56px 1fr 56px;
-  gap: 42px;
-  align-items: center;
+  position: relative;
+  width: 1440px;
+  height: 376px;
+  margin: 37px auto 0;
 }
 
 .about-team__slider > button {
+  position: absolute;
+  top: 150px;
+  z-index: 3;
   display: grid;
   width: 56px;
   height: 56px;
@@ -857,15 +911,27 @@
   transform: scale(0.94);
 }
 
+.about-team__slider > button:first-child {
+  left: 19px;
+}
+
+.about-team__slider > button:last-child {
+  right: 19px;
+}
+
 .about-team__grid {
+  position: absolute;
+  top: 0;
+  left: 111px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  width: 1229px;
+  grid-template-columns: repeat(4, 277px);
   gap: 40px;
 }
 
 .about-team__grid article {
   min-width: 0;
-  min-height: 375px;
+  height: 376px;
   overflow: hidden;
   border: 0;
   border-radius: 8px;
@@ -924,6 +990,43 @@
   margin-top: 34px;
 }
 
+.about-image-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 48px;
+  background: rgba(2, 0, 15, 0.72);
+  cursor: zoom-out;
+}
+
+.about-image-modal img {
+  display: block;
+  max-width: min(1100px, 92vw);
+  max-height: 86vh;
+  border-radius: 24px;
+  object-fit: contain;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+}
+
+.about-image-modal__close {
+  position: fixed;
+  top: 26px;
+  right: 34px;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #fbc02d;
+  color: #02000f;
+  cursor: pointer;
+  font-size: 32px;
+  line-height: 1;
+}
+
 .about-team__dots button {
   width: 5px;
   height: 5px;
@@ -958,7 +1061,7 @@
 }
 
 @media (max-width: 900px) {
-  .about-page > main h2 {
+  .about-page main h2 {
     font-size: 34px;
   }
 
