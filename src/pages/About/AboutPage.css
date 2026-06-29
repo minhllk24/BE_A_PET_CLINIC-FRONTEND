@@ -596,9 +596,21 @@
 .about-services {
   position: relative;
   min-height: 1952px;
-  margin-bottom: -1px;
+  margin-bottom: 0;
   overflow: hidden;
   background: #e3f2fd;
+}
+
+.about-services::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  height: 4px;
+  background: #fff;
+  content: "";
+  pointer-events: none;
 }
 
 .about-services__wave {
@@ -615,7 +627,7 @@
 }
 
 .about-services__wave--bottom {
-  bottom: -1px;
+  bottom: 0;
   height: 215px;
 }
 
@@ -812,9 +824,10 @@
   position: relative;
   width: 100%;
   min-height: 821px;
-  margin-top: -1px;
+  margin-top: 0;
   padding: 46px 0 58px;
   border-top: 0;
+  background: #fff;
   text-align: center;
 }
 

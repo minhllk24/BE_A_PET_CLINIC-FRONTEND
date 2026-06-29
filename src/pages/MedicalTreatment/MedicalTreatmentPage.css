@@ -342,11 +342,11 @@
 
 .medical-services__decor {
   position: absolute;
-  left: -172px;
-  top: 432px;
+  left: -11px;
+  top: 567px;
   z-index: 0;
-  width: 510px;
-  height: 390px;
+  width: 180px;
+  height: 138px;
   pointer-events: none;
 }
 
@@ -641,7 +641,7 @@
   height: 100%;
   max-width: none;
   object-fit: cover;
-  object-position: center;
+  object-position: 68% center;
 }
 
 .medical-why__decor {

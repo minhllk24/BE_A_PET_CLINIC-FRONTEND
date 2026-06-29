@@ -1,0 +1,81 @@
+import { notificationImages } from "../assets/notificationImages";
+
+export const NOTIFICATION_FILTERS = [
+  { id: "all", label: "Tất cả" },
+  { id: "unread", label: "Chưa đọc" },
+  { id: "read", label: "Đã đọc" },
+];
+
+export const NOTIFICATION_ITEMS = [
+  {
+    id: "appointment-nau",
+    type: "appointment",
+    unread: true,
+    icon: notificationImages.iconCalendar,
+    iconAlt: "Lịch hẹn",
+    relativeTime: "VỪA XONG",
+    dateTime: "10:39 SA 19/06/2026",
+    searchableText:
+      "Nhắc lịch hẹn Khám sức khỏe tổng quát cho Nâu lúc 09:00 ngày mai",
+    messageParts: [
+      { text: "Nhắc lịch hẹn:", tone: "strong" },
+      { text: " Khám sức khỏe tổng quát cho " },
+      { text: "Nâu", tone: "brandStrong" },
+      { text: " lúc 09:00 ngày mai." },
+    ],
+  },
+  {
+    id: "diary-bong",
+    type: "pet",
+    unread: true,
+    avatar: notificationImages.petBong,
+    avatarAlt: "Bông",
+    avatarCrop: {
+      width: "248.64%",
+      height: "130.86%",
+      left: "-15.71%",
+      top: "-15.02%",
+    },
+    relativeTime: "15 PHÚT TRƯỚC",
+    dateTime: "10:24 SA 19/06/2026",
+    searchableText: "Bông ăn sáng",
+    messageParts: [
+      { text: "Bông", tone: "brandStrong" },
+      { text: " ăn sáng" },
+    ],
+  },
+  {
+    id: "grouped-luna",
+    type: "pet",
+    unread: true,
+    avatar: notificationImages.petLuna,
+    avatarAlt: "Luna",
+    avatarCrop: {
+      width: "123.52%",
+      height: "193.95%",
+      left: "-12.76%",
+      top: "-17.4%",
+    },
+    relativeTime: "1 GIỜ TRƯỚC",
+    dateTime: "09:25 SA 19/06/2026",
+    searchableText: "Có 5 cập nhật ghi chú mới của Luna",
+    messageParts: [
+      { text: "Có " },
+      { text: "5 cập nhật", tone: "strongDark" },
+      { text: " ghi chú mới của " },
+      { text: "Luna", tone: "brandStrong" },
+    ],
+  },
+  {
+    id: "system-guide",
+    type: "system",
+    unread: false,
+    icon: notificationImages.iconNote,
+    iconAlt: "Ghi chú",
+    relativeTime: "HÔM QUA",
+    searchableText: "Hướng dẫn Cách chăm sóc thú cưng sau khi tiêm chủng",
+    messageParts: [
+      { text: "Hướng dẫn: Cách chăm sóc thú cưng sau khi tiêm chủng." },
+    ],
+  },
+];

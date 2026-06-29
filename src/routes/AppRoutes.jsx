@@ -28,6 +28,7 @@ import { MyOrdersPage, OrderDetailsPage } from "../pages/Order/OrderPages";
 import UserProfilePage from "../pages/User/UserProfilePage";
 import AboutPage from "../pages/About/AboutPage";
 import ContactPage from "../pages/Contact/ContactPage";
+import PolicyPage from "../pages/Policy/PolicyPage";
 
 const AppRoutes = () => {
   return (
@@ -51,6 +52,8 @@ const AppRoutes = () => {
       <Route path="/rescue" element={<RescuePage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/policy" element={<PolicyPage />} />
+      <Route path="/policies/doi-tra-hang" element={<PolicyPage />} />
 
       <Route path="/services/grooming-spa" element={<GroomingSpaPage />} />
       <Route path="/services/groomng-spa" element={<GroomingSpaPage />} />

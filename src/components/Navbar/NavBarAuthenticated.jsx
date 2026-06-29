@@ -6,6 +6,7 @@ import { homeImages } from "../../assets/homeImages";
 import { useCart } from "../../context/CartContext";
 import { navbarImages } from "../../assets/navbarImages";
 import YellowButton from "../home/YellowButton";
+import NotificationBell from "../Notifications/NotificationBell";
 import NavLinks from "./NavLinks";
 import NavSearchBar from "./NavSearchBar";
 import NavUserMenu from "./NavUserMenu";
@@ -36,17 +37,7 @@ function NavBarAuthenticated({ avatarSrc, onLogout }) {
             </YellowButton>
           </a>
 
-          <button
-            type="button"
-            className="btn-icon hidden shrink-0 p-1 sm:block"
-            aria-label="Thông báo"
-          >
-            <img
-              src={navbarImages.notificationIcon}
-              alt=""
-              className="h-[36px] w-[32px]"
-            />
-          </button>
+          <NotificationBell />
 
           <button
             type="button"
