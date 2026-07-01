@@ -18,6 +18,14 @@ const INITIAL_FORM = {
   message: "",
 };
 
+const getGoogleMapsLink = (address) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    address,
+  )}`;
+
+const getGoogleMapsEmbedLink = (address) =>
+  `https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=14&output=embed`;
+
 function ContactChannel({ channel }) {
   const isExternal = channel.href.startsWith("http");
 
@@ -140,7 +148,10 @@ function BranchCard({ branch, active, onSelect }) {
       onClick={() => onSelect(branch.id)}
       aria-pressed={active}
     >
-      <img className="contact-branch-card__pin" src={branch.pin} alt="" />
+      <span
+        className={`contact-branch-card__pin${active ? " is-active" : ""}`}
+        aria-hidden="true"
+      />
       <span className="contact-branch-card__content">
         <strong>{branch.name}</strong>
         <span>{branch.address}</span>
@@ -164,6 +175,8 @@ function BranchCard({ branch, active, onSelect }) {
 function BranchDirectory() {
   const [query, setQuery] = useState("");
   const [activeBranch, setActiveBranch] = useState(1);
+  const selectedBranch =
+    BRANCHES.find((branch) => branch.id === activeBranch) ?? BRANCHES[0];
 
   const visibleBranches = useMemo(() => {
     const keyword = query.trim().toLocaleLowerCase("vi");
@@ -209,7 +222,23 @@ function BranchDirectory() {
         </div>
 
         <div className="contact-map" aria-label="Bản đồ chi nhánh">
-          <img className="contact-map__image" src={contactAssets.map} alt="" />
+          <iframe
+            className="contact-map__embed"
+            title={`Google Maps - ${selectedBranch.name}`}
+            src={getGoogleMapsEmbedLink(selectedBranch.address)}
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+          <a
+            className="contact-map__open"
+            href={getGoogleMapsLink(selectedBranch.address)}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Mở Google Maps cho ${selectedBranch.name}`}
+          >
+            Google Maps
+          </a>
           {BRANCHES.map((branch) => (
             <button
               type="button"
@@ -224,11 +253,9 @@ function BranchDirectory() {
                 height: branch.mapPosition.size,
               }}
               onClick={() => setActiveBranch(branch.id)}
-              aria-label={`Xem ${branch.name}`}
+              aria-label={`Chọn ${branch.name}`}
               aria-pressed={activeBranch === branch.id}
-            >
-              <img src={branch.pin} alt="" />
-            </button>
+            />
           ))}
         </div>
       </div>
