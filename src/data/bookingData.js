@@ -1,8 +1,8 @@
 import { bookingImages } from "../assets/bookingImages";
 
 export const BOOKING_SERVICES = [
-  { id: "bath", name: "Tắm sấy khử mùi", desc: "Vệ sinh sạch sẽ, sấy khô và xịt nước hoa cao cấp", price: 150000 },
-  { id: "trim", name: "Cắt tỉa lông tạo kiểu", desc: "Tạo kiểu theo yêu cầu, tỉa gọn chân và bụng", price: 250000 },
+  { id: "bath", name: "Tắm sấy khử mùi", desc: "Vệ sinh sạch sẽ, sấy khô và xịt nước hoa cao cấp", price: 150000, weightSurcharge: { minWeight: 10, amount: 50000 } },
+  { id: "trim", name: "Cắt tỉa lông tạo kiểu", desc: "Tạo kiểu theo yêu cầu, tỉa gọn chân và bụng", price: 250000, weightSurcharge: { minWeight: 10, amount: 50000 } },
   { id: "nails", name: "Cắt móng & Mài dũa", desc: "Cắt tỉa móng gọn gàng, tránh trầy xước", price: 60000 },
 ];
 

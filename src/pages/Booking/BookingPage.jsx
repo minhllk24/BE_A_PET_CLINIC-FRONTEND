@@ -530,8 +530,10 @@ function InfoForm({
             setPetInfo((current) => ({
               ...current,
               name: pet.name || current.name,
+              species: pet.species || current.species,
               breed: pet.breed || current.breed,
               age: pet.age || current.age,
+              weight: pet.weight || current.weight,
             }));
             setShowPetPicker(false);
           }}
@@ -763,6 +765,7 @@ function BookingPage() {
               selectedDate={selectedDate}
               selectedSlot={selectedSlot}
               selectedPet={selectedPet}
+              petInfo={petInfo}
               ownerInfo={ownerInfo}
               selectedServices={BOOKING_SERVICES.filter((service) => selectedServices.includes(service.id))}
               paymentMode={paymentMode}

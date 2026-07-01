@@ -31,6 +31,23 @@ const formatMoney = (value) =>
     maximumFractionDigits: 0,
   }).format(value);
 
+const getWeightValue = (weight) => {
+  const normalizedWeight = String(weight ?? "").replace(",", ".");
+  const value = Number.parseFloat(normalizedWeight);
+
+  return Number.isFinite(value) ? value : 0;
+};
+
+const getWeightSurcharge = (service, petWeight) => {
+  const surcharge = service.weightSurcharge;
+
+  if (!surcharge || petWeight < surcharge.minWeight) {
+    return 0;
+  }
+
+  return surcharge.amount;
+};
+
 function Card({ children, className = "" }) {
   return (
     <section
@@ -41,7 +58,11 @@ function Card({ children, className = "" }) {
   );
 }
 
-function AppointmentDetails({ selectedDate, selectedSlot, selectedPet, ownerInfo, selectedServices, quantities, onQuantityChange }) {
+function AppointmentDetails({ selectedDate, selectedSlot, selectedPet, petInfo, ownerInfo, selectedServices, quantities, onQuantityChange }) {
+  const petName = petInfo?.name || selectedPet?.name || "Thú cưng khác";
+  const petWeight = petInfo?.weight || selectedPet?.weight;
+  const petWeightValue = getWeightValue(petWeight);
+
   return (
     <Card className="rounded-lg border border-slate-300 p-6 shadow-none">
       <div className="mb-6 flex items-start justify-between">
@@ -53,29 +74,45 @@ function AppointmentDetails({ selectedDate, selectedSlot, selectedPet, ownerInfo
       </div>
       <div className="grid gap-5 border-b border-slate-300 pb-5 md:grid-cols-2">
         <Detail label="LỊCH HẸN CỦA BẠN" value={formatAppointmentDate(selectedDate, selectedSlot)} icon={paymentCalendarIcon} />
-        <Detail label="THÔNG TIN THÚ CƯNG" value={selectedPet?.name || "Thú cưng khác"} icon={paymentPetIcon} />
+        <Detail
+          label="THÔNG TIN THÚ CƯNG"
+          value={petName}
+          subValue={petWeight ? `Cân nặng: ${petWeight}` : ""}
+          icon={paymentPetIcon}
+        />
         <Detail label="HỌ TÊN KHÁCH HÀNG" value={ownerInfo?.name || "Chưa cung cấp"} icon={paymentPersonIcon} />
         <Detail label="SỐ ĐIỆN THOẠI LIÊN HỆ" value={ownerInfo?.phone || "Chưa cung cấp"} icon={paymentPhoneIcon} />
       </div>
       <h2 className="mt-6 text-xs font-bold tracking-wider text-slate-500">DỊCH VỤ ĐÃ CHỌN</h2>
       <div className="mt-4 divide-y divide-slate-200">
-        {selectedServices.map((service) => (
-          <div key={service.id} className="flex items-center justify-between py-4">
-            <div>
-              <p className="font-bold text-blue-900">{service.name}</p>
-              <p className="mt-1 text-xs text-slate-600">{service.desc}</p>
-              <span className="mt-2 inline-flex items-center gap-3 rounded bg-slate-100 px-3 text-sm font-bold">
-                <button type="button" onClick={() => onQuantityChange(service.id, -1)}>-</button>
-                {quantities[service.id] || 1}
-                <button type="button" onClick={() => onQuantityChange(service.id, 1)}>+</button>
-              </span>
+        {selectedServices.map((service) => {
+          const quantity = quantities[service.id] || 1;
+          const weightSurcharge = getWeightSurcharge(service, petWeightValue) * quantity;
+          const serviceTotal = service.price * quantity + weightSurcharge;
+
+          return (
+            <div key={service.id} className="flex items-center justify-between py-4">
+              <div>
+                <p className="font-bold text-blue-900">{service.name}</p>
+                <p className="mt-1 text-xs text-slate-600">{service.desc}</p>
+                <span className="mt-2 inline-flex items-center gap-3 rounded bg-slate-100 px-3 text-sm font-bold">
+                  <button type="button" onClick={() => onQuantityChange(service.id, -1)}>-</button>
+                  {quantity}
+                  <button type="button" onClick={() => onQuantityChange(service.id, 1)}>+</button>
+                </span>
+              </div>
+              <div className="text-right">
+                <p className="font-bold">{formatMoney(serviceTotal)}</p>
+                <p className="text-xs text-slate-700">{formatMoney(service.price)} x {quantity}</p>
+                {weightSurcharge > 0 && (
+                  <p className="mt-1 text-xs text-slate-500">
+                    Phụ thu cân nặng: +{formatMoney(weightSurcharge)}
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="text-right">
-              <p className="font-bold">{formatMoney(service.price * (quantities[service.id] || 1))}</p>
-              <p className="text-xs text-slate-700">{formatMoney(service.price)} x {quantities[service.id] || 1}</p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
         {selectedServices.length === 0 && <p className="py-4 text-sm text-slate-500">Chưa chọn dịch vụ.</p>}
       </div>
       <div className="mt-5 rounded bg-slate-100 p-5 text-sm text-slate-700">
@@ -85,7 +122,7 @@ function AppointmentDetails({ selectedDate, selectedSlot, selectedPet, ownerInfo
   );
 }
 
-function Detail({ label, value, icon }) {
+function Detail({ label, value, subValue, icon }) {
   return (
     <div>
       <p className="text-xs font-bold tracking-wider text-slate-500">{label}</p>
@@ -93,11 +130,12 @@ function Detail({ label, value, icon }) {
         <img src={icon} alt="" className="h-5 w-5" />
         {value}
       </p>
+      {subValue && <p className="ml-8 mt-1 text-xs text-slate-500">{subValue}</p>}
     </div>
   );
 }
 
-function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal }) {
+function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surchargeTotal, total }) {
   const [couponCode, setCouponCode] = useState("");
   const [couponError, setCouponError] = useState("");
 
@@ -211,7 +249,7 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal }) {
 
       <div className="space-y-3 py-5 text-sm">
         <PriceRow label="Tạm tính" value={formatMoney(subtotal)} />
-        <PriceRow label="Phí dịch vụ" value="0 đ" />
+        <PriceRow label="Phụ thu" value={formatMoney(surchargeTotal)} />
         <PriceRow label="Giảm giá" value="0 đ" />
       </div>
 
@@ -222,7 +260,7 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal }) {
         </div>
 
         <p className="text-xl font-bold text-[#00355f]">
-          {formatMoney(subtotal)}
+          {formatMoney(total)}
         </p>
       </div>
 
@@ -256,6 +294,7 @@ function BookingPaymentStep({
   selectedDate,
   selectedSlot,
   selectedPet,
+  petInfo,
   ownerInfo,
   selectedServices = [],
   paymentMode,
@@ -266,10 +305,18 @@ function BookingPaymentStep({
   const [quantities, setQuantities] = useState(() =>
     Object.fromEntries(selectedServices.map((service) => [service.id, 1])),
   );
-  const subtotal = selectedServices.reduce(
-    (total, service) => total + service.price * (quantities[service.id] || 1),
-    0,
-  );
+  const petWeightValue = getWeightValue(petInfo?.weight || selectedPet?.weight);
+  const subtotal = selectedServices.reduce((total, service) => {
+    const quantity = quantities[service.id] || 1;
+
+    return total + service.price * quantity;
+  }, 0);
+  const surchargeTotal = selectedServices.reduce((total, service) => {
+    const quantity = quantities[service.id] || 1;
+
+    return total + getWeightSurcharge(service, petWeightValue) * quantity;
+  }, 0);
+  const total = subtotal + surchargeTotal;
   const handleQuantityChange = (serviceId, delta) => {
     setQuantities((current) => ({
       ...current,
@@ -284,12 +331,20 @@ function BookingPaymentStep({
           selectedDate={selectedDate}
           selectedSlot={selectedSlot}
           selectedPet={selectedPet}
+          petInfo={petInfo}
           ownerInfo={ownerInfo}
           selectedServices={selectedServices}
           quantities={quantities}
           onQuantityChange={handleQuantityChange}
         />
-        <PaymentPanel paymentMode={paymentMode} setPaymentMode={setPaymentMode} onConfirm={onConfirm} subtotal={subtotal} />
+        <PaymentPanel
+          paymentMode={paymentMode}
+          setPaymentMode={setPaymentMode}
+          onConfirm={onConfirm}
+          subtotal={subtotal}
+          surchargeTotal={surchargeTotal}
+          total={total}
+        />
       </div>
       <div className="mt-6">
         <button

@@ -25,6 +25,7 @@ import PetDetailPage from "../pages/Pet/PetDetailPage";
 import PetFormPage from "../pages/Pet/PetFormPage";
 import { MyOrdersPage, OrderDetailsPage } from "../pages/Order/OrderPages";
 import UserProfilePage from "../pages/User/UserProfilePage";
+import NotFoundPage from "../pages/NotFoundPage";
 
 const AppRoutes = () => {
   return (
@@ -63,6 +64,8 @@ const AppRoutes = () => {
         <Route path="/my-orders" element={<MyOrdersPage />} />
         <Route path="/my-orders/:orderId" element={<OrderDetailsPage />} />
       </Route>
+
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };
