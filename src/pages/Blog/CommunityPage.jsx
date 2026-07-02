@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState } from "react";
 import {
-  ArrowRight,
   Bookmark,
   Camera,
   Check,
@@ -157,7 +156,7 @@ function Composer({ onPost }) {
           <button type="button" onClick={() => imageInput.current?.click()} className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm"><Image className="h-[18px] w-[18px]" />Ảnh</button>
           <button type="button" onClick={() => videoInput.current?.click()} className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm"><Video className="h-[18px] w-[18px]" />Video</button>
           <div className="relative">
-            <button type="button" onClick={() => setShowTypes((open) => !open)} className={`flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm ${POST_TYPES[type]}`}><Tag className="h-[18px] w-[18px]" />Thẻ</button>
+            <button type="button" onClick={() => setShowTypes((open) => !open)} className={`flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm ${POST_TYPES[type]}`}><Tag className="h-[18px] w-[18px]" />{type || "Thẻ"}</button>
             {showTypes && <div className="absolute left-0 top-12 z-20 flex w-44 flex-col gap-2 rounded-2xl bg-white p-3 shadow-xl">{Object.keys(POST_TYPES).map((item) => <button key={item} type="button" onClick={() => { setType(item); setShowTypes(false); }} className={`flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm ${POST_TYPES[item]}`}>{item}{type === item && <Check className="h-4 w-4" />}</button>)}</div>}
           </div>
         </div>
@@ -187,22 +186,22 @@ function PostModal({ post, comments, state, onClose, onAddComment, onLike, onSha
     setAttachment(null);
   };
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-8" onMouseDown={onClose}>
-      <div className="flex h-[795px] w-[1024px] overflow-hidden rounded-[16px] border border-[#C1C6D5] bg-white shadow-2xl" onMouseDown={(event) => event.stopPropagation()}>
-        <div className="flex w-[623px] flex-col border-r border-[#C1C6D5]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 sm:p-6" onMouseDown={onClose}>
+      <div className="flex h-[795px] max-h-[calc(100vh-48px)] w-[1024px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[16px] border border-[#C1C6D5] bg-white shadow-2xl" onMouseDown={(event) => event.stopPropagation()}>
+        <div className="flex min-h-0 w-[623px] flex-col border-r border-[#C1C6D5]">
           <div className="border-b border-[#C1C6D5] px-6 py-4">Bài viết của {post.author}</div>
           {post.image && <img src={post.image} alt="" className="h-[360px] w-full object-cover" />}
           {post.video && <video src={post.video} controls className="h-[360px] w-full bg-black object-contain" />}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="min-h-0 flex-1 overflow-y-auto p-6">
             <div className="flex items-start justify-between"><Author post={post} large /><TypeBadge type={post.type} /></div>
             {post.title && <h2 className="mt-5 text-[16px] font-semibold">{post.title}</h2>}
             <div className="mt-4 whitespace-pre-line text-[16px] leading-[26px] text-[#414753]">{post.content}</div>
             <div className="mt-6"><Actions post={post} liked={state.liked} saved={state.saved} onLike={onLike} onComment={() => commentInput.current?.focus()} onShare={onShare} onSave={onSave} /></div>
           </div>
         </div>
-        <div className="flex w-[400px] flex-col">
+        <div className="flex min-h-0 w-[400px] flex-col">
           <div className="flex items-center justify-between border-b border-[#C1C6D5] px-6 py-4"><span>Bình luận ({comments.length})</span><button type="button" onClick={onClose}><X className="h-5 w-5" /></button></div>
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="min-h-0 flex-1 overflow-y-auto p-6">
             {comments.length ? comments.map((comment) => (
               <div key={comment.id} className="mb-4 flex gap-3">
                 <span className="h-8 w-8 shrink-0 rounded-full bg-[#EEE]" />
@@ -272,19 +271,16 @@ export default function CommunityPage() {
       <CanvasLayout>
         <NavBar isAuthenticated={isAuthenticated} />
         <main className="flex min-h-[2100px] flex-col items-center gap-3 bg-[#E5F6FD] pb-10">
-          <nav className="flex h-14 w-[1200px] items-center gap-10 text-[16px]"><Link to="/blog" className="font-medium text-[#4B5563]">Blog nền tảng</Link><span className="flex h-full items-center border-b-2 border-[#0D47A1] font-bold text-[#0D47A1]">Cộng đồng chia sẻ</span></nav>
+          <nav className="flex h-14 w-[1200px] items-center gap-10 text-[16px]">
+            <Link to="/blog/kien-thuc" className="font-medium text-[#4B5563]">Kiến thức thú cưng</Link>
+            <span className="flex h-full items-center border-b-2 border-[#0D47A1] font-bold text-[#0D47A1]">Cộng đồng chia sẻ</span>
+            <Link to="/blog/so-cuu" className="font-medium text-[#4B5563]">Cẩm nang sơ cứu</Link>
+          </nav>
           <section className="flex flex-col items-center pb-5 pt-2 text-center"><h1 className="flex items-center gap-1 text-[40px] font-bold tracking-[-0.8px]">Kết nối <span className="text-[#0D47A1]">chia sẻ</span><img src={blogImages.communityTitle} alt="" className="h-12 w-12" /></h1><p className="mt-2 text-[16px] leading-6 text-[#414753]">Nơi chia sẻ khoảnh khắc, kinh nghiệm và lan tỏa yêu thương<br />cùng cộng đồng yêu thú cưng!!</p></section>
           <Composer onPost={addPost} />
           <section className="mt-7 grid w-[1208px] grid-cols-2 items-start gap-4">
             {columns.map((column, columnIndex) => <div key={columnIndex} className="flex flex-col gap-4">{column.map((post) => <CommunityCard key={post.id} post={post} state={getState(post.id)} onOpen={() => openPost(post.id)} onLike={() => updatePostState(post.id, "liked")} onSave={() => updatePostState(post.id, "saved")} onShare={() => sharePost(post)} />)}{columnIndex === 1 && <div className="rounded-[24px] bg-[#0D47A1] p-8 text-center text-white"><h3 className="font-semibold">Gia đình Dr.Pet</h3><p className="mt-2 text-[14px]">Tham gia cộng đồng Zalo để cập nhật tin tức và ưu đãi sớm nhất.</p><button className="mt-5 rounded-full bg-white px-8 py-2 text-[12px] font-bold text-[#0D47A1]">THAM GIA NGAY</button></div>}</div>)}
           </section>
-              <button
-                type="button"
-                onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
-                className="my-4 h-[42px] rounded-[4px] bg-[#FFF176] px-[22px] text-[15px] font-medium uppercase tracking-[0.46px] text-black shadow-elevation hover:bg-[#FDD835]"
-              >
-                Xem thêm
-              </button>
         </main>
         <Footer variant="white" />
       </CanvasLayout>
