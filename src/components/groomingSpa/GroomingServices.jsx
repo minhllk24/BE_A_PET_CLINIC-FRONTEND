@@ -132,16 +132,6 @@ function GroomingServices() {
         />
       </div>
 
-      <div className="relative h-[62px] w-[550px] shrink-0">
-        <div className="absolute inset-0 rounded-[30px] border-2 border-[#FDD835] bg-[#F5F5F5]" />
-        <img
-          src={groomingImages.searchIcon}
-          alt=""
-          className="absolute right-[14px] top-1/2 size-6 -translate-y-1/2"
-          aria-hidden="true"
-        />
-      </div>
-
       <div className="relative h-[1572px] w-full shrink-0">
         <img
           src={groomingImages.servicesDecor}
