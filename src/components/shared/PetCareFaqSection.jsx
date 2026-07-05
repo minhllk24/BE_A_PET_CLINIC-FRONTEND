@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import './PetCareFaqSection.css'
 
 function PetCareFaqSection({ faqs, assets, listTop = 186, renderAnswer }) {
   const [openId, setOpenId] = useState(faqs[0]?.id ?? 1)

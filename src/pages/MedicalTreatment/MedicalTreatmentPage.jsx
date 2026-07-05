@@ -14,7 +14,6 @@ import {
   medicalStats,
   medicalWhyItems,
 } from '../../data/medicalTreatmentData'
-import './MedicalTreatmentPage.css'
 
 function MedicalHero() {
   return (

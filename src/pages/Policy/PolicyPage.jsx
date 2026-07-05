@@ -6,7 +6,6 @@ import NavBar from "../../components/Navbar";
 import { useAuth } from "../../context/AuthContext";
 import { policyImages } from "../../assets/policyImages";
 import { POLICY_DETAIL, RELATED_POLICIES } from "../../data/policyData";
-import "./PolicyPage.css";
 
 function RichText({ parts, className = "" }) {
   return (

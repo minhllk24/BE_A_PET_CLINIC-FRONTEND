@@ -24,7 +24,7 @@ const cx = (...classes) => classes.filter(Boolean).join(" ");
 
 const containerClass = "mx-auto w-[min(1200px,calc(100%-48px))] max-[620px]:w-[min(calc(100%-28px),1180px)]";
 const sectionTitleClass =
-  "m-0 text-center font-display text-[64px] font-normal leading-[1.1] max-[900px]:text-[34px]";
+  "m-0 text-center font-['Baloo_Tamma'] text-[64px] font-normal leading-[1.1] max-[900px]:text-[34px]";
 const primaryButtonClass =
   "inline-flex min-h-[44px] items-center justify-center gap-[7px] border border-secondary bg-secondary px-[22px] py-2 text-[15px] font-bold text-[#222] no-underline transition-[background-color,border-color,color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[#fbc02d] hover:bg-[#fbc02d] hover:shadow-[0_5px_12px_rgba(13,71,161,0.18)] active:translate-y-0 active:scale-[0.98] active:shadow-none focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-[rgba(13,71,161,0.45)]";
 const roundControlClass =
@@ -121,7 +121,7 @@ function AboutPage() {
               aria-hidden="true"
             />
             <div className="relative z-[2] mx-auto h-[759px] w-[min(1200px,calc(100%-48px))] pt-[72px] text-center max-[620px]:w-[calc(100%-28px)] max-[620px]:pt-[45px]">
-              <p className="relative z-[2] mb-2 mt-0 font-display text-[56px] font-normal leading-[1.1] text-blue-900 max-[900px]:text-[28px] max-[620px]:text-[20px]">
+              <p className="relative z-[2] mb-2 mt-0 font-['Baloo_Tamma'] text-[56px] font-normal leading-[1.1] text-blue-900 max-[900px]:text-[28px] max-[620px]:text-[20px]">
                 TRUNG TÂM CHĂM SÓC THÚ CƯNG
               </p>
               <img
@@ -344,7 +344,7 @@ function AboutPage() {
             <span className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-1 bg-white" />
             <div className="relative z-[2] mx-auto w-[min(1280px,calc(100%-48px))] py-[83px] pb-28">
               <div className="relative mb-5 ml-10 inline-block w-[610px] text-left">
-                <h2 className="m-0 text-left font-display text-[64px] font-normal leading-[1.1] text-[rgba(0,0,0,0.87)]">
+                <h2 className="m-0 text-left font-['Baloo_Tamma'] text-[64px] font-normal leading-[1.1] text-[rgba(0,0,0,0.87)]">
                   <span className="text-[#fbc02d]">Dịch vụ</span>
                   <br />
                   chúng tôi cung cấp

@@ -8,7 +8,6 @@ import {
   CONTACT_CHANNELS,
   contactAssets,
 } from "../../data/contactData";
-import "./ContactPage.css";
 
 const INITIAL_FORM = {
   name: "",

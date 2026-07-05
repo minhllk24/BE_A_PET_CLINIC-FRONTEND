@@ -1,6 +1,5 @@
 import { NOTIFICATION_FILTERS } from "../../data/notificationData";
 import { notificationImages } from "../../assets/notificationImages";
-import "./NotificationPopup.css";
 
 const messageToneClass = {
   strong: "notification-item__message-strong",
