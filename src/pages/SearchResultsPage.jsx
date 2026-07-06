@@ -10,12 +10,13 @@ import {
   SEARCH_SORT_OPTIONS,
   mockSearchApi,
 } from "../data/searchResultsData";
+import { formatVnd } from "../utils/currency";
 
 const TYPE_IDS = SEARCH_DEMAND_TYPES.map((item) => item.id);
 const SORT_OPTIONS = Object.values(SEARCH_SORT_OPTIONS);
 
 function formatServicePrice(value) {
-  return `Từ ${new Intl.NumberFormat("vi-VN").format(value)}đ`;
+  return `Từ ${formatVnd(value)}`;
 }
 
 function parseServicePrice(price) {

@@ -11,6 +11,7 @@ import {
   BOOKING_TIME_SLOTS,
 } from "../../data/bookingData";
 import { bookingImages } from "../../assets/bookingImages";
+import { formatVnd } from "../../utils/currency";
 
 import buddyImg from "../../assets/images/pets/buddy.jpg";
 import { useAuth } from "../../context/AuthContext";
@@ -41,12 +42,7 @@ const BRANCH_OPTIONS = [
   "Quận Hoàng Mai, Hà Nội",
 ];
 
-const formatMoney = (value) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(value);
+const formatMoney = (value) => formatVnd(value);
 
 const getDateKey = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;

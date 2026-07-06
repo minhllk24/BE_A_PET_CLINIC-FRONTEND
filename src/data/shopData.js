@@ -17,14 +17,14 @@ export const PRODUCT_PRICE_RANGES = [
 ];
 
 export const SHOP_PRODUCTS = Array.from({ length: 45 }, (_, index) => {
-  const price = 20 + ((index * 7) % 180);
+  const price = 20000 + ((index * 7000) % 180000);
   return {
     id: index + 1,
     categoryIdx: index % PRODUCT_CATEGORIES.length,
     name: `Sản phẩm ${index + 1}`,
     price,
     originalPrice: Math.round(price * 1.6),
-    rating: 2.5,
+    rating: 4.5,
     discountPercent: [0, 1, 2, 4, 11].includes(index) ? 56 : undefined,
   };
 });

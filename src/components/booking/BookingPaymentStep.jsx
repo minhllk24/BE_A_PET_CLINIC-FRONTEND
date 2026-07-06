@@ -2,6 +2,7 @@ import CouponInput from "../ui/CouponInput";
 import { useState } from "react";
 import { bookingImages } from "../../assets/bookingImages";
 import { BOOKING_PAYMENT_METHODS } from "../../data/bookingData";
+import { formatVnd } from "../../utils/currency";
 
 const {
   paymentCalendarIcon,
@@ -24,12 +25,7 @@ const formatAppointmentDate = (date, slot) => {
   return `${date.getDate()} tháng ${date.getMonth() + 1}, ${date.getFullYear()}${slot ? ` • ${slot}` : ""}`;
 };
 
-const formatMoney = (value) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(value);
+const formatMoney = (value) => formatVnd(value);
 
 const getWeightValue = (weight) => {
   const normalizedWeight = String(weight ?? "").replace(",", ".");
@@ -250,7 +246,7 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surcha
       <div className="space-y-3 py-5 text-sm">
         <PriceRow label="Tạm tính" value={formatMoney(subtotal)} />
         <PriceRow label="Phụ thu" value={formatMoney(surchargeTotal)} />
-        <PriceRow label="Giảm giá" value="0 đ" />
+        <PriceRow label="Giảm giá" value="0đ" />
       </div>
 
       <div className="mb-5 flex items-end justify-between">

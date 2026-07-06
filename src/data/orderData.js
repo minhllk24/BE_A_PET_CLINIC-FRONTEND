@@ -1,4 +1,5 @@
 import { productCardImages } from "../components/product/productCardAssets";
+import { formatVnd } from "../utils/currency";
 
 export const ORDER_STATUS = {
   awaiting_payment: { label: "Chờ thanh toán", badgeClass: "bg-[#FFF9C4]" },
@@ -129,11 +130,7 @@ export const getOrderSubtotal = (order) =>
 export const getOrderTotal = (order) =>
   Math.max(0, getOrderSubtotal(order) + order.shippingFee - order.discount);
 
-export const formatCurrency = (value) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(value);
+export const formatCurrency = (value) => formatVnd(value);
 
 export const formatOrderDate = (value, includeTime = true) =>
   new Intl.DateTimeFormat("vi-VN", {

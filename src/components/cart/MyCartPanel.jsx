@@ -1,18 +1,10 @@
 import { useState } from "react";
 import { cartImages } from "../../assets/cartImages";
 import { useCart } from "../../context/CartContext";
-
-function getNumericPrice(value) {
-  if (typeof value === "number") return value;
-  return Number(String(value ?? "").replace(/[^\d.-]/g, "")) || 0;
-}
+import { formatVnd, getNumericPrice } from "../../utils/currency";
 
 function formatPrice(value) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(getNumericPrice(value));
+  return formatVnd(value);
 }
 
 function CartItemRow({ item }) {

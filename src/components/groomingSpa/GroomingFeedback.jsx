@@ -1,15 +1,12 @@
 import { groomingImages } from "../../assets/groomingImages";
 import { GROOMING_REVIEWS } from "../../data/groomingData";
+import ProductRating from "../product/ProductRating";
 import { groomingTitleStyles } from "./groomingTitleStyles";
 
 function ReviewCard({ review }) {
   return (
     <article className="flex flex-[1_0_0] flex-col justify-center gap-[10px] rounded-[24px] bg-white p-10">
-      <div className="flex items-center gap-2 text-[15px] leading-[15px] text-[#FF9D00]">
-        {"★★★★★".split("").map((star, index) => (
-          <span key={`${review.id}-star-${index}`}>{star}</span>
-        ))}
-      </div>
+      <ProductRating value={review.rating ?? 5} size={16} gap={8} fillColor="#FF9D00" />
 
       <div
         className="h-[118px] text-justify text-[#333]"

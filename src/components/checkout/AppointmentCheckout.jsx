@@ -206,19 +206,19 @@ function AppointmentCheckout() {
                 <div className="w-full border-t border-[#C2C7D1] pt-[24px] flex flex-col gap-[12px]">
                   <div className="w-full flex justify-between items-center">
                     <span className="text-[16px] font-normal text-[#W676PB] leading-[1.5em] text-[#727780]">Tạm tính</span>
-                    <span className="text-[16px] font-normal text-[#191C1E] leading-[1.5em]">250.000 đ</span>
+                    <span className="text-[16px] font-normal text-[#191C1E] leading-[1.5em]">250.000đ</span>
                   </div>
                   <div className="w-full flex justify-between items-center">
                     <span className="text-[16px] font-normal text-[#727780] leading-[1.5em]">Phí dịch vụ</span>
-                    <span className="text-[16px] font-normal text-[#191C1E] leading-[1.5em]">0 đ</span>
+                    <span className="text-[16px] font-normal text-[#191C1E] leading-[1.5em]">0đ</span>
                   </div>
                   <div className="w-full flex justify-between items-center">
                     <span className="text-[16px] font-normal text-[#727780] leading-[1.5em]">Giảm giá</span>
-                    <span className="text-[16px] font-normal text-[#191C1E] leading-[1.5em]">0 đ</span>
+                    <span className="text-[16px] font-normal text-[#191C1E] leading-[1.5em]">0đ</span>
                   </div>
                   <div className="w-full flex justify-between items-center pt-[12px]">
                     <span className="text-[20px] font-semibold text-[#00355F] leading-[1.4em]">Tổng cộng</span>
-                    <span className="text-[20px] font-bold text-[#00355F] leading-[1.4em]">250.000 đ</span>
+                    <span className="text-[20px] font-bold text-[#00355F] leading-[1.4em]">250.000đ</span>
                   </div>
                 </div>
 

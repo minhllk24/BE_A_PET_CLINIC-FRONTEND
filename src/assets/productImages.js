@@ -1,6 +1,5 @@
 import detailImage from "./images/product/detail-image.png";
 import chevronRight from "./images/product/chevron-right.svg";
-import starIcon from "./images/product/star-icon.svg";
 import chevronDownSmall from "./images/product/chevron-down-small.svg";
 import remove from "./images/product/remove.svg";
 import add from "./images/product/add.svg";
@@ -9,7 +8,6 @@ import truck from "./images/product/truck.svg";
 import rotate3d from "./images/product/rotate-3d.svg";
 import reviewDivider from "./images/product/review-divider.svg";
 import reviewStars from "./images/product/review-stars.svg";
-import reviewStarSmall from "./images/product/review-star-small.svg";
 import reviewAvatarBlock from "./images/product/review-avatar-block.svg";
 import paginationPrev from "./images/product/pagination-prev.svg";
 import paginationNext from "./images/product/pagination-next.svg";
@@ -26,7 +24,6 @@ import submitChevron from "./images/product/submit-chevron.svg";
 export const productImages = {
   detailImage,
   chevronRight,
-  starIcon,
   chevronDownSmall,
   remove,
   add,
@@ -35,7 +32,6 @@ export const productImages = {
   rotate3d,
   reviewDivider,
   reviewStars,
-  reviewStarSmall,
   reviewAvatarBlock,
   paginationPrev,
   paginationNext,
