@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Circle, Link as LinkIcon, MapPin, Phone } fr
 import CanvasLayout from "../../components/layout/CanvasLayout";
 import Footer from "../../components/Footer/Footer";
 import NavBar from "../../components/Navbar";
+import AdoptionApplicationModal from "../../components/rescue/AdoptionApplicationModal";
 import { rescueImages } from "../../assets/rescueImages";
 import { RESCUE_PARTNERS, RESCUE_PETS } from "../../data/rescueData";
 
@@ -21,7 +22,7 @@ function SectionLabel({ children }) {
   );
 }
 
-function RescuePetCard({ pet }) {
+function RescuePetCard({ pet, onAdopt }) {
   const adopted = pet.state === "adopted";
 
   return (
@@ -60,7 +61,11 @@ function RescuePetCard({ pet }) {
         </div>
         {!adopted && (
           <div className="mt-auto flex flex-col gap-2">
-            <button className="h-9 rounded-[2px] bg-[#FDD835] text-[14px] leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)] shadow-[0_1px_1px_rgba(0,0,0,0.05)]">
+            <button
+              type="button"
+              onClick={() => onAdopt(pet)}
+              className="h-9 rounded-[2px] bg-[#FDD835] text-[14px] leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)] shadow-[0_1px_1px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#FBC02D]"
+            >
               Nhận nuôi ngay
             </button>
             <button className="h-[38px] rounded-[2px] border border-white bg-[#0D47A1] text-[14px] leading-5 tracking-[0.28px] text-white shadow-[0_1px_1px_rgba(0,0,0,0.05)]">
@@ -130,6 +135,7 @@ export default function RescuePage() {
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedAdoptionPet, setSelectedAdoptionPet] = useState(null);
 
   const filteredPets = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLocaleLowerCase("vi");
@@ -195,7 +201,7 @@ export default function RescuePage() {
 
             <div className="mt-7 grid w-[1180px] grid-cols-3 gap-x-5 gap-y-8">
               {pets.map((pet) => (
-                <RescuePetCard key={pet.id} pet={pet} />
+                <RescuePetCard key={pet.id} pet={pet} onAdopt={setSelectedAdoptionPet} />
               ))}
             </div>
 
@@ -267,6 +273,11 @@ export default function RescuePage() {
         </main>
         <Footer variant="white" />
       </CanvasLayout>
+      <AdoptionApplicationModal
+        open={Boolean(selectedAdoptionPet)}
+        pet={selectedAdoptionPet}
+        onClose={() => setSelectedAdoptionPet(null)}
+      />
     </div>
   );
 }
