@@ -16,6 +16,7 @@ import CommunityPage from "../pages/Blog/CommunityPage";
 import FirstAidPage from "../pages/Blog/FirstAidPage";
 import FirstAidDetailPage from "../pages/Blog/FirstAidDetailPage";
 import RescuePage from "../pages/Rescue/RescuePage";
+import SearchResultsPage from "../pages/SearchResultsPage";
 
 import GroomingSpaPage from "../pages/GroomingSpaPage";
 import CheckoutPage from "../pages/CheckoutPage";
@@ -47,6 +48,7 @@ const AppRoutes = () => {
       <Route path="/blog/cong-dong" element={<CommunityPage />} />
       <Route path="/blog/:postId" element={<BlogDetailPage />} />
       <Route path="/rescue" element={<RescuePage />} />
+      <Route path="/search" element={<SearchResultsPage />} />
 
       <Route path="/services/grooming-spa" element={<GroomingSpaPage />} />
       <Route path="/services/groomng-spa" element={<GroomingSpaPage />} />

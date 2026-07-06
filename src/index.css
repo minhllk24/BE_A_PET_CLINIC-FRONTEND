@@ -58,6 +58,7 @@ body {
     @apply hover:bg-[#FFF59D];
   }
 
+
   /* ---- Brand primary (checkout, forms) ---- */
   .btn-brand {
     @apply inline-flex items-center justify-center rounded font-['Roboto'] font-medium;
