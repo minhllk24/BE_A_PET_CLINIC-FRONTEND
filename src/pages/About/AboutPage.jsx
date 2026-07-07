@@ -26,7 +26,7 @@ const containerClass = "mx-auto w-[min(1200px,calc(100%-48px))] max-[620px]:w-[m
 const sectionTitleClass =
   "m-0 text-center font-['Baloo_Tamma'] text-[64px] font-normal leading-[1.1] max-[900px]:text-[34px]";
 const primaryButtonClass =
-  "inline-flex min-h-[44px] items-center justify-center gap-[7px] border border-secondary bg-secondary px-[22px] py-2 text-[15px] font-bold text-[#222] no-underline transition-[background-color,border-color,color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[#fbc02d] hover:bg-[#fbc02d] hover:shadow-[0_5px_12px_rgba(13,71,161,0.18)] active:translate-y-0 active:scale-[0.98] active:shadow-none focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-[rgba(13,71,161,0.45)]";
+  "inline-flex min-h-[44px] items-center justify-center gap-[7px] border border-secondary bg-secondary px-[22px] py-2 font-['Roboto'] text-[15px] font-medium text-[#222] no-underline transition-[background-color,border-color,color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-[#fbc02d] hover:bg-[#fbc02d] hover:shadow-[0_5px_12px_rgba(13,71,161,0.18)] active:translate-y-0 active:scale-[0.98] active:shadow-none focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-[rgba(13,71,161,0.45)]";
 const roundControlClass =
   "grid size-10 place-items-center rounded-full border-0 bg-secondary text-[#0f172a] transition-[background-color,color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:bg-blue-900 hover:text-white hover:shadow-[0_5px_12px_rgba(13,71,161,0.28)] active:scale-[0.94] active:shadow-none focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-[3px] focus-visible:outline-[rgba(13,71,161,0.45)]";
 
@@ -149,7 +149,7 @@ function AboutPage() {
                 </a>
               </div>
               <img
-                className="absolute left-1/2 top-[291px] z-0 h-[594px] w-[970px] -translate-x-1/2 object-cover object-top opacity-100 max-[620px]:w-[480px]"
+                className="absolute left-1/2 top-[291px] z-0 h-[594px] w-[970px] -translate-x-1/2 object-cover object-top opacity-[0.8] max-[620px]:w-[480px]"
                 src={imageUrl("hero-pets.png")}
                 alt="Ba thú cưng tại Dr. Pet's House"
               />
@@ -165,10 +165,10 @@ function AboutPage() {
                   className="flex flex-col items-center justify-center rounded-[14px] border border-[rgba(18,73,122,0.13)] bg-[#fff7ca]"
                   key={label}
                 >
-                  <strong className="font-['Plus_Jakarta_Sans'] text-[44px] font-bold leading-none text-blue-900 max-[620px]:text-[23px]">
+                  <strong className="font-['Baloo_Tamma'] text-[48px] font-normal leading-[1.1] text-blue-900 max-[620px]:text-[23px]">
                     {value}
                   </strong>
-                  <span className="mt-1 text-[14px] font-bold max-[620px]:px-1.5 max-[620px]:text-center max-[620px]:text-[8px]">
+                  <span className="mt-1 font-['Roboto'] text-[16px] font-bold leading-[1.5] tracking-[0.15px] max-[620px]:px-1.5 max-[620px]:text-center max-[620px]:text-[8px]">
                     {label}
                   </span>
                 </div>
@@ -182,7 +182,7 @@ function AboutPage() {
             </h2>
             <div className="grid grid-cols-[0.95fr_1.05fr] items-center gap-[70px] max-[900px]:grid-cols-1">
               <div>
-                <h3 className="mb-[22px] mt-0 font-['Plus_Jakarta_Sans'] text-[40px] leading-[1.35]">
+                <h3 className="mb-[22px] mt-0 font-['Baloo_Tamma'] text-[45px] font-normal leading-[54px] text-[#02000f]">
                   Đặt sức khỏe của
                   <br />
                   thú cưng lên đầu
@@ -376,7 +376,7 @@ function AboutPage() {
                         )}
                       </div>
                       <div>
-                        <h3 className="mb-[18px] mt-0 flex items-center font-['Plus_Jakarta_Sans'] text-[32px] leading-[41.6px] text-blue-900">
+                        <h3 className="mb-[18px] mt-0 flex items-center font-['Roboto'] text-[32px] font-bold leading-[41.6px] text-blue-900">
                           {title}
                         </h3>
                         <p className="mt-0 text-justify font-sans text-[18px] leading-[28.8px] text-black">
@@ -416,7 +416,7 @@ function AboutPage() {
               tận tình trong chăm sóc, chúng tôi mang đến trải nghiệm thăm khám
               đáng tin cậy cho mọi khách hàng.
             </p>
-            <Link className={cx(primaryButtonClass, "mb-[38px] min-h-14 px-8 py-4 text-[20px] tracking-[0.5px] shadow-elevation")} to="/booking">
+            <Link className={cx(primaryButtonClass, "mb-[38px] min-h-14 px-8 py-4 text-[20px] font-bold tracking-[0.5px] shadow-elevation")} to="/booking">
               ĐẶT LỊCH NGAY
             </Link>
             <div className="relative mx-auto mt-[37px] h-[376px] w-[1440px]">
@@ -429,9 +429,9 @@ function AboutPage() {
                     <div className="h-[228px] overflow-hidden bg-[#dce7ef] max-[620px]:h-[340px]">
                       <img className="size-full object-cover object-center" src={doctor.image} alt={doctor.name} />
                     </div>
-                    <h3 className="mx-4 mb-[7px] mt-4 font-sans text-[20px] text-blue-900">{doctor.name}</h3>
-                    <strong className="mx-4 block text-[17px] font-normal text-[#555]">{doctor.role}</strong>
-                    <p className="mx-4 mb-[18px] mt-3 block text-[15px] leading-[1.45] text-[#777]">{doctor.school}</p>
+                    <h3 className="mx-4 mb-[7px] mt-4 font-['Roboto'] text-[20px] font-bold text-blue-900">{doctor.name}</h3>
+                    <strong className="mx-4 block font-['Roboto'] text-[17px] font-normal text-[#555]">{doctor.role}</strong>
+                    <p className="mx-4 mb-[18px] mt-3 block font-['Roboto'] text-[15px] leading-[1.45] text-[#777]">{doctor.school}</p>
                   </article>
                 ))}
               </div>
