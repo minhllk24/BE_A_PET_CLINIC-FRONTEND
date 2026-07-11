@@ -20,11 +20,11 @@ const SERVICE_LINKS = [
 ];
 
 const SUPPORT_LINKS = [
-  ["Chính sách đặt lịch", "/policy"],
-  ["Chính sách đổi/hủy lịch", "/policy"],
-  ["Chính sách thanh toán", "/policy"],
-  ["Chính sách bán hàng", "/policy"],
-  ["Chính sách bảo mật", "/policy"],
+  ["Chính sách đặt lịch", "/policies/dat-lich"],
+  ["Chính sách đổi/hủy lịch", "/policies/doi-huy-lich"],
+  ["Chính sách thanh toán", "/policies/phuong-thuc-thanh-toan"],
+  ["Chính sách bán hàng", "/policies/huong-dan-mua-hang"],
+  ["Chính sách bảo mật", "/policies/bao-mat"],
 ];
 
 function isBlueBackground(element) {

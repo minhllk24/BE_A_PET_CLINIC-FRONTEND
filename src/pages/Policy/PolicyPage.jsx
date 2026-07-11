@@ -1,17 +1,20 @@
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Breadcrumb from "../../components/layout/Breadcrumb";
 import CanvasLayout from "../../components/layout/CanvasLayout";
 import Footer from "../../components/Footer/Footer";
 import NavBar from "../../components/Navbar";
 import { useAuth } from "../../context/AuthContext";
 import { policyImages } from "../../assets/policyImages";
-import { POLICY_DETAIL, RELATED_POLICIES } from "../../data/policyData";
+import { getPolicyDetail, getRelatedPolicies } from "../../data/policyData";
 
 function RichText({ parts, className = "" }) {
   return (
     <p className={className}>
       {parts.map((part, index) => (
-        <span key={`${part.text}-${index}`} className={part.strong ? "font-bold" : undefined}>
+        <span
+          key={`${part.text}-${index}`}
+          className={`${part.strong ? "font-bold" : ""} ${part.italic ? "italic" : ""}`.trim() || undefined}
+        >
           {part.text}
         </span>
       ))}
@@ -52,22 +55,30 @@ function PolicySection({ section }) {
           ))}
         </div>
       ) : null}
+
+      {section.paragraphsAfter?.map((paragraph, index) => (
+        <RichText
+          key={`${section.id}-paragraph-after-${index}`}
+          parts={paragraph}
+          className="policy-article__paragraph"
+        />
+      ))}
     </section>
   );
 }
 
-function PolicyArticle() {
+function PolicyArticle({ policy }) {
   return (
     <article
-      className="policy-article h-[1214px] w-[813px] shrink-0 rounded-[12px] bg-white px-8 pb-8 pt-6"
+      className="policy-article w-[813px] shrink-0 rounded-[12px] bg-white px-8 pb-8 pt-6"
       data-node-id="3102:10676"
     >
       <h1 className="w-full text-[32px] font-bold leading-[40px] text-[#0D47A1]">
-        {POLICY_DETAIL.title}
+        {policy.title}
       </h1>
 
       <div className="mt-4 flex h-[54px] w-full items-center gap-6 border-y border-[#C1C6D5] py-[17px] text-[14px] font-semibold leading-5 tracking-[0.14px] text-[#414753]">
-        {POLICY_DETAIL.meta.map((item) => (
+        {policy.meta.map((item) => (
           <span key={item.id} className="flex items-center gap-2">
             <img src={item.icon} alt="" className={item.iconClassName} />
             <span
@@ -84,7 +95,7 @@ function PolicyArticle() {
       </div>
 
       <div className="policy-article__body">
-        {POLICY_DETAIL.sections.map((section) => (
+        {policy.sections.map((section) => (
           <PolicySection key={section.id} section={section} />
         ))}
       </div>
@@ -92,7 +103,9 @@ function PolicyArticle() {
   );
 }
 
-function PolicyRelatedSidebar() {
+function PolicyRelatedSidebar({ activeSlug }) {
+  const relatedPolicies = getRelatedPolicies(activeSlug);
+
   return (
     <aside
       className="h-[630px] w-[330px] shrink-0 rounded-[12px] bg-white px-6 pt-6"
@@ -105,7 +118,7 @@ function PolicyRelatedSidebar() {
       </div>
 
       <nav className="mt-6 flex w-[282px] flex-col gap-6" aria-label="Chính sách liên quan">
-        {RELATED_POLICIES.map((item) => (
+        {relatedPolicies.map((item) => (
           <Link
             key={item.label}
             to={item.href}
@@ -121,7 +134,7 @@ function PolicyRelatedSidebar() {
   );
 }
 
-function PolicySupportCta() {
+function PolicySupportCta({ policy }) {
   return (
     <section
       className="flex h-[158px] w-[813px] items-start rounded-[8px] bg-white"
@@ -129,10 +142,10 @@ function PolicySupportCta() {
     >
       <div className="ml-[33px] mt-[33px] w-[371px]">
         <h2 className="text-[20px] font-bold leading-7 text-[#C62828]">
-          {POLICY_DETAIL.supportTitle}
+          {policy.supportTitle}
         </h2>
         <p className="mt-2 w-[371px] text-[14px] leading-5 text-[#64748B]">
-          {POLICY_DETAIL.supportDescription}
+          {policy.supportDescription}
         </p>
       </div>
 
@@ -158,28 +171,30 @@ function PolicySupportCta() {
 
 function PolicyPage() {
   const { isAuthenticated } = useAuth();
+  const { slug } = useParams();
+  const policy = getPolicyDetail(slug);
 
   return (
     <div className="min-h-screen bg-white">
       <CanvasLayout>
         <NavBar isAuthenticated={isAuthenticated} />
-        <main className="policy-page flex h-[1539px] flex-col items-center pt-[43px]">
+        <main className="policy-page flex flex-col items-center pb-12 pt-[43px]">
           <Breadcrumb
             items={[
               { label: "Trang chủ", to: "/" },
               { label: "Hỗ trợ khách hàng" },
-              { label: POLICY_DETAIL.title },
+              { label: policy.title },
             ]}
             variant="blog"
             className="w-[1200px]"
           />
 
-          <div className="mt-6 flex h-[1420px] w-[1200px] flex-col items-start gap-12">
-            <div className="flex h-[1214px] w-full items-start gap-12">
-              <PolicyArticle />
-              <PolicyRelatedSidebar />
+          <div className="mt-6 flex w-[1200px] flex-col items-start gap-12">
+            <div className="flex w-full items-start gap-12">
+              <PolicyArticle policy={policy} />
+              <PolicyRelatedSidebar activeSlug={slug} />
             </div>
-            <PolicySupportCta />
+            <PolicySupportCta policy={policy} />
           </div>
         </main>
         <Footer variant="white" />

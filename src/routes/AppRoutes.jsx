@@ -57,6 +57,7 @@ const AppRoutes = () => {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/policy" element={<PolicyPage />} />
       <Route path="/policies/doi-tra-hang" element={<PolicyPage />} />
+      <Route path="/policies/:slug" element={<PolicyPage />} />
 
       <Route path="/services/grooming-spa" element={<GroomingSpaPage />} />
       <Route path="/services/groomng-spa" element={<GroomingSpaPage />} />
