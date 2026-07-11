@@ -1,6 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { footerImages } from "../../assets/footerImages";
 import { homeImages } from "../../assets/homeImages";
 
 const PRODUCT_LINKS = [
@@ -21,11 +20,11 @@ const SERVICE_LINKS = [
 ];
 
 const SUPPORT_LINKS = [
-  "Chính sách đặt lịch",
-  "Chính sách đổi/hủy lịch",
-  "Chính sách thanh toán",
-  "Chính sách bán hàng",
-  "Chính sách bảo mật",
+  ["Chính sách đặt lịch", "/policies/dat-lich"],
+  ["Chính sách đổi/hủy lịch", "/policies/doi-huy-lich"],
+  ["Chính sách thanh toán", "/policies/phuong-thuc-thanh-toan"],
+  ["Chính sách bán hàng", "/policies/huong-dan-mua-hang"],
+  ["Chính sách bảo mật", "/policies/bao-mat"],
 ];
 
 function isBlueBackground(element) {
@@ -152,7 +151,7 @@ function Footer({ variant = "auto" }) {
             </a>
             <a href="#" aria-label="TikTok" className="transition-colors hover:text-[#0D47A1]">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <g clip-path="url(#clip0_2498_10299)">
+                <g clipPath="url(#clip0_2498_10299)">
                   <rect width="24" height="24" rx="5" fill="white"/>
                   <path d="M13.5 0H16.47C16.686 1.0725 17.28 2.4255 18.3225 3.768C19.3425 5.0835 20.6955 6 22.5 6V9C19.8705 9 17.895 7.779 16.5 6.2565V16.5C16.5 17.9834 16.0601 19.4334 15.236 20.6668C14.4119 21.9001 13.2406 22.8614 11.8701 23.4291C10.4997 23.9968 8.99168 24.1453 7.53683 23.8559C6.08197 23.5665 4.7456 22.8522 3.6967 21.8033C2.64781 20.7544 1.9335 19.418 1.64411 17.9632C1.35472 16.5083 1.50325 15.0003 2.07091 13.6299C2.63856 12.2594 3.59986 11.0881 4.83323 10.264C6.0666 9.43987 7.51664 9 9 9V12C8.10999 12 7.23996 12.2639 6.49994 12.7584C5.75992 13.2529 5.18314 13.9557 4.84255 14.7779C4.50195 15.6002 4.41284 16.505 4.58647 17.3779C4.7601 18.2508 5.18869 19.0526 5.81802 19.682C6.44736 20.3113 7.24918 20.7399 8.1221 20.9135C8.99501 21.0872 9.89981 20.9981 10.7221 20.6575C11.5443 20.3169 12.2472 19.7401 12.7416 19.0001C13.2361 18.26 13.5 17.39 13.5 16.5V0Z" fill="#475569"/>
                 </g>
@@ -176,8 +175,8 @@ function Footer({ variant = "auto" }) {
 
         <FooterColumn title="Thông tin Trung tâm">
           <ul>
-            <FooterLink>Về chúng tôi</FooterLink>
-            <FooterLink>Liên hệ</FooterLink>
+            <FooterLink to="/about">Về chúng tôi</FooterLink>
+            <FooterLink to="/contact">Liên hệ</FooterLink>
             <FooterLink>
               <span className="flex items-center gap-2">
                 Danh sách chi nhánh <span aria-hidden="true">→</span>
@@ -199,13 +198,19 @@ function Footer({ variant = "auto" }) {
         </FooterColumn>
 
         <FooterColumn title="Hỗ trợ khách hàng">
-          <ul>{SUPPORT_LINKS.map((label) => <FooterLink key={label}>{label}</FooterLink>)}</ul>
+          <ul>
+            {SUPPORT_LINKS.map(([label, to]) => (
+              <FooterLink key={label} to={to}>
+                {label}
+              </FooterLink>
+            ))}
+          </ul>
         </FooterColumn>
       </div>
 
       <div className="absolute inset-x-0 bottom-0 flex h-[40px] items-center justify-center bg-[#B3E5FC]">
         <p className="text-[16px] leading-[1.4] text-[rgba(0,0,0,0.6)]">
-          © 2026 Dr.Pet's House. Bản quyền thuộc về Dr.Pet's House.
+          © 2026 Dr.Pet&apos;s House. Bản quyền thuộc về Dr.Pet&apos;s House.
         </p>
       </div>
     </footer>

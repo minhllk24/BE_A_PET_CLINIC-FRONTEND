@@ -16,22 +16,22 @@ function NavBarGuest() {
   return (
     <>
     <header className="fixed inset-x-0 top-0 z-[70] w-full bg-white">
-      <div className="mx-auto flex max-w-page items-center justify-between gap-6 px-6 py-3 md:px-20">
+      <div className="mx-auto flex max-w-page items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6 md:px-20">
         <a href="/" className="shrink-0">
           <img
             src={homeImages.logo}
             alt="Dr. Pet's House"
-            className="h-[59px] w-auto object-contain"
+            className="h-[52px] w-auto object-contain sm:h-[59px]"
           />
         </a>
 
         <NavLinks />
 
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
           <NavSearchBar className="hidden lg:block" />
 
           <a href="/booking">
-            <YellowButton className="h-[35px] min-w-[109px] px-[22px] py-2 text-base tracking-[0.15px]">
+            <YellowButton className="h-[35px] min-w-[82px] px-3 py-2 text-[13px] tracking-[0.1px] sm:min-w-[109px] sm:px-[22px] sm:text-base sm:tracking-[0.15px]">
               ĐẶT LỊCH
             </YellowButton>
           </a>
@@ -39,7 +39,7 @@ function NavBarGuest() {
           <YellowButton
             variant="outline"
             onClick={() => openAuth("login")}
-            className="h-[35px] min-w-[109px] px-[22px] py-2 text-base tracking-[0.15px]"
+            className="h-[35px] min-w-[82px] px-3 py-2 text-[13px] tracking-[0.1px] sm:min-w-[109px] sm:px-[22px] sm:text-base sm:tracking-[0.15px]"
           >
             ĐĂNG NHẬP
           </YellowButton>
@@ -47,7 +47,7 @@ function NavBarGuest() {
           <button
             type="button"
             onClick={openCart}
-            className="shrink-0 cursor-pointer bg-transparent p-0 border-0"
+            className="hidden shrink-0 cursor-pointer border-0 bg-transparent p-0 min-[520px]:block"
             aria-label="Giỏ hàng"
           >
             <img src={cartIcon} alt="" className="h-9 w-9" />

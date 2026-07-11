@@ -1,5 +1,6 @@
-import { groomingImages } from "../../assets/groomingImages";
-import { groomingTitleStyles } from "./groomingTitleStyles";
+import { groomingImages } from '../../assets/groomingImages'
+import { Link } from 'react-router-dom'
+import { groomingTitleStyles } from './groomingTitleStyles'
 
 function GroomingHero() {
   return (
@@ -22,7 +23,7 @@ function GroomingHero() {
           <p
             className="w-full text-justify text-[#0F172A]"
             style={{
-              fontFamily: "Roboto, sans-serif",
+              fontFamily: 'Roboto, sans-serif',
               fontWeight: 400,
               fontSize: 24,
               lineHeight: 1.334,
@@ -33,48 +34,45 @@ function GroomingHero() {
           </p>
 
           <div className="flex items-start gap-[24px]">
-            <a
-              href="/booking"
-              className="group relative"
+            <Link
+              to="/booking"
+              className="focus-ring-brand group relative rounded-[4px]"
             >
               <img
                 src={groomingImages.heroPaw}
                 alt=""
-                className="pointer-events-none absolute -left-[54px] -top-[43px] h-[65.801px] w-[59.964px] -rotate-[25deg] opacity-0 translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0"
+                className="pointer-events-none absolute -left-[54px] -top-[43px] h-[65.801px] w-[59.964px] -rotate-[25deg] translate-y-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
                 aria-hidden="true"
               />
-              <button
-                type="button"
-                className="flex w-[181px] items-center justify-center rounded-[4px] bg-[#FDD835] px-[22px] py-2 shadow-[0px_3px_1px_-2px_rgba(0,0,0,0.2),0px_2px_2px_0px_rgba(0,0,0,0.14),0px_1px_5px_0px_rgba(0,0,0,0.12)] transition-all duration-micro hover:bg-[#ffe454]"
+              <span
+                className="flex w-[181px] items-center justify-center rounded-[4px] bg-[#FDD835] px-[22px] py-2 shadow-[0px_3px_1px_-2px_rgba(0,0,0,0.2),0px_2px_2px_0px_rgba(0,0,0,0.14),0px_1px_5px_0px_rgba(0,0,0,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#FBC02D] hover:shadow-[0_5px_12px_rgba(0,0,0,0.18)] active:translate-y-0 active:scale-[0.98]"
                 style={{
-                  fontFamily: "Roboto, sans-serif",
+                  fontFamily: 'Roboto, sans-serif',
                   fontWeight: 700,
                   fontSize: 15,
-                  lineHeight: "26px",
-                  letterSpacing: "0.46px",
-                  textTransform: "uppercase",
-                  color: "rgba(0, 0, 0, 0.87)",
+                  lineHeight: '26px',
+                  letterSpacing: '0.46px',
+                  textTransform: 'uppercase',
+                  color: 'rgba(0, 0, 0, 0.87)',
                 }}
               >
                 ĐẶT LỊCH NGAY
-              </button>
-            </a>
-            <a href="#danh-sach-dich-vu">
-              <button
-                type="button"
-                className="flex w-[179px] items-center justify-center rounded-[4px] bg-[#FFF9C4] px-[22px] py-2 shadow-[0px_3px_1px_-2px_rgba(0,0,0,0.2),0px_2px_2px_0px_rgba(0,0,0,0.14),0px_1px_5px_0px_rgba(0,0,0,0.12)] transition-all duration-micro hover:bg-[#FFF59D]"
-                style={{
-                  fontFamily: "Roboto, sans-serif",
-                  fontWeight: 700,
-                  fontSize: 15,
-                  lineHeight: "26px",
-                  letterSpacing: "0.46px",
-                  textTransform: "uppercase",
-                  color: "rgba(0, 0, 0, 0.87)",
-                }}
-              >
-                Bắt đầu thôi
-              </button>
+              </span>
+            </Link>
+            <a
+              href="#danh-sach-dich-vu"
+              className="focus-ring-brand flex w-[179px] items-center justify-center rounded-[4px] bg-[#FFF9C4] px-[22px] py-2 shadow-[0px_3px_1px_-2px_rgba(0,0,0,0.2),0px_2px_2px_0px_rgba(0,0,0,0.14),0px_1px_5px_0px_rgba(0,0,0,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#FFF59D] hover:shadow-[0_5px_12px_rgba(0,0,0,0.18)] active:translate-y-0 active:scale-[0.98]"
+              style={{
+                fontFamily: 'Roboto, sans-serif',
+                fontWeight: 700,
+                fontSize: 15,
+                lineHeight: '26px',
+                letterSpacing: '0.46px',
+                textTransform: 'uppercase',
+                color: 'rgba(0, 0, 0, 0.87)',
+              }}
+            >
+              Bắt đầu thôi
             </a>
           </div>
         </div>
@@ -89,7 +87,7 @@ function GroomingHero() {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
-export default GroomingHero;
+export default GroomingHero

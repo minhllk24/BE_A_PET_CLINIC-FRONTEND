@@ -1,0 +1,143 @@
+const contactAsset = (name) =>
+  new URL(`../assets/images/contact/figma/${name}`, import.meta.url).href;
+
+export const contactAssets = {
+  letterSend: contactAsset("letter-send.png"),
+  map: contactAsset("branch-map.png"),
+  search: contactAsset("search-icon.svg"),
+  chevron: contactAsset("chevron-down.svg"),
+  clock: contactAsset("clock-icon.svg"),
+  branchPhone: contactAsset("branch-phone.svg"),
+};
+
+export const CONTACT_CHANNELS = [
+  {
+    id: "phone",
+    label: "0868.686.868",
+    href: "tel:0868686868",
+    icon: contactAsset("phone-contact.svg"),
+  },
+  {
+    id: "email",
+    label: "drpetshouse.cskh@gmail.com",
+    href: "mailto:drpetshouse.cskh@gmail.com",
+    icon: contactAsset("email-contact.svg"),
+  },
+  {
+    id: "facebook",
+    label: "Fanpage Dr. Pet’s Shop",
+    href: "https://www.facebook.com/",
+    icon: contactAsset("facebook-contact.svg"),
+  },
+  {
+    id: "zalo",
+    label: "Zalo Dr. Pet’s Shop",
+    href: "https://zalo.me/",
+    icon: contactAsset("zalo-contact.svg"),
+  },
+  {
+    id: "instagram",
+    label: "Instagram Dr. Pet’s Shop",
+    href: "https://www.instagram.com/",
+    icon: contactAsset("instagram-contact.svg"),
+  },
+  {
+    id: "tiktok",
+    label: "TikTok Dr. Pet’s Shop",
+    href: "https://www.tiktok.com/",
+    icon: contactAsset("tiktok-contact.svg"),
+  },
+];
+
+export const BRANCHES = [
+  {
+    id: 1,
+    name: "Chi nhánh 1",
+    address: "669 Đỗ Mười, khu phố 13, Linh Xuân, Hồ Chí Minh",
+    hours: "Cả ngày (24/7) kể cả cuối tuần, lễ, Tết.",
+    phone: "0987.654.321",
+    pin: contactAsset("branch-pin-red.svg"),
+    mapPosition: { left: 287, top: 228, size: 61 },
+  },
+  {
+    id: 2,
+    name: "Chi nhánh 2",
+    address: "530 Huỳnh Tấn Phát, Tân Thuận, Hồ Chí Minh",
+    hours: "Cả ngày (24/7) kể cả cuối tuần, lễ, Tết.",
+    phone: "0123.456.789",
+    pin: contactAsset("branch-pin-orange.svg"),
+    mapPosition: { left: 100, top: 136, size: 40 },
+  },
+  {
+    id: 3,
+    name: "Chi nhánh 3",
+    address: "162T Trường Chinh, Bảy Hiền, Hồ Chí Minh",
+    hours: "8:00 - 22:00 (kể cả cuối tuần, lễ, Tết)",
+    phone: "0923.446.779",
+    pin: contactAsset("branch-pin-yellow.svg"),
+    mapPosition: { left: 558, top: 303, size: 40 },
+  },
+  {
+    id: 4,
+    name: "Chi nhánh 4",
+    address: "27 Nguyễn Thị Minh Khai, Bến Nghé, Hồ Chí Minh",
+    hours: "8:00 - 22:00 (kể cả cuối tuần, lễ, Tết)",
+    phone: "0901.234.567",
+    pin: contactAsset("branch-pin-red.svg"),
+    mapPosition: { left: 424, top: 164, size: 40 },
+  },
+  {
+    id: 5,
+    name: "Chi nhánh 5",
+    address: "88 Lê Văn Sỹ, phường 11, Phú Nhuận, Hồ Chí Minh",
+    hours: "8:00 - 22:00 (kể cả cuối tuần, lễ, Tết)",
+    phone: "0902.345.678",
+    pin: contactAsset("branch-pin-orange.svg"),
+    mapPosition: { left: 210, top: 306, size: 40 },
+  },
+  {
+    id: 6,
+    name: "Chi nhánh 6",
+    address: "145 Võ Văn Ngân, Linh Chiểu, Thủ Đức, Hồ Chí Minh",
+    hours: "Cả ngày (24/7) kể cả cuối tuần, lễ, Tết.",
+    phone: "0903.456.789",
+    pin: contactAsset("branch-pin-yellow.svg"),
+    mapPosition: { left: 360, top: 350, size: 40 },
+  },
+  {
+    id: 7,
+    name: "Chi nhánh 7",
+    address: "12 Nguyễn Ảnh Thủ, Trung Mỹ Tây, Hồ Chí Minh",
+    hours: "8:00 - 22:00 (kể cả cuối tuần, lễ, Tết)",
+    phone: "0904.567.890",
+    pin: contactAsset("branch-pin-red.svg"),
+    mapPosition: { left: 50, top: 246, size: 40 },
+  },
+  {
+    id: 8,
+    name: "Chi nhánh 8",
+    address: "245 Nguyễn Duy Trinh, Bình Trưng Tây, Hồ Chí Minh",
+    hours: "8:00 - 22:00 (kể cả cuối tuần, lễ, Tết)",
+    phone: "0905.678.901",
+    pin: contactAsset("branch-pin-orange.svg"),
+    mapPosition: { left: 476, top: 414, size: 40 },
+  },
+  {
+    id: 9,
+    name: "Chi nhánh 9",
+    address: "6 Đại lộ Bình Dương, Phú Hòa, Bình Dương",
+    hours: "8:00 - 22:00 (kể cả cuối tuần, lễ, Tết)",
+    phone: "0906.789.012",
+    pin: contactAsset("branch-pin-yellow.svg"),
+    mapPosition: { left: 603, top: 190, size: 40 },
+  },
+  {
+    id: 10,
+    name: "Chi nhánh 10",
+    address: "102 Hạ Long, phường 2, Vũng Tàu",
+    hours: "Cả ngày (24/7) kể cả cuối tuần, lễ, Tết.",
+    phone: "0907.890.123",
+    pin: contactAsset("branch-pin-red.svg"),
+    mapPosition: { left: 512, top: 78, size: 40 },
+  },
+];
