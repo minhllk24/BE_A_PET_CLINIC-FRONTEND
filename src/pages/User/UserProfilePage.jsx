@@ -34,8 +34,20 @@ function Field({ label, action, children }) {
   );
 }
 
+function formatAddressLine(address) {
+  const streetAddress = String(address.address ?? "").trim();
+  const city = String(address.city ?? "").trim();
+
+  if (!city || streetAddress.toLowerCase().includes(city.toLowerCase())) {
+    return streetAddress;
+  }
+
+  return [streetAddress, city].filter(Boolean).join(", ");
+}
+
 function AddressCard({ address, onEdit, onDelete, onSetDefault }) {
   const recipient = address.name ?? address.recipient;
+  const addressLine = formatAddressLine(address);
 
   return (
     <article
@@ -69,7 +81,7 @@ function AddressCard({ address, onEdit, onDelete, onSetDefault }) {
         </div>
       </div>
       <p className="mt-2">{address.phone}</p>
-      <p>{address.address}</p>
+      <p>{addressLine}</p>
     </article>
   );
 }

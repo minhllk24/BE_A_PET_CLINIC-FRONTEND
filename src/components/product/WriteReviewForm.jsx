@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Star } from "lucide-react";
 import { productImages } from "../../assets/productImages";
 
 function StarRating({ value, onChange }) {
@@ -15,13 +16,14 @@ function StarRating({ value, onChange }) {
             aria-checked={filled}
             aria-label={`${star} sao`}
             onClick={() => onChange(star)}
-            className="focus-ring-brand h-[16.101px] w-[16.101px] shrink-0"
+            className="focus-ring-brand flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm text-[#FFB400] transition-transform duration-micro hover:scale-110"
           >
-            <img
-              src={productImages.starIcon}
-              alt=""
-              className={`size-full ${filled ? "opacity-100" : "opacity-25"}`}
-              style={filled ? { filter: "brightness(0) saturate(100%) invert(77%) sepia(52%) saturate(638%) hue-rotate(359deg) brightness(103%) contrast(101%)" } : undefined}
+            <Star
+              size={18}
+              strokeWidth={2}
+              color={filled ? "#FFB400" : "rgba(0,0,0,0.23)"}
+              fill={filled ? "#FFB400" : "transparent"}
+              aria-hidden="true"
             />
           </button>
         );

@@ -1,58 +1,62 @@
-import { productCardImages } from "./productCardAssets";
+import { Star } from "lucide-react";
 
-function HalfStar() {
+function RatingStar({ fillPercent, size, fillColor, emptyColor }) {
   return (
-    <div className="relative size-6 shrink-0">
-      <div
-        className="absolute bottom-0 left-0 top-0 w-3 bg-[#FFB400]"
-        style={{
-          maskImage: `url('${productCardImages.starHalfMask}')`,
-          maskSize: "24px 24px",
-          maskRepeat: "no-repeat",
-        }}
+    <span
+      className="relative inline-flex shrink-0"
+      style={{ width: size, height: size }}
+      aria-hidden="true"
+    >
+      <Star
+        size={size}
+        strokeWidth={2}
+        className="absolute inset-0"
+        color={emptyColor}
+        fill="transparent"
       />
-      <div
-        className="absolute bottom-0 right-0 top-0 w-3 bg-[rgba(0,0,0,0.23)]"
-        style={{
-          maskImage: `url('${productCardImages.starHalfMask}')`,
-          maskSize: "24px 24px",
-          maskRepeat: "no-repeat",
-          maskPosition: "-12px 0px",
-        }}
-      />
-    </div>
+      <span
+        className="absolute inset-y-0 left-0 overflow-hidden"
+        style={{ width: `${fillPercent}%` }}
+      >
+        <Star
+          size={size}
+          strokeWidth={2}
+          color={fillColor}
+          fill={fillColor}
+          style={{ minWidth: size }}
+        />
+      </span>
+    </span>
   );
 }
 
-function ProductRating({ value = 0, max = 5 }) {
+function ProductRating({
+  value = 0,
+  max = 5,
+  size = 20,
+  gap = 5,
+  fillColor = "#FFB400",
+  emptyColor = "rgba(0,0,0,0.23)",
+  className = "",
+}) {
   const rating = Math.min(Math.max(Number(value) || 0, 0), max);
 
   return (
-    <div className="flex shrink-0 items-center" aria-label={`${rating} sao`}>
+    <div
+      className={`flex shrink-0 items-center ${className}`}
+      style={{ gap }}
+      aria-label={`${rating} sao`}
+    >
       {Array.from({ length: max }).map((_, index) => {
-        const starValue = rating - index;
-
-        if (starValue >= 0.75) {
-          return (
-            <img
-              key={index}
-              src={productCardImages.starFull}
-              alt=""
-              className="size-6 shrink-0"
-            />
-          );
-        }
-
-        if (starValue >= 0.25) {
-          return <HalfStar key={index} />;
-        }
+        const fillPercent = Math.min(Math.max(rating - index, 0), 1) * 100;
 
         return (
-          <img
+          <RatingStar
             key={index}
-            src={productCardImages.starEmpty}
-            alt=""
-            className="size-6 shrink-0"
+            fillPercent={fillPercent}
+            size={size}
+            fillColor={fillColor}
+            emptyColor={emptyColor}
           />
         );
       })}

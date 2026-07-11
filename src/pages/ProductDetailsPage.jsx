@@ -11,6 +11,7 @@ import ProductRating from "../components/product/ProductRating";
 import { productImages } from "../assets/productImages";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
+import { formatVnd } from "../utils/currency";
 import {
   createProductReview,
   getProductDetails,
@@ -22,11 +23,7 @@ import {
 const REVIEW_PAGE_SIZE = 2;
 
 function formatPrice(value) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(Number(value) || 0);
+  return formatVnd(value);
 }
 
 function formatReviewTime(createdAt) {
@@ -632,7 +629,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                       <div key={value} className="flex h-6 items-center gap-px">
                         <div className="flex items-center">
                           <span className="font-['Roboto'] text-[16px] leading-[24px] tracking-[0.15px] text-[rgba(0,0,0,0.7)]">{value}</span>
-                          <img src={productImages.reviewStarSmall} alt="" className="h-4 w-4" />
+                          <ProductRating value={1} max={1} size={16} fillColor="#FFB70A" />
                         </div>
                         <div className="relative h-[22px] w-[200px]">
                           <div className="absolute left-4 right-4 top-[9px] h-[6px] rounded-[3px] bg-[rgba(120,120,120,0.2)]" />
@@ -805,8 +802,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
             </button>
           </div>
         </section>
-
-        <Footer />
+        <Footer variant="white" />
       </CanvasLayout>
     </div>
   );

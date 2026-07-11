@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import ProductRating from "./ProductRating";
 import { productCardImages } from "./productCardAssets";
+import { formatVnd, getNumericPrice } from "../../utils/currency";
 
 function getFirstValue(...values) {
   return values.find((value) => value !== undefined && value !== null && value !== "");
@@ -9,13 +10,9 @@ function getFirstValue(...values) {
 
 function formatProductPrice(value) {
   if (value === undefined || value === null || value === "") return "";
-  if (typeof value === "string") return value;
+  if (typeof value === "string" && !/\d/.test(value)) return value;
 
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatVnd(value);
 }
 
 function buildProductHref(product, fallbackHref) {
@@ -28,15 +25,12 @@ function buildProductHref(product, fallbackHref) {
   return slugOrId ? `/product-details/${slugOrId}` : undefined;
 }
 
-/**
- * Figma: Product_cart_1 (1261:2673 default, 1268:2743 hover, 1261:2675 tag)
- * 170×234px — cart badge absolute left 117px top 136.5px (40×40)
- */
 function ProductCard({
   product,
   variant = "default",
   name,
   price,
+  oldPrice,
   tagLabel,
   imageSrc,
   rating,
@@ -52,9 +46,24 @@ function ProductCard({
     product?.title,
     "Sản phẩm",
   );
-  const productPrice = formatProductPrice(
-    getFirstValue(price, product?.price, product?.salePrice, product?.currentPrice),
+  const currentPriceValue = getFirstValue(price, product?.salePrice, product?.currentPrice, product?.price);
+  const oldPriceValue = getFirstValue(
+    oldPrice,
+    product?.oldPrice,
+    product?.originalPrice,
+    product?.regularPrice,
+    product?.compareAtPrice,
+    product?.listPrice,
+    product?.salePrice || product?.currentPrice ? product?.price : undefined,
   );
+  const productPrice = formatProductPrice(currentPriceValue);
+  const productOldPrice =
+    oldPriceValue !== undefined &&
+    oldPriceValue !== null &&
+    oldPriceValue !== "" &&
+    getNumericPrice(oldPriceValue) > getNumericPrice(currentPriceValue)
+      ? formatProductPrice(oldPriceValue)
+      : "";
   const productRating = getFirstValue(rating, product?.rating, product?.averageRating, 0);
   const productImage = getFirstValue(
     imageSrc,
@@ -81,7 +90,7 @@ function ProductCard({
         id: getFirstValue(product?.id, product?.productId, product?.slug, `${productName}:${productPrice}`),
         productId: getFirstValue(product?.productId, product?.id),
         name: productName,
-        price: getFirstValue(price, product?.price, product?.salePrice, product?.currentPrice, 0),
+        price: currentPriceValue ?? 0,
         image: productImage,
         type: getFirstValue(product?.type, product?.variantName, ""),
         size: getFirstValue(product?.size, ""),
@@ -112,12 +121,15 @@ function ProductCard({
         />
       </div>
 
-      <div className="mt-auto w-full pt-3 pb-3">
+      <div className="mt-auto w-full pb-2 pt-2">
         <p className="product-card-name line-clamp-2 min-h-[40px] font-['Roboto'] text-[16px] font-bold leading-[20px] tracking-[0.15px] text-black transition-colors duration-micro group-hover:text-blue-900">
           {productName}
         </p>
 
-        <div className="mt-1 flex items-center gap-1.5 uppercase tracking-[1px]">
+        <div className="product-card-price-row flex h-[28px] flex-col justify-center overflow-hidden">
+          <span className="block h-[12px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap font-normal text-[11px] leading-3 text-[#8A8F98] line-through">
+            {productOldPrice}
+          </span>
           <span className="product-card-current-price font-['Roboto'] text-[14px] font-bold leading-none text-black">
             {productPrice}
           </span>

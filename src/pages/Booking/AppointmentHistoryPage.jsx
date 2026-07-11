@@ -8,15 +8,9 @@ import {
   getAppointmentDisplayStatus,
   getAppointmentTimelineSteps,
 } from "../../utils/appointmentDisplay";
+import { formatVnd } from "../../utils/currency";
 
-const formatMoney = (value) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  })
-    .format(value)
-    .replace(/\s/g, "");
+const formatMoney = (value) => formatVnd(value);
 
 const paymentMethodLabels = {
   cash: "Thanh toán tại phòng khám",

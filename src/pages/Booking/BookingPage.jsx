@@ -3,6 +3,7 @@ import NavBar from "../../components/Navbar";
 import Footer from "../../components/Footer/Footer";
 import BookingPaymentStep from "../../components/booking/BookingPaymentStep";
 import BookingSuccessModal from "../../components/booking/BookingSuccessModal";
+import { ChevronDown, MapPin } from "lucide-react";
 import { MOCK_PETS } from "../../data/mockPets";
 import {
   BOOKING_SERVICES,
@@ -10,6 +11,7 @@ import {
   BOOKING_TIME_SLOTS,
 } from "../../data/bookingData";
 import { bookingImages } from "../../assets/bookingImages";
+import { formatVnd } from "../../utils/currency";
 
 import buddyImg from "../../assets/images/pets/buddy.jpg";
 import { useAuth } from "../../context/AuthContext";
@@ -32,12 +34,15 @@ const petImages = {
   Snow: informationSelectedPetPhoto,
 };
 
-const formatMoney = (value) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(value);
+const BRANCH_OPTIONS = [
+  "Phường Linh Xuân, TP. Thủ Đức, TP. Hồ Chí Minh",
+  "Quận 1, TP. Hồ Chí Minh",
+  "Quận Gò Vấp, TP. Hồ Chí Minh",
+  "Quận Cầu Giấy, Hà Nội",
+  "Quận Hoàng Mai, Hà Nội",
+];
+
+const formatMoney = (value) => formatVnd(value);
 
 const getDateKey = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -190,7 +195,7 @@ function BookingCalendar({ selectedDate, onSelect, invalid = false }) {
 function TimeSlots({ selectedSlot, onSelect, invalid = false }) {
   return (
     <Card
-      className={`p-6 ${invalid ? "ring-2 ring-red-500" : ""}`}
+      className={`flex h-full min-h-0 flex-col p-6 ${invalid ? "ring-2 ring-red-500" : ""}`}
       title={invalid ? "Vui lòng điền thông tin" : undefined}
       data-booking-error={invalid ? "true" : undefined}
       tabIndex={invalid ? -1 : undefined}
@@ -198,7 +203,7 @@ function TimeSlots({ selectedSlot, onSelect, invalid = false }) {
       <h3 className="mb-5 flex items-center gap-2 text-xl font-bold text-blue-900">
         <span>◷</span> Khung giờ trống
       </h3>
-      <div className="space-y-3">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
         {BOOKING_TIME_SLOTS.map((slot) => {
           const disabled = !slot.available;
           const active = selectedSlot === slot.value;
@@ -227,6 +232,42 @@ function TimeSlots({ selectedSlot, onSelect, invalid = false }) {
   );
 }
 
+function BranchSelectionCard({ selectedBranch, onSelect, invalid = false }) {
+  return (
+    <Card
+      className={`h-full p-6 ${invalid ? "ring-2 ring-red-500" : ""}`}
+      title={invalid ? "Vui lòng điền thông tin" : undefined}
+      data-booking-error={invalid ? "true" : undefined}
+      tabIndex={invalid ? -1 : undefined}
+    >
+      <label className="block">
+        <span className="mb-4 flex items-center gap-2 text-xl font-bold text-blue-900">
+          <MapPin size={22} strokeWidth={2.2} />
+          Chi nhánh
+        </span>
+        <span className="relative block">
+          <select
+            value={selectedBranch}
+            onChange={(event) => onSelect(event.target.value)}
+            className={`h-12 w-full appearance-none rounded-2xl border bg-[#f2f4f6] px-4 pr-12 text-sm font-semibold text-slate-800 outline-none transition ${
+              invalid ? "border-red-500 ring-1 ring-red-500" : "border-transparent focus:border-blue-900"
+            }`}
+          >
+            <option value="" disabled>Chọn chi nhánh</option>
+            {BRANCH_OPTIONS.map((branch) => (
+              <option key={branch} value={branch}>{branch}</option>
+            ))}
+          </select>
+          <ChevronDown
+            size={18}
+            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"
+          />
+        </span>
+      </label>
+    </Card>
+  );
+}
+
 function ServiceSelection({
   selectedServiceType,
   setSelectedServiceType,
@@ -236,9 +277,15 @@ function ServiceSelection({
   setSelectedDate,
   selectedSlot,
   setSelectedSlot,
+  ownerInfo,
+  setOwnerInfo,
   onNext,
 }) {
   const [validationAttempted, setValidationAttempted] = useState(false);
+  const visibleServices = useMemo(
+    () => BOOKING_SERVICES.filter((service) => !selectedServiceType || service.serviceTypeId === selectedServiceType),
+    [selectedServiceType],
+  );
   const total = useMemo(
     () => BOOKING_SERVICES.filter((item) => selectedServices.includes(item.id)).reduce((sum, item) => sum + item.price, 0),
     [selectedServices],
@@ -250,8 +297,23 @@ function ServiceSelection({
     );
   };
 
+  const selectBranch = (branch) => {
+    setOwnerInfo((current) => ({ ...current, branch }));
+  };
+
+  const selectServiceType = (serviceTypeId) => {
+    setSelectedServiceType(serviceTypeId);
+    setSelectedServices((current) => {
+      const allowedServiceIds = new Set(
+        BOOKING_SERVICES.filter((service) => service.serviceTypeId === serviceTypeId).map((service) => service.id),
+      );
+
+      return current.filter((serviceId) => allowedServiceIds.has(serviceId));
+    });
+  };
+
   const handleNext = () => {
-    if (selectedServiceType && selectedServices.length > 0 && selectedDate && selectedSlot) {
+    if (selectedServiceType && selectedServices.length > 0 && ownerInfo.branch && selectedDate && selectedSlot) {
       onNext();
       return;
     }
@@ -266,95 +328,101 @@ function ServiceSelection({
 
   return (
     <>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_320px]">
-        <div className="space-y-6">
-          <div
-            className={`grid gap-6 rounded-2xl md:grid-cols-2 ${
-              validationAttempted && !selectedServiceType ? "ring-2 ring-red-500" : ""
-            }`}
-            title={validationAttempted && !selectedServiceType ? "Vui lòng điền thông tin" : undefined}
-            data-booking-error={validationAttempted && !selectedServiceType ? "true" : undefined}
-            tabIndex={validationAttempted && !selectedServiceType ? -1 : undefined}
-          >
-            {BOOKING_SERVICE_TYPES.map((serviceType) => {
-              const active = selectedServiceType === serviceType.id;
+      <div className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,2fr)_320px]">
+        <div
+          className={`grid h-full gap-6 rounded-2xl md:grid-cols-2 ${
+            validationAttempted && !selectedServiceType ? "ring-2 ring-red-500" : ""
+          }`}
+          title={validationAttempted && !selectedServiceType ? "Vui lòng điền thông tin" : undefined}
+          data-booking-error={validationAttempted && !selectedServiceType ? "true" : undefined}
+          tabIndex={validationAttempted && !selectedServiceType ? -1 : undefined}
+        >
+          {BOOKING_SERVICE_TYPES.map((serviceType) => {
+            const active = selectedServiceType === serviceType.id;
 
+            return (
+              <button
+                key={serviceType.id}
+                type="button"
+                onClick={() => selectServiceType(serviceType.id)}
+                className={`relative h-full rounded-2xl border-2 bg-white p-7 text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] transition ${
+                  active ? "border-blue-900" : "border-transparent"
+                }`}
+              >
+                {active && <img src={serviceSelectedCheck} alt="" className="absolute right-4 top-4 h-4 w-4" />}
+                <div className="flex items-center gap-4">
+                  <img src={serviceType.icon} alt="" className="h-12 w-12 rounded object-cover shadow" />
+                  <h3 className={`text-xl font-bold ${active ? "text-blue-900" : "text-slate-900"}`}>
+                    {serviceType.title}
+                  </h3>
+                </div>
+                <p className="mt-5 text-base text-slate-600">{serviceType.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        <BranchSelectionCard
+          selectedBranch={ownerInfo.branch}
+          onSelect={selectBranch}
+          invalid={validationAttempted && !ownerInfo.branch}
+        />
+
+        <Card
+          className={`flex h-[744px] flex-col p-6 ${validationAttempted && selectedServices.length === 0 ? "ring-2 ring-red-500" : ""}`}
+          title={validationAttempted && selectedServices.length === 0 ? "Vui lòng điền thông tin" : undefined}
+          data-booking-error={validationAttempted && selectedServices.length === 0 ? "true" : undefined}
+          tabIndex={validationAttempted && selectedServices.length === 0 ? -1 : undefined}
+        >
+          <h2 className="mb-5 flex items-center gap-2 text-xl font-bold text-blue-900">
+            <AssetIcon src={serviceListIcon} /> Danh sách dịch vụ chi tiết
+          </h2>
+          <div className="relative mb-6">
+            <img src={serviceInputSearchIcon} alt="" className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2" />
+            <input
+              type="search"
+              placeholder="Tìm kiếm dịch vụ..."
+              className="w-full rounded-lg border border-slate-300 py-3 pl-12 pr-5 text-base outline-none focus:border-blue-900"
+            />
+          </div>
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-2">
+            {visibleServices.map((service) => {
+              const active = selectedServices.includes(service.id);
               return (
-                <button
-                  key={serviceType.id}
-                  type="button"
-                  onClick={() => setSelectedServiceType(serviceType.id)}
-                  className={`relative rounded-2xl border-2 bg-white p-7 text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] transition ${
-                    active ? "border-blue-900" : "border-transparent"
+                <div
+                  key={service.id}
+                  className={`flex items-center justify-between rounded-2xl p-5 ${
+                    active ? "border-l-4 border-blue-900 bg-[#d5e4f3]" : "bg-[#f2f4f6]"
                   }`}
                 >
-                  {active && <img src={serviceSelectedCheck} alt="" className="absolute right-4 top-4 h-4 w-4" />}
-                  <div className="flex items-center gap-4">
-                    <img src={serviceType.icon} alt="" className="h-12 w-12 rounded object-cover shadow" />
-                    <h3 className={`text-xl font-bold ${active ? "text-blue-900" : "text-slate-900"}`}>
-                      {serviceType.title}
-                    </h3>
+                  <div>
+                    <h3 className="font-bold text-slate-900">{service.name}</h3>
+                    <p className="text-sm text-slate-700">{service.desc}</p>
+                    <p className="font-bold text-blue-900">{formatMoney(service.price)}</p>
                   </div>
-                  <p className="mt-5 text-base text-slate-600">{serviceType.desc}</p>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleService(service.id)}
+                    className={`flex min-w-[68px] items-center justify-center rounded-full border px-5 py-2 text-sm font-bold ${
+                      active ? "border-blue-900 bg-blue-900 text-white" : "border-blue-900 bg-white text-blue-900"
+                    }`}
+                  >
+                    {active ? <span className="relative z-10 text-base leading-none">✓</span> : "Chọn"}
+                  </button>
+                </div>
               );
             })}
           </div>
+          <div className="mt-5 flex items-center justify-between rounded-xl bg-slate-100 p-5 shadow">
+            <span className="font-bold text-slate-900">Tổng tiền tạm tính</span>
+            <div className="text-right">
+              <p className="text-2xl font-black text-blue-900">{formatMoney(total)}</p>
+              <p className="text-xs text-slate-500">(Chưa bao gồm thuế)</p>
+            </div>
+          </div>
+        </Card>
 
-          <Card
-            className={`p-6 ${validationAttempted && selectedServices.length === 0 ? "ring-2 ring-red-500" : ""}`}
-            title={validationAttempted && selectedServices.length === 0 ? "Vui lòng điền thông tin" : undefined}
-            data-booking-error={validationAttempted && selectedServices.length === 0 ? "true" : undefined}
-            tabIndex={validationAttempted && selectedServices.length === 0 ? -1 : undefined}
-          >
-            <h2 className="mb-5 flex items-center gap-2 text-xl font-bold text-blue-900">
-              <AssetIcon src={serviceListIcon} /> Danh sách dịch vụ chi tiết
-            </h2>
-            <div className="relative mb-6">
-              <img src={serviceInputSearchIcon} alt="" className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2" />
-              <input
-                type="search"
-                placeholder="Tìm kiếm dịch vụ..."
-                className="w-full rounded-lg border border-slate-300 py-3 pl-12 pr-5 text-base outline-none focus:border-blue-900"
-              />
-            </div>
-            <div className="max-h-[320px] space-y-4 overflow-y-auto pr-2">
-              {BOOKING_SERVICES.map((service) => {
-                const active = selectedServices.includes(service.id);
-                return (
-                  <div
-                    key={service.id}
-                    className={`flex items-center justify-between rounded-2xl p-5 ${
-                      active ? "border-l-4 border-blue-900 bg-[#d5e4f3]" : "bg-[#f2f4f6]"
-                    }`}
-                  >
-                    <div>
-                      <h3 className="font-bold text-slate-900">{service.name}</h3>
-                      <p className="text-sm text-slate-700">{service.desc}</p>
-                      <p className="font-bold text-blue-900">{formatMoney(service.price)}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => toggleService(service.id)}
-                      className={`flex min-w-[68px] items-center justify-center rounded-full border px-5 py-2 text-sm font-bold ${
-                        active ? "border-blue-900 bg-blue-900 text-white" : "border-blue-900 bg-white text-blue-900"
-                      }`}
-                    >
-                      {active ? <span className="relative z-10 text-base leading-none">✓</span> : "Chọn"}                    </button>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-5 flex items-center justify-between rounded-xl bg-slate-100 p-5 shadow">
-              <span className="font-bold text-slate-900">Tổng tiền tạm tính</span>
-              <div className="text-right">
-                <p className="text-2xl font-black text-blue-900">{formatMoney(total)}</p>
-                <p className="text-xs text-slate-500">(Chưa bao gồm thuế)</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-        <aside className="space-y-6">
+        <aside className="grid h-[744px] grid-rows-[auto_minmax(0,1fr)] gap-6">
           <BookingCalendar selectedDate={selectedDate} onSelect={setSelectedDate} invalid={validationAttempted && !selectedDate} />
           <TimeSlots selectedSlot={selectedSlot} onSelect={setSelectedSlot} invalid={validationAttempted && !selectedSlot} />
         </aside>
@@ -419,7 +487,6 @@ function InfoForm({
     petInfo.status &&
     ownerInfo.name.trim() &&
     ownerInfo.phone.trim() &&
-    ownerInfo.branch &&
     ownerInfo.agreed;
 
   const handleNext = () => {
@@ -507,7 +574,6 @@ function InfoForm({
             <Field label="Họ và tên" required showError={validationAttempted} value={ownerInfo.name} onChange={(event) => updateOwnerInfo("name", event.target.value)}/>
             <Field label="Số điện thoại" required showError={validationAttempted} value={ownerInfo.phone} onChange={(event) => updateOwnerInfo("phone", event.target.value)}/>
             <Field label="Email" value={ownerInfo.email} onChange={(event) => updateOwnerInfo("email", event.target.value)}/>
-            <Field label="Lựa chọn chi nhánh gần bạn nhất" as="select" required showError={validationAttempted} value={ownerInfo.branch} onChange={(event) => updateOwnerInfo("branch", event.target.value)} options={["Phường Linh Xuân, TP. Thủ Đức, TP. Hồ Chí Minh", "Quận 1, TP. Hồ Chí Minh","Quận Gò Vấp, TP. Hồ Chí Minh", "Quận Cầu Giấy, Hà Nội","Quận Hoàng Mai, Hà Nội"]} />
             <label
               className={`flex items-start gap-3 rounded-lg text-sm text-slate-700 ${validationAttempted && !ownerInfo.agreed ? "ring-2 ring-red-500" : ""}`}
               title={validationAttempted && !ownerInfo.agreed ? "Vui lòng điền thông tin" : undefined}
@@ -530,8 +596,10 @@ function InfoForm({
             setPetInfo((current) => ({
               ...current,
               name: pet.name || current.name,
+              species: pet.species || current.species,
               breed: pet.breed || current.breed,
               age: pet.age || current.age,
+              weight: pet.weight || current.weight,
             }));
             setShowPetPicker(false);
           }}
@@ -540,8 +608,6 @@ function InfoForm({
     </>
   );
 }
-
-import { ChevronDown } from "lucide-react";
 
 function Field({
   label,
@@ -707,7 +773,7 @@ function BookingPage() {
     name: "",
     phone: "",
     email: "",
-    branch: "",
+    branch: BRANCH_OPTIONS[0],
     agreed: false,
   });
   const [paymentMode, setPaymentMode] = useState("store");
@@ -743,6 +809,8 @@ function BookingPage() {
               setSelectedDate={setSelectedDate}
               selectedSlot={selectedSlot}
               setSelectedSlot={setSelectedSlot}
+              ownerInfo={ownerInfo}
+              setOwnerInfo={setOwnerInfo}
               onNext={() => requireAuth(() => setStep(2))}
             />
           )}
@@ -763,6 +831,7 @@ function BookingPage() {
               selectedDate={selectedDate}
               selectedSlot={selectedSlot}
               selectedPet={selectedPet}
+              petInfo={petInfo}
               ownerInfo={ownerInfo}
               selectedServices={BOOKING_SERVICES.filter((service) => selectedServices.includes(service.id))}
               paymentMode={paymentMode}

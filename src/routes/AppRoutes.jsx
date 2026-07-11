@@ -16,6 +16,7 @@ import CommunityPage from "../pages/Blog/CommunityPage";
 import FirstAidPage from "../pages/Blog/FirstAidPage";
 import FirstAidDetailPage from "../pages/Blog/FirstAidDetailPage";
 import RescuePage from "../pages/Rescue/RescuePage";
+import SearchResultsPage from "../pages/SearchResultsPage";
 
 import GroomingSpaPage from "../pages/GroomingSpaPage";
 import MedicalTreatmentPage from "../pages/MedicalTreatment/MedicalTreatmentPage";
@@ -29,6 +30,7 @@ import UserProfilePage from "../pages/User/UserProfilePage";
 import AboutPage from "../pages/About/AboutPage";
 import ContactPage from "../pages/Contact/ContactPage";
 import PolicyPage from "../pages/Policy/PolicyPage";
+import NotFoundPage from "../pages/NotFoundPage";
 
 const AppRoutes = () => {
   return (
@@ -50,6 +52,7 @@ const AppRoutes = () => {
       <Route path="/blog/cong-dong" element={<CommunityPage />} />
       <Route path="/blog/:postId" element={<BlogDetailPage />} />
       <Route path="/rescue" element={<RescuePage />} />
+      <Route path="/search" element={<SearchResultsPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/policy" element={<PolicyPage />} />
@@ -72,6 +75,8 @@ const AppRoutes = () => {
         <Route path="/my-orders" element={<MyOrdersPage />} />
         <Route path="/my-orders/:orderId" element={<OrderDetailsPage />} />
       </Route>
+
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };

@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { groomingFeedbackAssets } from "../../assets/groomingImages";
 import { FEEDBACK_PAGE_COUNT, FEEDBACK_PAGES } from "../shop/feedbackData";
+import ProductRating from "../product/ProductRating";
 import { groomingTitleStyles } from "./groomingTitleStyles";
 
 const FEEDBACK_QUOTE_LINES = 4;
@@ -11,9 +12,7 @@ const FEEDBACK_AUTHOR_HEIGHT = 68;
 function FeedbackCard({ review }) {
   return (
     <article className="flex h-[280px] min-h-[280px] w-full min-w-0 flex-col rounded-3xl bg-white p-10 transition-[transform,box-shadow] duration-component ease-premium hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
-      <p className="h-6 shrink-0 text-[#FF9D00] leading-6" aria-label="5 sao">
-        ★★★★★
-      </p>
+      <ProductRating value={review.rating ?? 5} size={18} gap={2} fillColor="#FF9D00" className="h-6 shrink-0" />
       <p
         className="mt-2 shrink-0 overflow-hidden text-[16px] leading-7 text-[#333] line-clamp-4"
         style={{ height: FEEDBACK_QUOTE_HEIGHT }}

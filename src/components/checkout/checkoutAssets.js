@@ -38,7 +38,7 @@ export const GUEST_ORDER_ITEMS = [
   {
     id: 2,
     name: "Laptop lenovhbhfbv fbdfhdvd chhvuhv",
-    price: "89.000",
+    price: "89.000đ",
     type: "màu xanh",
     size: "1,5kg",
     qty: 2,
@@ -63,7 +63,7 @@ export const GUEST_ORDER_ITEMS = [
 
 export const ORDER_ITEMS = GUEST_ORDER_ITEMS;
 
-export const GUEST_ORDER_TOTAL = "200.000 đ";
+export const GUEST_ORDER_TOTAL = "200.000đ";
 
 export const ONLINE_PAYMENT_METHODS = [
   {

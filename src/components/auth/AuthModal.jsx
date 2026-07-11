@@ -45,7 +45,7 @@ const PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
 const VALIDATION_SCHEMAS = {
   login: {
     phone: ["required", "phone"],
-    password: ["required", "password"],
+    password: ["required"],
   },
   register: {
     name: ["required"],
@@ -64,6 +64,10 @@ const VALIDATION_SCHEMAS = {
 };
 
 const VALIDATION_MESSAGES = {
+  requiredByField: {
+    phone: "Vui lòng nhập số điện thoại",
+    password: "Vui lòng nhập mật khẩu",
+  },
   required: "Vui lòng điền thông tin",
   phone: "Số điện thoại không đúng định dạng",
   email: "Email không đúng định dạng",
@@ -76,7 +80,9 @@ function getFieldError(form, field, rules) {
   const value = String(form[field] ?? "").trim();
 
   for (const rule of rules) {
-    if (rule === "required" && !value) return VALIDATION_MESSAGES.required;
+    if (rule === "required" && !value) {
+      return VALIDATION_MESSAGES.requiredByField[field] ?? VALIDATION_MESSAGES.required;
+    }
     if (!value) continue;
     if (rule === "phone" && !PHONE_PATTERN.test(value)) return VALIDATION_MESSAGES.phone;
     if (rule === "email" && !EMAIL_PATTERN.test(value)) return VALIDATION_MESSAGES.email;

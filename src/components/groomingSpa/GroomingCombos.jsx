@@ -141,7 +141,7 @@ function GroomingCombos() {
               Combo Tắm 11 bước
             </h3>
             <p className="mt-1 font-['Roboto'] text-[20px] italic leading-[35px] text-[#02000F]">
-              Từ 150.000 đ
+              Từ 150.000đ
             </p>
             <ol className="mt-3 list-decimal pl-6 font-['Roboto'] text-[16px] leading-6 text-[#6C6D71]">
               {GROOMING_COMBO_STEPS.map((step) => (
@@ -158,14 +158,14 @@ function GroomingCombos() {
         <SmallComboCard
           image={groomingImages.comboGrooming}
           title="Combo Tắm cơ bản & cắt tỉa lông"
-          price="Từ 100.000 đ"
+          price="Từ 100.000đ"
           description="Gói Tắm cơ bản, sấy lông & cắt tỉa"
           maskUrl={groomingImages.comboCardMaskSm1}
         />
         <SmallComboCard
           image={groomingImages.comboNail}
           title="Combo Chăm sóc & bảo vệ móng"
-          price="Từ 80.000 đ"
+          price="Từ 80.000đ"
           description="Cắt móng, cạo da chết đệm thịt, dưỡng ẩm"
           maskUrl={groomingImages.comboCardMaskSm2}
         />

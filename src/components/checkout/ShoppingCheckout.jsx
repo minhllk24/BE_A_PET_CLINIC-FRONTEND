@@ -11,18 +11,10 @@ import {
   GuestShippingForm,
 } from "./GuestCheckoutSections";
 import AddressFormModal from "../address/AddressFormModal";
-
-function getNumericPrice(value) {
-  if (typeof value === "number") return value;
-  return Number(String(value ?? "").replace(/[^\d.-]/g, "")) || 0;
-}
+import { formatVnd, getNumericPrice } from "../../utils/currency";
 
 function formatMoney(value) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(getNumericPrice(value));
+  return formatVnd(value);
 }
 
 function CheckoutOrderItem({ item }) {
@@ -195,9 +187,9 @@ function CouponAndSummary({ isGuest, items }) {
           { label: "Tạm tính", value: formatMoney(subtotal) },
           {
             label: isGuest ? "Phí dịch vụ" : "Phí vận chuyển",
-            value: "0 đ",
+            value: "0đ",
           },
-          { label: "Giảm giá", value: "0 đ" },
+          { label: "Giảm giá", value: "0đ" },
         ].map((row) => (
           <div
             key={row.label}

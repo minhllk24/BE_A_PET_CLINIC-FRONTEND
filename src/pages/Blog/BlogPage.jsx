@@ -193,7 +193,7 @@ export default function BlogPage() {
           <section className="flex w-[1200px] items-end justify-between pb-5">
             <div>
               <h1 className="flex items-center gap-1 text-[40px] font-bold leading-[48px] tracking-[-0.8px]">
-                Khám phá <span className="text-[#0D47A1]">Blog</span>
+                Kiến thức<span className="text-[#0D47A1]">thú cưng</span>
                 <img src={blogImages.titlePet} alt="" className="h-12 w-12 object-contain" />
               </h1>
               <p className="mt-2 text-[16px] leading-6 text-[#4B5563]">Kiến thức chăm sóc thú cưng từ chuyên gia!!</p>
