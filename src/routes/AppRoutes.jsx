@@ -37,24 +37,35 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<HomePage />} />
       
-      <Route path="/booking" element={<BookingPage />} />
+      <Route path="/dat-lich" element={<BookingPage />} />
 
       <Route path="/petshop" element={<ShopPage />} />
+      <Route path="/cua-hang" element={<ShopPage />} />
       <Route path="/products" element={<ProductPage />} />
+      <Route path="/san-pham" element={<ProductPage />} />
       <Route path="/product-details" element={<ProductDetailsPage />} />
       <Route path="/product-details/:productId" element={<ProductDetailsPage />} />
       <Route path="/product-details/:productId/write-review" element={<WriteReviewPage />} />
       <Route path="/cart" element={<CartOpenHandler />} />
       <Route path="/blog" element={<BlogPage />} />
+      <Route path="/bai-viet" element={<BlogPage />} />
       <Route path="/blog/kien-thuc" element={<BlogPage />} />
+      <Route path="/bai-viet/kien-thuc" element={<BlogPage />} />
       <Route path="/blog/so-cuu" element={<FirstAidPage />} />
+      <Route path="/bai-viet/so-cuu" element={<FirstAidPage />} />
       <Route path="/blog/so-cuu/:postId" element={<FirstAidDetailPage />} />
+      <Route path="/bai-viet/so-cuu/:postId" element={<FirstAidDetailPage />} />
       <Route path="/blog/cong-dong" element={<CommunityPage />} />
+      <Route path="/bai-viet/cong-dong" element={<CommunityPage />} />
       <Route path="/blog/:postId" element={<BlogDetailPage />} />
+      <Route path="/bai-viet/:postId" element={<BlogDetailPage />} />
       <Route path="/rescue" element={<RescuePage />} />
+      <Route path="/cuu-tro" element={<RescuePage />} />
       <Route path="/search" element={<SearchResultsPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/ve-chung-toi" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/lien-he" element={<ContactPage />} />
       <Route path="/policy" element={<PolicyPage />} />
       <Route path="/policies/doi-tra-hang" element={<PolicyPage />} />
       <Route path="/policies/:slug" element={<PolicyPage />} />
@@ -62,19 +73,22 @@ const AppRoutes = () => {
       <Route path="/services/grooming-spa" element={<GroomingSpaPage />} />
       <Route path="/services/groomng-spa" element={<GroomingSpaPage />} />
       <Route path="/services/kham-dieu-tri" element={<MedicalTreatmentPage />} />
+      <Route path="/dich-vu" element={<MedicalTreatmentPage />} />
+      <Route path="/dich-vu/grooming-spa" element={<GroomingSpaPage />} />
+      <Route path="/dich-vu/tam-cat-tia-spa" element={<GroomingSpaPage />} />
+      <Route path="/dich-vu/kham-dieu-tri" element={<MedicalTreatmentPage />} />
       <Route path="/checkout" element={<CheckoutPage />} />
 
       {/* 2. Các trang thuộc nhóm quản lý thú cưng có layout riêng */}
       <Route element={<LayoutManagePet />}>
-        <Route path="/user-profile" element={<UserProfilePage />} />
-        <Route path="/profile" element={<UserProfilePage />} />
-        <Route path="/my-pets" element={<MyPetPage />} />
-        <Route path="/my-pets/new" element={<PetFormPage />} />
-        <Route path="/my-pets/:id" element={<PetDetailPage />} />
-        <Route path="/my-pets/:id/edit" element={<PetFormPage />} />
-        <Route path="/appointment/history" element={<AppointmentHistoryPage />} />
-        <Route path="/my-orders" element={<MyOrdersPage />} />
-        <Route path="/my-orders/:orderId" element={<OrderDetailsPage />} />
+        <Route path="/thong-tin-nguoi-dung" element={<UserProfilePage />} />
+        <Route path="/thu-cung-cua-toi" element={<MyPetPage />} />
+        <Route path="/thu-cung-cua-toi/them-moi" element={<PetFormPage />} />
+        <Route path="/thu-cung-cua-toi/:id" element={<PetDetailPage />} />
+        <Route path="/thu-cung-cua-toi/:id/chinh-sua" element={<PetFormPage />} />
+        <Route path="/lich-su-dat-lich" element={<AppointmentHistoryPage />} />
+        <Route path="/don-hang-cua-toi" element={<MyOrdersPage />} />
+        <Route path="/don-hang-cua-toi/:orderId" element={<OrderDetailsPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

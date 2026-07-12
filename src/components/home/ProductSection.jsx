@@ -1,12 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { FEATURED_PRODUCTS, PRODUCT_CATEGORIES } from "../../data/shopData";
 import ProductCard from "../product/ProductCard";
 import SectionTitle from "./SectionTitle";
 import YellowButton from "./YellowButton";
 
 function ProductSection() {
-  const navigate = useNavigate();
-
   return (
     <section
       id="mua-sắm"
@@ -34,10 +32,10 @@ function ProductSection() {
         <SectionTitle>Pet shop</SectionTitle>
 
         <div className="grid w-full max-w-[992px] grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
-          {PRODUCT_CATEGORIES.map(({ label, image }) => (
-            <button
+          {PRODUCT_CATEGORIES.map(({ label, image, slug }) => (
+            <Link
               key={label}
-              type="button"
+              to={`/san-pham?category=${slug}`}
               className="card-category flex flex-col items-center gap-3 border-0 bg-transparent p-0 text-center"
             >
               <img
@@ -49,7 +47,7 @@ function ProductSection() {
               <p className="text-lg font-bold text-black">
                 {label}
               </p>
-            </button>
+            </Link>
           ))}
           </div>
 
@@ -64,8 +62,8 @@ function ProductSection() {
         </div>
 
         <YellowButton
+          to="/san-pham"
           className="h-[42px] min-w-[154px]"
-          onClick={() => navigate("/products")}
         >
           XEM THÊM 
           <span className="text-xl leading-none">›</span>

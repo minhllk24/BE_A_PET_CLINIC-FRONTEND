@@ -1,5 +1,7 @@
+import { Link } from "react-router-dom";
 import { homeImages } from "../../assets/homeImages";
 import { HOME_DOCTORS } from "../../data/homeData";
+import { useAuth } from "../../context/AuthContext";
 import SectionTitle from "./SectionTitle";
 import YellowButton from "./YellowButton";
 
@@ -68,6 +70,8 @@ function DoctorCard({ image, name }) {
 }
 
 function DoctorSection() {
+  const { openAuth } = useAuth();
+
   return (
     <section className="relative w-full overflow-hidden py-12 md:py-16">
       <img
@@ -100,16 +104,20 @@ function DoctorSection() {
      
 
           <div className="flex flex-wrap items-center justify-center gap-4 pb-10">
-            <YellowButton className="h-12 px-4 text-xl">ĐẶT LỊCH NGAY</YellowButton>
-            <YellowButton variant="outline" className="h-12 px-4">
+            <YellowButton to="/dat-lich" className="h-12 px-4 text-xl">ĐẶT LỊCH NGAY</YellowButton>
+            <YellowButton
+              variant="outline"
+              className="h-12 px-4"
+              onClick={() => openAuth("register")}
+            >
               ĐĂNG KÝ TÀI KHOẢN
             </YellowButton>
-            <button
-              type="button"
+            <Link
+              to="/ve-chung-toi"
               className="px-2 py-3 text-base font-medium text-blue-900 hover:underline"
             >
               TÌM HIỂU THÊM →
-            </button>
+            </Link>
           </div>
         </div>
 

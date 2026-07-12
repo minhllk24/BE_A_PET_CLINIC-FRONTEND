@@ -6,6 +6,7 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../context/AuthContext";
+import { USER_MENU_LINKS } from "../Navbar/userMenuLinks";
 
 const PawIcon = (props) => (
   <svg {...props} viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em">
@@ -22,39 +23,24 @@ const Sidebar = () => {
   const location = useLocation();
   const { logout } = useAuth();
 
+  const menuIcons = {
+    "Thông tin người dùng": UserOutlined,
+    "Quản lý thú cưng": PawIcon,
+    "Lịch sử đặt lịch": CalendarOutlined,
+    "Đơn hàng của tôi": ShoppingOutlined,
+  };
+
   const menuItems = [
-    {
-      id: "profile",
-      label: "Thông tin người dùng",
-      icon: UserOutlined,
-      path: "/user-profile",
-    },
-    {
-      id: "pets",
-      label: "Quản lý thú cưng",
-      icon: PawIcon, 
-      path: "/my-pets",
-    },
-    {
-      id: "appointments",
-      label: "Lịch sử đặt lịch",
-      icon: CalendarOutlined,
-      path: "/appointment/history",
-    },
-    {
-      id: "orders",
-      label: "Đơn hàng của tôi",
-      icon: ShoppingOutlined,
-      path: "/my-orders",
-    },
+    ...USER_MENU_LINKS.map((item) => ({
+      id: item.href,
+      label: item.label,
+      icon: menuIcons[item.label],
+      path: item.href,
+    })),
   ];
 
   // LOGIC ACTIVE MỚI NHẤT
   const isActive = (path) => {
-    // Nếu là tab quản lý thú cưng, giữ sáng cho tất cả các route bắt đầu bằng /my-pets
-    if (path === "/my-pets") {
-      return location.pathname === "/my-pets" || location.pathname.startsWith("/my-pets/");
-    }
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 

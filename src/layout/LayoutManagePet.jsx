@@ -6,7 +6,7 @@ import Footer from "../components/Footer/Footer";
 const LayoutManagePet = () => {
   return (
     // THAY ĐỔI QUAN TRỌNG: Thêm 'fixed inset-0' để khóa chặt Layout vừa khít 100% màn hình
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-slate-50 w-full h-full">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-white w-full h-full">
       
       {/* Header */}
       <div className="flex-shrink-0 z-50 bg-white shadow-sm relative">
@@ -19,17 +19,14 @@ const LayoutManagePet = () => {
         <Sidebar />
 
         {/* Khối nội dung chính (Chỉ có duy nhất 1 thanh cuộn nằm ở đây) */}
-        <main className="flex-1 overflow-y-auto flex flex-col bg-slate-50 relative">
-          <div className="flex-1 px-4 sm:px-6 lg:px-8 py-6">
+        <main className="flex-1 overflow-y-auto flex flex-col bg-white relative">
+          <div className="ml-auto flex-1 w-full max-w-[1160px] px-4 py-6 sm:px-6 lg:px-8 [&>div]:!mx-0 [&>div]:!w-full [&>div]:!max-w-none">
             <Outlet />
-          </div>
-          
-          <div className="flex-shrink-0 mt-auto">
-            <Footer />
           </div>
         </main>
 
       </div>
+      <Footer variant="account" />
     </div>
   );
 };

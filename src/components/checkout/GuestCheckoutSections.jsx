@@ -3,9 +3,9 @@ import { useAuth } from "../../context/AuthContext";
 
 function FieldLabel({ children, required = false }) {
   return (
-    <label className="font-['Roboto'] text-[14px] leading-[1.43] tracking-[0.17px] text-[#3d3d3d]">
+    <label className="text-sm font-medium text-slate-900">
       {children}
-      {required && <span className="text-[#c62828]">*</span>}
+      {required && <span className="text-red-600">*</span>}
     </label>
   );
 }
@@ -15,7 +15,7 @@ function PillInput({ id, type = "text", className = "", ...props }) {
     <input
       id={id}
       type={type}
-      className={`h-[43px] rounded-[16px] border border-solid border-[#e0e0e0] bg-white px-4 font-['Roboto'] text-[14px] leading-[1.43] tracking-[0.17px] text-[rgba(0,0,0,0.87)] outline-none focus:border-[#0d47a1] ${className}`}
+      className={`h-10 rounded-2xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none focus:border-blue-900 ${className}`}
       {...props}
     />
   );
@@ -25,9 +25,9 @@ export function GuestLoginBanner() {
   const { openAuth } = useAuth();
 
   return (
-    <section className="flex h-[73px] items-center justify-between gap-4 rounded-[8px] border border-solid border-[#c2c7d1] bg-white p-[25px]">
+    <section className="flex min-h-[73px] items-center justify-between gap-4 rounded-2xl bg-white p-6 shadow-[0_4px_13px_rgba(144,202,249,0.85)]">
       <p
-        className="min-w-0 flex-1 font-['Roboto'] text-[14px] font-medium leading-[24px] tracking-[0.17px] text-[#42474f]"
+        className="min-w-0 flex-1 text-sm font-medium leading-6 text-slate-700"
         style={{ lineHeight: "24px" }}
       >
         Đăng nhập tài khoản để mua hàng và theo dõi đơn hàng thuận tiện hơn
@@ -35,7 +35,7 @@ export function GuestLoginBanner() {
       <button
         type="button"
         onClick={() => openAuth("login")}
-        className="btn-brand-yellow-sm shrink-0 w-[125px] text-center"
+        className="shrink-0 rounded bg-secondary px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition hover:bg-[#ffe454]"
       >
         Đăng nhập
       </button>
@@ -45,7 +45,7 @@ export function GuestLoginBanner() {
 
 export function GuestShippingForm() {
   return (
-    <section className="flex flex-col gap-4 rounded-[8px] border border-solid border-[#c2c7d1] bg-white p-[25px]">
+    <section className="flex flex-col gap-5 rounded-2xl bg-white p-8 shadow-[0_4px_13px_rgba(144,202,249,0.85)]">
       <div className="flex items-center gap-2">
         <img
           src={checkoutImages.locationPin}
@@ -53,20 +53,19 @@ export function GuestShippingForm() {
           className="h-5 w-4 shrink-0"
           aria-hidden="true"
         />
-        <h2 className="font-['Roboto'] text-[24px] font-bold leading-[1.334] text-[#00355f]">
-          Địa chỉ nhận hàng
+        <h2 className="text-xl font-black text-blue-900">
+          ĐỊA CHỈ NHẬN HÀNG
         </h2>
       </div>
 
-      <div className="flex flex-col gap-[10px]">
-        <div className="flex gap-[46px]">
-          <div className="flex w-[307px] flex-col gap-[10px]">
+      <div className="grid gap-5 md:grid-cols-2">
+        <div className="flex flex-col gap-2">
             <FieldLabel required>
               Họ tên
             </FieldLabel>
             <PillInput id="guest-full-name" name="fullName" autoComplete="name" />
-          </div>
-          <div className="flex w-[307px] flex-col gap-[10px]">
+        </div>
+        <div className="flex flex-col gap-2">
             <FieldLabel required>
               Số điện thoại
             </FieldLabel>
@@ -76,11 +75,9 @@ export function GuestShippingForm() {
               type="tel"
               autoComplete="tel"
             />
-          </div>
         </div>
 
-        <div className="flex gap-[46px]">
-          <div className="flex w-[307px] flex-col gap-[10px]">
+        <div className="flex flex-col gap-2">
             <FieldLabel>Email</FieldLabel>
             <PillInput
               id="guest-email"
@@ -88,23 +85,22 @@ export function GuestShippingForm() {
               type="email"
               autoComplete="email"
             />
-          </div>
-          <div className="flex w-[307px] flex-col gap-[10px]">
+        </div>
+        <div className="flex flex-col gap-2">
             <FieldLabel required>
               Quốc gia
             </FieldLabel>
             <PillInput id="guest-country" name="country" defaultValue="Việt Nam" />
-          </div>
         </div>
 
-        <div className="flex w-full max-w-[660px] flex-col gap-[10px]">
+        <div className="flex flex-col gap-2 md:col-span-2">
           <FieldLabel required>
             Địa chỉ cụ thể
           </FieldLabel>
           <PillInput id="guest-address" name="address" autoComplete="street-address" />
         </div>
 
-        <div className="flex w-full max-w-[660px] flex-col gap-[10px]">
+        <div className="flex flex-col gap-2 md:col-span-2">
           <FieldLabel required>
             Tỉnh/Thành phố
           </FieldLabel>

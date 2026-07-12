@@ -19,9 +19,9 @@ function formatMoney(value) {
 
 function CheckoutOrderItem({ item }) {
   return (
-    <div className="flex h-[100px] w-full max-w-[670px] items-center gap-[10px] border-b border-solid border-[#e0e0e0] py-[10px]">
+    <div className="flex w-full items-center gap-4 rounded-2xl bg-[#f2f4f6] p-4">
       <div className="flex h-full shrink-0 items-center justify-center">
-        <div className="h-full w-[80px]">
+        <div className="h-20 w-20 overflow-hidden rounded-2xl bg-white shadow">
           <img
             src={item.image || item.imageUrl || item.thumbnail || checkoutImages.product}
             alt={item.name}
@@ -29,22 +29,22 @@ function CheckoutOrderItem({ item }) {
           />
         </div>
       </div>
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-center gap-[10px]">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-center gap-2">
         <div className="flex w-full items-start justify-between">
-          <p className="w-[278px] font-['Roboto'] text-[16px] font-bold leading-[1.5] tracking-[0.15px] text-[#0d47a1]">
+          <p className="line-clamp-2 min-w-0 pr-4 text-base font-bold leading-6 text-blue-900">
             {item.name}
           </p>
-          <p className="shrink-0 whitespace-nowrap font-['Roboto'] text-[16px] font-bold leading-[1.5] tracking-[0.15px] text-[#353535]">
+          <p className="shrink-0 whitespace-nowrap text-base font-black text-blue-900">
             {formatMoney(item.price * item.qty)}
           </p>
         </div>
-        <div className="flex w-full items-center justify-between whitespace-nowrap font-['Roboto'] text-[12px] leading-[1.66] tracking-[0.4px] text-[#353535]">
-          <div className="flex items-center gap-10">
-            <div className="flex items-center gap-[5px]">
+        <div className="flex w-full items-center justify-between whitespace-nowrap text-xs font-medium text-slate-700">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+            <div className="flex items-center gap-1">
               <span>Loại:</span>
               <span>{item.type || "Mặc định"}</span>
             </div>
-            <div className="flex items-center gap-[5px]">
+            <div className="flex items-center gap-1">
               <span>Kích cỡ:</span>
               <span>{item.size || "Mặc định"}</span>
             </div>
@@ -64,13 +64,13 @@ function PaymentModeToggle() {
   const isCod = paymentMode === "cod";
 
   return (
-    <div className="grid rounded-xl bg-slate-200 p-1 text-center text-sm font-bold">
+    <div className="grid rounded-2xl bg-[#f2f4f6] p-1.5 text-center text-sm font-bold">
       <div className="grid grid-cols-2">
         <button
           type="button"
           onClick={() => setPaymentMode("cod")}
-          className={`rounded-lg py-2 transition-colors duration-micro ${
-            isCod ? "bg-white text-blue-900" : "text-slate-500"
+          className={`rounded-2xl py-3 transition duration-micro ${
+            isCod ? "bg-white text-blue-900 shadow-elevation" : "text-slate-500 hover:text-blue-900"
           }`}
         >
           Khi nhận hàng
@@ -78,8 +78,8 @@ function PaymentModeToggle() {
         <button
           type="button"
           onClick={() => setPaymentMode("online")}
-          className={`rounded-lg py-2 transition-colors duration-micro ${
-            !isCod ? "bg-white text-blue-900" : "text-slate-500"
+          className={`rounded-2xl py-3 transition duration-micro ${
+            !isCod ? "bg-white text-blue-900 shadow-elevation" : "text-slate-500 hover:text-blue-900"
           }`}
         >
           Trực tuyến
@@ -93,11 +93,11 @@ function OnlinePaymentMethods() {
   const { onlineMethod, setOnlineMethod } = useCart();
 
   return (
-    <div className="space-y-2 border-y border-slate-300 py-4">
-      <p className="mb-3 text-sm text-slate-700">
+    <div className="space-y-3 rounded-2xl bg-[#f2f4f6] p-4">
+      <p className="text-sm font-bold text-slate-900">
         Phương thức thanh toán trực tuyến
       </p>
-      <div className="space-y-2">
+      <div className="space-y-3">
         {ONLINE_PAYMENT_METHODS.map((method) => {
           const selected = onlineMethod === method.id;
           return (
@@ -105,20 +105,23 @@ function OnlinePaymentMethods() {
               key={method.id}
               type="button"
               onClick={() => setOnlineMethod(method.id)}
-              className={`flex w-full items-center gap-4 rounded-lg border p-3 text-left transition-colors duration-micro ${
+              className={`flex w-full items-center gap-4 rounded-2xl border-2 p-3 text-left transition duration-micro ${
                 selected
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-slate-200 bg-white"
+                  ? "border-blue-900 bg-[#d5e4f3]"
+                  : "border-transparent bg-white hover:border-blue-900"
               }`}
             >
-              <img
-                src={method.icon}
-                alt=""
-                className="h-6 w-6 shrink-0 object-contain"
-              />
-              <span className="flex-1 text-[16px] leading-6 text-[rgba(0,0,0,0.87)]">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow">
+                <img
+                  src={method.icon}
+                  alt=""
+                  className="h-6 w-6 object-contain"
+                />
+              </span>
+              <span className="flex-1 text-base font-bold leading-6 text-slate-900">
                 {method.label}
               </span>
+              {selected && <span className="text-base font-black text-blue-900">✓</span>}
             </button>
           );
         })}
@@ -146,13 +149,13 @@ function CouponAndSummary({ isGuest, items }) {
 
   return (
     <>
-      <div className="flex w-full flex-col gap-3 border-t border-solid border-[#c2c7d1] pt-[17px]">
-        <p className="whitespace-nowrap font-['Roboto'] text-[15px] font-medium leading-normal text-[#585858]">
+      <div className="flex w-full flex-col gap-3 border-t border-solid border-slate-200 pt-5">
+        <p className="whitespace-nowrap text-sm font-bold text-slate-900">
           Thẻ quà tặng / Mã giảm giá
         </p>
-        <div className="flex flex-row items-start gap-[26px]">
-          <div className="flex flex-col flex-1 min-w-0">
-            <div className="w-full h-[37px] border border-[rgba(0,0,0,0.23)] rounded-[4px] px-[14px] flex items-center bg-[#FFFFFF]">
+        <div className="flex flex-row items-start gap-3">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <div className="flex h-10 w-full items-center rounded-2xl border border-slate-300 bg-white px-4 focus-within:border-blue-900">
               <input
                 type="text"
                 value={couponCode}
@@ -161,11 +164,11 @@ function CouponAndSummary({ isGuest, items }) {
                   setCouponError("");
                 }}
                 placeholder="Nhập mã"
-                className="w-full bg-transparent outline-none text-[14px] font-normal text-[#4F4B4B] placeholder:text-[#999]"
+                className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
               />
             </div>
             {couponError && (
-              <p className="w-full px-[14px] pt-[3px] font-['Roboto'] text-[10px] font-normal leading-[1.66em] tracking-[0.04em] text-[rgba(255,0,0,0.6)]" role="alert">
+              <p className="w-full px-4 pt-1 text-xs font-medium text-red-600" role="alert">
                 {couponError}
               </p>
             )}
@@ -173,16 +176,14 @@ function CouponAndSummary({ isGuest, items }) {
           <button
             type="button"
             onClick={handleApplyCoupon}
-            className="h-[37px] w-[104px] flex items-center justify-center bg-[#FFF176] rounded-[4px] shadow-elevation drop-shadow-[0px_3px_0.5px_rgba(0,0,0,0.2),0px_2px_1px_rgba(0,0,0,0.14),0px_1px_2.5px_rgba(0,0,0,0.12)] hover:bg-[#ffe454] active:scale-[0.98] focus-ring-brand transition-all duration-micro"
+            className="flex h-10 w-[104px] items-center justify-center rounded bg-secondary text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition-all duration-micro hover:bg-[#ffe454] active:scale-[0.98]"
           >
-            <span className="whitespace-nowrap font-['Roboto'] text-[16px] font-normal leading-[1.5] tracking-[0.15px] text-black">
-              Áp dụng
-            </span>
+            Áp dụng
           </button>
         </div>
       </div>
 
-      <div className="flex w-full flex-col gap-3 border-t border-solid border-[#c2c7d1] pt-[25px]">
+      <div className="my-2 flex w-full flex-col gap-3 rounded-2xl bg-[#f2f4f6] p-5 text-sm">
         {[
           { label: "Tạm tính", value: formatMoney(subtotal) },
           {
@@ -193,40 +194,39 @@ function CouponAndSummary({ isGuest, items }) {
         ].map((row) => (
           <div
             key={row.label}
-            className="flex items-center justify-between font-['Roboto'] text-[16px] leading-6 text-[#727780]"
+            className="flex items-center justify-between font-medium text-slate-700"
           >
             <span>{row.label}</span>
-            <span className="text-[#191c1e]">{row.value}</span>
+            <span className="font-bold text-slate-900">{row.value}</span>
           </div>
         ))}
-        <div className="flex items-start justify-between pt-3">
-          <div className="font-['Roboto'] text-[#00355f]">
-            <p className="text-[20px] font-semibold leading-7">Tổng cộng</p>
-            <p className="text-[14px] leading-[1.43] tracking-[0.17px] text-[rgba(0,0,0,0.38)]">
+      </div>
+
+      <div className="flex items-start justify-between rounded-2xl bg-[#d5e4f3] p-5">
+          <div className="text-blue-900">
+            <p className="text-xl font-black leading-7">Tổng cộng</p>
+            <p className="text-xs font-medium text-slate-500">
               (Đã bao gồm thuế VAT)
             </p>
           </div>
-          <span className="font-['Roboto'] text-[20px] font-bold leading-7 text-[#00355f]">
+          <span className="text-2xl font-black leading-7 text-blue-900">
             {formatMoney(subtotal)}
           </span>
-        </div>
       </div>
 
       <button
         type="button"
         onClick={confirmOrder}
         disabled={items.length === 0}
-        className="btn-brand-yellow relative h-12 w-full rounded-[4px] text-[20px] font-bold shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)] hover:bg-[#ffe454] active:scale-[0.99] active:shadow-none transition-all duration-micro focus-ring-brand disabled:cursor-not-allowed disabled:opacity-50"
+        className="relative h-12 w-full rounded bg-secondary text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition-all duration-micro hover:bg-[#ffe454] active:scale-[0.99] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <span className="font-['Roboto'] text-[20px] font-bold leading-6 text-black">
-          {isGuest ? "Xác nhận đặt lịch" : "Xác nhận đơn hàng"}
-        </span>
+        {isGuest ? "Xác nhận đặt lịch" : "Xác nhận đơn hàng"}
       </button>
 
-      <p className="text-center font-['Roboto'] text-[12px] leading-[15px] text-[#727780]">
+      <p className="text-center text-xs leading-[15px] text-slate-500">
         Bằng cách nhấn xác nhận, bạn đồng ý với{" "}
-        <a href="/terms" className="text-[#00355f] underline hover:no-underline">Điều khoản dịch vụ</a> và{" "}
-        <a href="/privacy" className="text-[#00355f] underline hover:no-underline">Chính sách bảo mật</a> của
+        <a href="/terms" className="text-blue-900 underline hover:no-underline">Điều khoản dịch vụ</a> và{" "}
+        <a href="/privacy" className="text-blue-900 underline hover:no-underline">Chính sách bảo mật</a> của
         chúng tôi.
       </p>
     </>
@@ -241,7 +241,7 @@ const INITIAL_ADDRESSES = [
 
 function AuthenticatedAddressCard({ onChange, address }) {
   return (
-    <section className="flex flex-col gap-4 rounded-[8px] border border-solid border-[#c2c7d1] bg-white p-[25px]">
+    <section className="flex flex-col gap-4 rounded-2xl bg-white p-8 shadow-[0_4px_13px_rgba(144,202,249,0.85)]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <img
@@ -250,27 +250,27 @@ function AuthenticatedAddressCard({ onChange, address }) {
             className="h-5 w-4"
             aria-hidden="true"
           />
-          <h2 className="font-['Roboto'] text-[24px] font-bold leading-[1.334] text-[#00355f]">
-            Địa chỉ nhận hàng
+          <h2 className="text-xl font-black text-blue-900">
+            ĐỊA CHỈ NHẬN HÀNG
           </h2>
         </div>
         <button
           type="button"
           onClick={onChange}
-          className="font-['Roboto'] text-[12px] leading-[1.66] tracking-[0.4px] text-[#00355f] hover:underline focus-ring-brand transition-colors duration-micro"
+          className="text-sm font-bold text-blue-900 transition-colors duration-micro hover:underline"
         >
           Thay đổi
         </button>
       </div>
-      <div className="flex flex-col gap-2">
-        <p className="font-['Roboto'] text-[16px] leading-[1.5] tracking-[0.15px] text-[#191c1e]">
+      <div className="flex flex-col gap-2 rounded-2xl bg-[#f2f4f6] p-5">
+        <p className="text-base font-bold leading-6 text-slate-900">
           {address.name} | {address.phone}
         </p>
-        <p className="font-['Roboto'] text-[14px] leading-[1.43] tracking-[0.17px] text-[#42474f]">
+        <p className="text-sm font-medium leading-5 text-slate-700">
           {address.address}
         </p>
         {address.isDefault && (
-          <span className="inline-flex w-fit rounded-[2px] bg-[#d2e4ff] px-2 py-1 font-['Roboto'] text-[12px] leading-[1.66] tracking-[0.4px] text-[#001c37]">
+          <span className="inline-flex w-fit rounded-2xl bg-[#d5e4f3] px-3 py-1 text-xs font-bold text-blue-900">
             Mặc định
           </span>
         )}
@@ -339,18 +339,18 @@ function AddressChangeModal({ addresses, onClose, onSave, onSelect }) {
 
 function OrderDetailsCard({ items }) {
   return (
-    <section className="flex flex-col gap-[24.5px] rounded-[8px] border border-solid border-[#c2c7d1] bg-white p-[25px]">
+    <section className="flex flex-col gap-6 rounded-2xl bg-white p-8 shadow-[0_4px_13px_rgba(144,202,249,0.85)]">
       <div className="flex flex-col gap-2">
-        <h2 className="font-['Roboto'] text-[24px] font-bold leading-[1.334] text-[#00355f]">
-          Chi tiết đơn hàng
+        <h2 className="text-xl font-black text-blue-900">
+          CHI TIẾT ĐƠN HÀNG
         </h2>
-        <p className="font-['Roboto'] text-[14px] leading-[1.43] tracking-[0.17px] text-[#42474f]">
+        <p className="text-sm font-medium text-slate-600">
           Mã đơn hàng: {ORDER_CODE}
         </p>
       </div>
 
-      <div className="flex flex-col gap-4 pb-2">
-        <p className="font-['Roboto'] text-[12px] font-bold leading-4 tracking-[0.5px] text-[#727780]">
+      <div className="flex flex-col gap-4">
+        <p className="text-xl font-black text-blue-900">
           SẢN PHẨM ĐÃ CHỌN
         </p>
         <div className="flex flex-col gap-3">
@@ -360,13 +360,13 @@ function OrderDetailsCard({ items }) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-[16.5px] pb-2">
-        <p className="font-['Roboto'] text-[12px] font-bold leading-4 tracking-[0.5px] text-[#727780]">
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-bold text-slate-900">
           GHI CHÚ ĐƠN HÀNG
         </p>
         <input
           type="text"
-          className="input-brand h-[46px] w-full max-w-[669px] rounded-[16px] px-[14px] font-['Roboto'] text-[14px] text-[rgba(0,0,0,0.87)]"
+          className="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none focus:border-blue-900"
           aria-label="Ghi chú đơn hàng"
         />
       </div>
@@ -399,7 +399,7 @@ function ShoppingCheckout({ onBack }) {
 
   return (
     <div
-      className="pointer-events-auto fixed inset-0 z-[70] overflow-y-auto bg-[#f8f9fb]"
+      className="pointer-events-auto fixed inset-0 z-[70] overflow-y-auto bg-[#e5f6fd]"
       role="dialog"
       aria-label="Thanh toán"
     >
@@ -414,21 +414,19 @@ function ShoppingCheckout({ onBack }) {
           }}
         />
       )}
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center px-6 py-[22px]">
-        <div className="flex w-full max-w-[1392px] flex-col gap-[14px]">
+      <div className="mx-auto flex w-full max-w-[1280px] flex-col items-center px-6 py-6">
+        <div className="flex w-full flex-col gap-5">
           <button
             type="button"
             onClick={onBack}
-            className="btn-icon-subtle flex items-center gap-[10px] self-start rounded-lg px-10 py-2"
+            className="flex items-center gap-3 self-start rounded bg-secondary-light px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition hover:bg-secondary"
           >
             <img src={checkoutImages.backArrow} alt="" className="size-3" />
-            <span className="font-['Roboto'] text-[20px] font-medium leading-[1.6] tracking-[0.15px] text-[#00355f]">
-              Quay lại
-            </span>
+            Quay lại
           </button>
 
-          <div className="flex flex-col gap-7 px-4 lg:flex-row lg:items-start lg:justify-center lg:gap-8 lg:px-16">
-            <div className="flex w-full max-w-[720px] flex-col gap-7">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
+            <div className="flex w-full flex-col gap-7">
               {isGuest && <GuestLoginBanner />}
               {isGuest ? <GuestShippingForm /> : (
                 <AuthenticatedAddressCard address={selectedAddress} onChange={() => setShowAddressModal(true)} />
@@ -436,13 +434,13 @@ function ShoppingCheckout({ onBack }) {
               <OrderDetailsCard items={orderItems} />
             </div>
 
-            <aside className="w-full min-w-[390px] max-w-[480px] shrink-0">
-              <div className="flex flex-col gap-[13px] rounded-[8px] border border-solid border-[#c2c7d1] bg-white px-[25px] py-[24.5px]">
-                <h2 className="font-['Roboto'] text-[24px] font-bold leading-[1.334] text-[#00355f]">
-                  Phương thức thanh toán
+            <aside className="w-full">
+              <div className="flex flex-col gap-5 rounded-2xl bg-white p-8 shadow-[0_4px_13px_rgba(144,202,249,0.85)]">
+                <h2 className="text-xl font-black text-blue-900">
+                  PHƯƠNG THỨC THANH TOÁN
                 </h2>
 
-                <div className="flex flex-col gap-[22px]">
+                <div className="flex flex-col gap-5">
                   <PaymentModeToggle />
                   {paymentMode === "online" && <OnlinePaymentMethods />}
                   <CouponAndSummary isGuest={isGuest} items={orderItems} />
