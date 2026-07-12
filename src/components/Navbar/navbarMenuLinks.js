@@ -2,7 +2,7 @@ export const NAV_LINKS = [
   { label: "Trang chủ", href: "/" },
   {
     label: "Dịch vụ",
-    href: "/services",
+    href: "/service",
     children: [
       { label: "Khám & Điều trị", href: "/services/kham-dieu-tri" },
       { label: "Grooming & Spa", href: "/services/grooming-spa" },

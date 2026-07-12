@@ -9,10 +9,12 @@ import NavBarAuthenticated from "./NavBarAuthenticated";
 import NavBarGuest from "./NavBarGuest";
 import { useAuth } from "../../context/AuthContext";
 
-function NavBar({ avatarSrc, onLogout }) {
+function NavBar({ avatarSrc, onLogout, isAuthenticated: authenticatedProp }) {
   const { isAuthenticated, logout } = useAuth();
+  const resolvedAuthenticated =
+    typeof authenticatedProp === "boolean" ? authenticatedProp : isAuthenticated;
 
-  if (isAuthenticated) {
+  if (resolvedAuthenticated) {
     return (
       <NavBarAuthenticated avatarSrc={avatarSrc} onLogout={onLogout ?? logout} />
     );
