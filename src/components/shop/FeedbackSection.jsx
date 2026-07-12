@@ -68,7 +68,7 @@ function FeedbackDot({ isActive, onClick, pageIndex, totalPages }) {
   );
 }
 
-function FeedbackSection({ onMouseEnter, onMouseLeave }) {
+function FeedbackSection({ onMouseEnter, onMouseLeave, layout = "absolute" }) {
   const [pageIndex, setPageIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const touchStartX = useRef(null);
@@ -168,7 +168,11 @@ function FeedbackSection({ onMouseEnter, onMouseLeave }) {
 
   return (
     <section
-      className="absolute left-0 top-[calc(2637px+0.5cm)] h-[683px] w-[1440px] overflow-hidden"
+      className={
+        layout === "flow"
+          ? "relative mx-auto h-[683px] w-full max-w-[1440px] overflow-hidden"
+          : "absolute left-0 top-[calc(2637px+0.5cm)] h-[683px] w-[1440px] overflow-hidden"
+      }
       aria-label="Phản hồi của khách hàng"
       aria-roledescription="carousel"
       tabIndex={0}

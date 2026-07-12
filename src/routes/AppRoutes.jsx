@@ -19,6 +19,7 @@ import RescuePage from "../pages/Rescue/RescuePage";
 import SearchResultsPage from "../pages/SearchResultsPage";
 
 import GroomingSpaPage from "../pages/GroomingSpaPage";
+import MedicalTreatmentPage from "../pages/MedicalTreatment/MedicalTreatmentPage";
 import CheckoutPage from "../pages/CheckoutPage";
 
 import MyPetPage from "../pages/Pet/MyPetPage";
@@ -26,6 +27,9 @@ import PetDetailPage from "../pages/Pet/PetDetailPage";
 import PetFormPage from "../pages/Pet/PetFormPage";
 import { MyOrdersPage, OrderDetailsPage } from "../pages/Order/OrderPages";
 import UserProfilePage from "../pages/User/UserProfilePage";
+import AboutPage from "../pages/About/AboutPage";
+import ContactPage from "../pages/Contact/ContactPage";
+import PolicyPage from "../pages/Policy/PolicyPage";
 import NotFoundPage from "../pages/NotFoundPage";
 
 const AppRoutes = () => {
@@ -49,9 +53,15 @@ const AppRoutes = () => {
       <Route path="/blog/:postId" element={<BlogDetailPage />} />
       <Route path="/rescue" element={<RescuePage />} />
       <Route path="/search" element={<SearchResultsPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/policy" element={<PolicyPage />} />
+      <Route path="/policies/doi-tra-hang" element={<PolicyPage />} />
+      <Route path="/policies/:slug" element={<PolicyPage />} />
 
       <Route path="/services/grooming-spa" element={<GroomingSpaPage />} />
       <Route path="/services/groomng-spa" element={<GroomingSpaPage />} />
+      <Route path="/services/kham-dieu-tri" element={<MedicalTreatmentPage />} />
       <Route path="/checkout" element={<CheckoutPage />} />
 
       {/* 2. Các trang thuộc nhóm quản lý thú cưng có layout riêng */}

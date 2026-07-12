@@ -1,17 +1,17 @@
-import { groomingImages } from "../../assets/groomingImages";
-import { GROOMING_VALUE_PROPS } from "../../data/groomingData";
-import { cssMask } from "./groomingMaskUtils";
-import { groomingTitleStyles } from "./groomingTitleStyles";
+import { groomingImages } from '../../assets/groomingImages'
+import { GROOMING_VALUE_PROPS } from '../../data/groomingData'
+import { cssMask } from './groomingMaskUtils'
+import { groomingTitleStyles } from './groomingTitleStyles'
 
 function ValuePropCard({ prop }) {
   return (
     <article
-      className="absolute left-[658px] h-[171px] w-[645px]"
+      className="group absolute left-[658px] h-[171px] w-[645px] transition-transform duration-200 hover:translate-x-1"
       style={{ top: prop.top }}
     >
       <div
         className="absolute inset-0"
-        style={cssMask(groomingImages.whyusCardMask, "645px 171px")}
+        style={cssMask(groomingImages.whyusCardMask, '645px 171px')}
       >
         <div className="absolute inset-x-0 top-[13px] h-[148px] rounded-[10px] bg-[#FBF6EA]" />
       </div>
@@ -20,7 +20,7 @@ function ValuePropCard({ prop }) {
         <img
           src={groomingImages.checkmark}
           alt=""
-          className="mt-1 size-[33px] shrink-0"
+          className="mt-1 size-[33px] shrink-0 transition-transform duration-200 group-hover:scale-110"
           aria-hidden="true"
         />
 
@@ -28,7 +28,7 @@ function ValuePropCard({ prop }) {
           <h3
             className="line-clamp-2 pr-2 text-black"
             style={{
-              fontFamily: "Roboto, sans-serif",
+              fontFamily: 'Roboto, sans-serif',
               fontWeight: 700,
               fontSize: 24,
               lineHeight: 1.25,
@@ -39,11 +39,11 @@ function ValuePropCard({ prop }) {
           <p
             className="mt-1 line-clamp-3 text-black"
             style={{
-              fontFamily: "Roboto, sans-serif",
+              fontFamily: 'Roboto, sans-serif',
               fontWeight: 400,
               fontSize: 14,
               lineHeight: 1.43,
-              letterSpacing: "0.17px",
+              letterSpacing: '0.17px',
             }}
           >
             {prop.desc}
@@ -53,17 +53,17 @@ function ValuePropCard({ prop }) {
         <span
           className="absolute right-[8px] top-[12px] text-[#02000F]"
           style={{
-            fontFamily: "Roboto, sans-serif",
+            fontFamily: 'Roboto, sans-serif',
             fontWeight: 500,
             fontSize: 32,
-            lineHeight: "26px",
+            lineHeight: '26px',
           }}
         >
           {prop.num}
         </span>
       </div>
     </article>
-  );
+  )
 }
 
 function GroomingWhyUs() {
@@ -72,9 +72,9 @@ function GroomingWhyUs() {
       className="relative h-[897px] w-[1440px] overflow-hidden bg-white"
       style={{
         backgroundImage: `url(${groomingImages.whyusBgFull}), linear-gradient(90deg, #fff 0%, #fff 100%)`,
-        backgroundSize: "1440px 774px, auto",
-        backgroundRepeat: "no-repeat, repeat",
-        backgroundPosition: "top left, 0 0",
+        backgroundSize: '1440px 774px, auto',
+        backgroundRepeat: 'no-repeat, repeat',
+        backgroundPosition: 'top left, 0 0',
       }}
     >
       <img
@@ -100,7 +100,7 @@ function GroomingWhyUs() {
       <p
         className="absolute left-[174px] top-[147px] w-[1077px] text-center text-[#0F172A]"
         style={{
-          fontFamily: "Roboto, sans-serif",
+          fontFamily: 'Roboto, sans-serif',
           fontWeight: 400,
           fontSize: 24,
           lineHeight: 1.334,
@@ -130,7 +130,7 @@ function GroomingWhyUs() {
         <ValuePropCard key={prop.num} prop={prop} />
       ))}
     </section>
-  );
+  )
 }
 
-export default GroomingWhyUs;
+export default GroomingWhyUs

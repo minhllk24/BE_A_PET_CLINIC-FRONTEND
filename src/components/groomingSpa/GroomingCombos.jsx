@@ -1,20 +1,21 @@
-import { groomingImages } from "../../assets/groomingImages";
-import { GROOMING_COMBO_STEPS } from "../../data/groomingData";
-import { cssMask } from "./groomingMaskUtils";
-import { groomingTitleStyles } from "./groomingTitleStyles";
+import { groomingImages } from '../../assets/groomingImages'
+import { GROOMING_COMBO_STEPS } from '../../data/groomingData'
+import { Link } from 'react-router-dom'
+import { cssMask } from './groomingMaskUtils'
+import { groomingTitleStyles } from './groomingTitleStyles'
 
-function BookButton({ className = "" }) {
+function BookButton({ className = '' }) {
   return (
-    <a
-      href="/booking"
-      className={`z-10 flex h-12 shrink-0 items-center justify-center rounded-[50px] bg-[#0D47A1] px-6 text-center font-['Roboto'] text-[16px] leading-4 text-white no-underline shadow-[0_2px_4px_rgba(0,0,0,0.12)] transition-all duration-micro hover:bg-[#1565C0] ${className}`}
+    <Link
+      to="/booking"
+      className={`focus-ring-brand z-10 flex h-12 shrink-0 items-center justify-center rounded-[50px] bg-[#0D47A1] px-6 text-center font-['Roboto'] text-[16px] leading-4 text-white no-underline shadow-[0_2px_4px_rgba(0,0,0,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1565C0] hover:shadow-[0_6px_14px_rgba(13,71,161,0.25)] active:translate-y-0 active:scale-[0.98] ${className}`}
     >
       Đặt lịch
-    </a>
-  );
+    </Link>
+  )
 }
 
-function MaskedBluePanel({ maskUrl, maskSize, className = "", children }) {
+function MaskedBluePanel({ maskUrl, maskSize, className = '', children }) {
   return (
     <div
       className={`absolute inset-0 overflow-hidden rounded-[16px] ${className}`}
@@ -23,7 +24,7 @@ function MaskedBluePanel({ maskUrl, maskSize, className = "", children }) {
       <div className="absolute inset-0 rounded-[39px] bg-[rgba(144,202,249,0.3)]" />
       {children}
     </div>
-  );
+  )
 }
 
 function SmallComboCard({ image, title, price, description, maskUrl }) {
@@ -52,7 +53,7 @@ function SmallComboCard({ image, title, price, description, maskUrl }) {
 
       <BookButton className="absolute bottom-[-2px] right-[2px] w-[181.77px]" />
     </article>
-  );
+  )
 }
 
 function GroomingCombos() {
@@ -94,8 +95,8 @@ function GroomingCombos() {
       <div
         className="pointer-events-none absolute bottom-[12px] right-[48px] z-20 h-[82px] w-[70px]"
         style={{
-          ...cssMask(groomingImages.comboHeartsIcon, "70px 82px"),
-          backgroundColor: "#0D47A1",
+          ...cssMask(groomingImages.comboHeartsIcon, '70px 82px'),
+          backgroundColor: '#0D47A1',
         }}
         aria-hidden="true"
       />
@@ -110,7 +111,7 @@ function GroomingCombos() {
       <p
         className="absolute left-1/2 top-[168.98px] w-[1293px] -translate-x-1/2 -translate-y-1/2 whitespace-pre-wrap text-center text-[#0F172A]"
         style={{
-          fontFamily: "Roboto, sans-serif",
+          fontFamily: 'Roboto, sans-serif',
           fontWeight: 400,
           fontSize: 24,
           lineHeight: 1.334,
@@ -170,7 +171,7 @@ function GroomingCombos() {
         />
       </div>
     </section>
-  );
+  )
 }
 
-export default GroomingCombos;
+export default GroomingCombos
