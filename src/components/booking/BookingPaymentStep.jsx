@@ -1,4 +1,3 @@
-import CouponInput from "../ui/CouponInput";
 import { useState } from "react";
 import { bookingImages } from "../../assets/bookingImages";
 import { BOOKING_PAYMENT_METHODS } from "../../data/bookingData";
@@ -9,12 +8,6 @@ const {
   paymentPersonIcon,
   paymentPetIcon,
   paymentPhoneIcon,
-  onlineMomoLogo,
-  onlineZalopayLogo,
-  onlineVnpayLogo,
-  onlineBankIcon,
-  onlineCardIcon,
-  onlineCreditCardIcon,
 } = bookingImages;
 
 const formatAppointmentDate = (date, slot) => {
@@ -54,21 +47,41 @@ function Card({ children, className = "" }) {
   );
 }
 
-function AppointmentDetails({ selectedDate, selectedSlot, selectedPet, petInfo, ownerInfo, selectedServices, quantities, onQuantityChange }) {
-  const petName = petInfo?.name || selectedPet?.name || "Thú cưng khác";
+function AppointmentDetails({
+  selectedDate,
+  selectedSlot,
+  selectedPet,
+  selectedPets = [],
+  petInfo,
+  petInfos = [],
+  ownerInfo,
+  selectedServices,
+  quantities,
+  onQuantityChange,
+}) {
+  const petList = petInfos.length > 0 ? petInfos : selectedPets;
+  const petNames = petList
+    .map((pet) => pet?.name)
+    .filter(Boolean);
+  const petName =
+    petNames.length > 1
+      ? `${petNames[0]} +${petNames.length - 1} bé khác`
+      : petNames[0] || petInfo?.name || selectedPet?.name || "Thú cưng khác";
   const petWeight = petInfo?.weight || selectedPet?.weight;
   const petWeightValue = getWeightValue(petWeight);
 
   return (
-    <Card className="rounded-lg border border-slate-300 p-6 shadow-none">
+    <Card className="p-8">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#00355f]">Chi tiết đặt lịch</h1>
-          <p className="mt-2 text-sm text-slate-700">Mã số: BK-8712-2023</p>
+          <h1 className="text-xl font-black text-blue-900">CHI TIẾT ĐẶT LỊCH</h1>
+          <p className="mt-2 text-sm font-medium text-slate-600">Mã số: BK-8712-2023</p>
         </div>
-        <span className="rounded bg-[#ffdbc9] px-3 py-2 text-xs text-[#321200]">Đang chờ thanh toán</span>
+        <span className="rounded-2xl bg-[#FFF9C4] px-4 py-2 text-xs font-bold text-slate-900 shadow-elevation">
+          Đang chờ thanh toán
+        </span>
       </div>
-      <div className="grid gap-5 border-b border-slate-300 pb-5 md:grid-cols-2">
+      <div className="grid gap-4 border-b border-slate-200 pb-6 md:grid-cols-2">
         <Detail label="LỊCH HẸN CỦA BẠN" value={formatAppointmentDate(selectedDate, selectedSlot)} icon={paymentCalendarIcon} />
         <Detail
           label="THÔNG TIN THÚ CƯNG"
@@ -79,26 +92,26 @@ function AppointmentDetails({ selectedDate, selectedSlot, selectedPet, petInfo, 
         <Detail label="HỌ TÊN KHÁCH HÀNG" value={ownerInfo?.name || "Chưa cung cấp"} icon={paymentPersonIcon} />
         <Detail label="SỐ ĐIỆN THOẠI LIÊN HỆ" value={ownerInfo?.phone || "Chưa cung cấp"} icon={paymentPhoneIcon} />
       </div>
-      <h2 className="mt-6 text-xs font-bold tracking-wider text-slate-500">DỊCH VỤ ĐÃ CHỌN</h2>
-      <div className="mt-4 divide-y divide-slate-200">
+      <h2 className="mt-6 text-xl font-black text-blue-900">DỊCH VỤ ĐÃ CHỌN</h2>
+      <div className="mt-5 space-y-4">
         {selectedServices.map((service) => {
           const quantity = quantities[service.id] || 1;
           const weightSurcharge = getWeightSurcharge(service, petWeightValue) * quantity;
           const serviceTotal = service.price * quantity + weightSurcharge;
 
           return (
-            <div key={service.id} className="flex items-center justify-between py-4">
+            <div key={service.id} className="flex items-center justify-between rounded-2xl bg-[#f2f4f6] p-5">
               <div>
                 <p className="font-bold text-blue-900">{service.name}</p>
-                <p className="mt-1 text-xs text-slate-600">{service.desc}</p>
-                <span className="mt-2 inline-flex items-center gap-3 rounded bg-slate-100 px-3 text-sm font-bold">
-                  <button type="button" onClick={() => onQuantityChange(service.id, -1)}>-</button>
-                  {quantity}
-                  <button type="button" onClick={() => onQuantityChange(service.id, 1)}>+</button>
+                <p className="mt-1 text-sm text-slate-700">{service.desc}</p>
+                <span className="mt-3 inline-flex h-9 items-center overflow-hidden rounded-full border border-blue-900 bg-white text-sm font-bold text-blue-900">
+                  <button type="button" onClick={() => onQuantityChange(service.id, -1)} className="h-full px-3 hover:bg-blue-50">-</button>
+                  <span className="min-w-8 px-2 text-center">{quantity}</span>
+                  <button type="button" onClick={() => onQuantityChange(service.id, 1)} className="h-full px-3 hover:bg-blue-50">+</button>
                 </span>
               </div>
               <div className="text-right">
-                <p className="font-bold">{formatMoney(serviceTotal)}</p>
+                <p className="text-lg font-black text-blue-900">{formatMoney(serviceTotal)}</p>
                 <p className="text-xs text-slate-700">{formatMoney(service.price)} x {quantity}</p>
                 {weightSurcharge > 0 && (
                   <p className="mt-1 text-xs text-slate-500">
@@ -111,7 +124,7 @@ function AppointmentDetails({ selectedDate, selectedSlot, selectedPet, petInfo, 
         })}
         {selectedServices.length === 0 && <p className="py-4 text-sm text-slate-500">Chưa chọn dịch vụ.</p>}
       </div>
-      <div className="mt-5 rounded bg-slate-100 p-5 text-sm text-slate-700">
+      <div className="mt-5 rounded-2xl bg-[#d5e4f3] p-5 text-sm font-medium text-slate-700">
         ⓘ Vui lòng kiểm tra lại thông tin lịch hẹn. Bạn có thể thay đổi lịch hẹn trước tối thiểu 24 giờ. Liên hệ bộ phận hỗ trợ nếu cần thêm thông tin.
       </div>
     </Card>
@@ -120,13 +133,15 @@ function AppointmentDetails({ selectedDate, selectedSlot, selectedPet, petInfo, 
 
 function Detail({ label, value, subValue, icon }) {
   return (
-    <div>
+    <div className="rounded-2xl bg-[#f2f4f6] p-4">
       <p className="text-xs font-bold tracking-wider text-slate-500">{label}</p>
-      <p className="mt-2 flex items-center gap-3 text-base text-slate-900">
-        <img src={icon} alt="" className="h-5 w-5" />
-        {value}
+      <p className="mt-2 flex items-center gap-3 text-base font-bold text-slate-900">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white shadow">
+          <img src={icon} alt="" className="h-5 w-5" />
+        </span>
+        <span>{value}</span>
       </p>
-      {subValue && <p className="ml-8 mt-1 text-xs text-slate-500">{subValue}</p>}
+      {subValue && <p className="ml-12 mt-1 text-xs font-medium text-slate-500">{subValue}</p>}
     </div>
   );
 }
@@ -134,9 +149,10 @@ function Detail({ label, value, subValue, icon }) {
 function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surchargeTotal, total }) {
   const [couponCode, setCouponCode] = useState("");
   const [couponError, setCouponError] = useState("");
+  const [paymentError, setPaymentError] = useState("");
 
   const online = paymentMode !== "store";
-  const selectedMethod = online && paymentMode !== "online" ? paymentMode : "bank";
+  const selectedMethod = online && paymentMode !== "online" ? paymentMode : "";
 
   const handleApplyCoupon = () => {
     if (!couponCode.trim()) {
@@ -147,19 +163,33 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surcha
     setCouponError("Mã không tồn tại");
   };
 
+  const selectPaymentMode = (mode) => {
+    setPaymentMode(mode);
+    setPaymentError("");
+  };
+
+  const handleConfirm = () => {
+    if (online && !selectedMethod) {
+      setPaymentError("Vui lòng chọn phương thức thanh toán trực tuyến");
+      return;
+    }
+
+    onConfirm();
+  };
+
   return (
-    <Card className="rounded-lg border border-slate-300 p-6 shadow-none">
-      <h2 className="mb-5 text-2xl font-bold text-[#00355f]">
-        Phương thức thanh toán
+    <Card className="p-8">
+      <h2 className="mb-5 text-xl font-black text-blue-900">
+        PHƯƠNG THỨC THANH TOÁN
       </h2>
 
-      <div className="mb-6 grid rounded-xl bg-slate-200 p-1 text-center text-sm font-bold">
+      <div className="mb-6 grid rounded-2xl bg-[#f2f4f6] p-1.5 text-center text-sm font-bold">
         <div className="grid grid-cols-2">
           <button
             type="button"
-            onClick={() => setPaymentMode("store")}
-            className={`rounded-lg py-2 ${
-              paymentMode === "store" ? "bg-white text-blue-900" : "text-slate-500"
+            onClick={() => selectPaymentMode("store")}
+            className={`rounded-2xl py-3 transition ${
+              paymentMode === "store" ? "bg-white text-blue-900 shadow-elevation" : "text-slate-500 hover:text-blue-900"
             }`}
           >
             Tại phòng khám
@@ -167,9 +197,9 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surcha
 
           <button
             type="button"
-            onClick={() => setPaymentMode("bank")}
-            className={`rounded-lg py-2 ${
-              online ? "bg-white text-blue-900" : "text-slate-500"
+            onClick={() => selectPaymentMode("online")}
+            className={`rounded-2xl py-3 transition ${
+              online ? "bg-white text-blue-900 shadow-elevation" : "text-slate-500 hover:text-blue-900"
             }`}
           >
             Trực tuyến
@@ -178,37 +208,47 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surcha
       </div>
 
       {online && (
-        <div className="mb-5 space-y-2 border-y border-slate-300 py-4">
-          <p className="mb-3 text-sm text-slate-700">
-            Phương thức thanh toán trực tuyến
+        <div
+          className={`mb-5 space-y-3 rounded-2xl bg-[#f2f4f6] p-4 ${
+            paymentError ? "ring-2 ring-red-500 ring-offset-2" : ""
+          }`}
+          data-booking-error={paymentError ? "true" : undefined}
+          tabIndex={paymentError ? -1 : undefined}
+        >
+          <p className="text-sm font-bold text-slate-900">
+            Phương thức thanh toán trực tuyến <span className="text-red-500">*</span>
           </p>
 
           {BOOKING_PAYMENT_METHODS.map((method) => (
             <button
               key={method.id}
               type="button"
-              onClick={() => setPaymentMode(method.id)}
-              className={`flex w-full items-center gap-4 rounded-lg border p-3 text-left ${
+              onClick={() => selectPaymentMode(method.id)}
+              className={`flex w-full items-center gap-4 rounded-2xl border-2 p-3 text-left transition ${
                 selectedMethod === method.id
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-slate-200 bg-white"
+                  ? "border-blue-900 bg-[#d5e4f3]"
+                  : "border-transparent bg-white hover:border-blue-900"
               }`}
             >
-              <img src={method.icon} alt="" className="h-6 w-6 object-contain" />
-              <span className="flex-1">{method.label}</span>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow">
+                <img src={method.icon} alt="" className="h-6 w-6 object-contain" />
+              </span>
+              <span className="flex-1 font-bold text-slate-900">{method.label}</span>
+              {selectedMethod === method.id && <span className="text-base font-black text-blue-900">✓</span>}
             </button>
           ))}
+          {paymentError && <p className="pt-1 text-sm font-medium text-red-600">{paymentError}</p>}
         </div>
       )}
 
-      <div className="flex w-full flex-col gap-3 border-t border-solid border-[#c2c7d1] pt-[17px]">
-        <p className="whitespace-nowrap font-['Roboto'] text-[15px] font-medium leading-normal text-[#585858]">
+      <div className="flex w-full flex-col gap-3 border-t border-solid border-slate-200 pt-5">
+        <p className="whitespace-nowrap text-sm font-bold text-slate-900">
           Thẻ quà tặng / Mã giảm giá
         </p>
 
-        <div className="flex flex-row items-start gap-[26px]">
+        <div className="flex flex-row items-start gap-3">
           <div className="flex min-w-0 flex-1 flex-col">
-            <div className="flex h-[37px] w-full items-center rounded-[4px] border border-[rgba(0,0,0,0.23)] bg-white px-[14px]">
+            <div className="flex h-10 w-full items-center rounded-2xl border border-slate-300 bg-white px-4 focus-within:border-blue-900">
               <input
                 type="text"
                 value={couponCode}
@@ -217,13 +257,13 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surcha
                   setCouponError("");
                 }}
                 placeholder="Nhập mã"
-                className="w-full bg-transparent text-[14px] font-normal text-[#4F4B4B] outline-none placeholder:text-[#999]"
+                className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
               />
             </div>
 
             {couponError && (
               <p
-                className="w-full px-[14px] pt-[3px] font-['Roboto'] text-[10px] font-normal leading-[1.66em] tracking-[0.04em] text-[rgba(255,0,0,0.6)]"
+                className="w-full px-4 pt-1 text-xs font-medium text-red-600"
                 role="alert"
               >
                 {couponError}
@@ -234,36 +274,34 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surcha
           <button
             type="button"
             onClick={handleApplyCoupon}
-            className="flex h-[37px] w-[104px] items-center justify-center rounded-[4px] bg-[#FFF176] shadow-elevation drop-shadow-[0px_3px_0.5px_rgba(0,0,0,0.2),0px_2px_1px_rgba(0,0,0,0.14),0px_1px_2.5px_rgba(0,0,0,0.12)] transition-all duration-micro hover:bg-[#ffe454] active:scale-[0.98]"
+            className="flex h-10 w-[104px] items-center justify-center rounded bg-secondary text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition-all duration-micro hover:bg-[#ffe454] active:scale-[0.98]"
           >
-            <span className="whitespace-nowrap font-['Roboto'] text-[16px] font-normal leading-[1.5] tracking-[0.15px] text-black">
-              Áp dụng
-            </span>
+            Áp dụng
           </button>
         </div>
       </div>
 
-      <div className="space-y-3 py-5 text-sm">
+      <div className="my-5 space-y-3 rounded-2xl bg-[#f2f4f6] p-5 text-sm">
         <PriceRow label="Tạm tính" value={formatMoney(subtotal)} />
         <PriceRow label="Phụ thu" value={formatMoney(surchargeTotal)} />
         <PriceRow label="Giảm giá" value="0đ" />
       </div>
 
-      <div className="mb-5 flex items-end justify-between">
+      <div className="mb-5 flex items-end justify-between rounded-2xl bg-[#d5e4f3] p-5">
         <div>
-          <p className="text-xl font-bold text-[#00355f]">Tổng cộng</p>
+          <p className="text-xl font-black text-blue-900">Tổng cộng</p>
           <p className="text-xs text-slate-500">(Đã bao gồm thuế VAT)</p>
         </div>
 
-        <p className="text-xl font-bold text-[#00355f]">
+        <p className="text-2xl font-black text-blue-900">
           {formatMoney(total)}
         </p>
       </div>
 
       <button
         type="button"
-        onClick={onConfirm}
-        className="w-full rounded bg-[#FDD835] py-3 text-lg font-bold shadow-elevation transition-all duration-micro hover:bg-[#ffe454] active:bg-[#F9A825]"
+        onClick={handleConfirm}
+        className="w-full rounded bg-secondary py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition-all duration-micro hover:bg-[#ffe454] active:bg-[#F9A825]"
       >
         Xác nhận đặt lịch
       </button>
@@ -279,9 +317,9 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surcha
 
 function PriceRow({ label, value }) {
   return (
-    <div className="flex justify-between text-slate-700">
+    <div className="flex justify-between font-medium text-slate-700">
       <span>{label}</span>
-      <span>{value}</span>
+      <span className="font-bold text-slate-900">{value}</span>
     </div>
   );
 }
@@ -290,7 +328,9 @@ function BookingPaymentStep({
   selectedDate,
   selectedSlot,
   selectedPet,
+  selectedPets = [],
   petInfo,
+  petInfos = [],
   ownerInfo,
   selectedServices = [],
   paymentMode,
@@ -322,12 +362,14 @@ function BookingPaymentStep({
 
   return (
     <>
-      <div className="grid gap-8 lg:grid-cols-[minmax(390px,720px)_390px] lg:justify-center">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
         <AppointmentDetails
           selectedDate={selectedDate}
           selectedSlot={selectedSlot}
           selectedPet={selectedPet}
+          selectedPets={selectedPets}
           petInfo={petInfo}
+          petInfos={petInfos}
           ownerInfo={ownerInfo}
           selectedServices={selectedServices}
           quantities={quantities}

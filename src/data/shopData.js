@@ -10,10 +10,10 @@ export const PRODUCT_CATEGORIES = [
 ];
 
 export const PRODUCT_PRICE_RANGES = [
-  { label: "20.000đ - 50.000đ", min: 20, max: 50 },
-  { label: "50.000đ - 100.000đ", min: 50, max: 100 },
-  { label: "100.000đ - 200.000đ", min: 100, max: 200 },
-  { label: "200.000đ trở lên", min: 200, max: Infinity },
+  { label: "20.000đ - 50.000đ", min: 20000, max: 50000 },
+  { label: "50.000đ - 100.000đ", min: 50000, max: 100000 },
+  { label: "100.000đ - 200.000đ", min: 100000, max: 200000 },
+  { label: "200.000đ trở lên", min: 200000, max: Infinity },
 ];
 
 export const SHOP_PRODUCTS = Array.from({ length: 45 }, (_, index) => {

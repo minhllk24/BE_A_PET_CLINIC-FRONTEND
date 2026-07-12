@@ -3,6 +3,7 @@ import { ALL_BLOG_POSTS } from "./blogData";
 import { COMMUNITY_POSTS } from "./communityData";
 import { FIRST_AID_POSTS } from "./firstAidData";
 import { PRODUCT_CATEGORIES, SHOP_PRODUCTS } from "./shopData";
+import { normalizeSearchText, rankSearchCandidates } from "../utils/searchSuggestionUtils";
 
 const searchProducts = SHOP_PRODUCTS.slice(0, 9).map((product, index) => ({
   ...product,
@@ -140,16 +141,6 @@ export const SEARCH_EMPTY_STATE = {
   homeLabel: "Về trang chủ",
   homeHref: "/",
 };
-
-function normalizeSearchText(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase()
-    .trim();
-}
 
 function collectSearchableText(item) {
   if (!item || typeof item !== "object") return "";
@@ -308,6 +299,114 @@ function buildFacets(results) {
       })),
     };
   });
+}
+
+function buildKeywordSuggestion(label, type, metadata = []) {
+  if (!label) return null;
+
+  return {
+    id: `${type}-${normalizeSearchText(label)}`,
+    label,
+    href: `/search?q=${encodeURIComponent(label)}`,
+    type,
+    metadata,
+  };
+}
+
+function getProductCategoryLabel(product) {
+  return PRODUCT_CATEGORIES[product.categoryIdx]?.label || "";
+}
+
+function collectAvailableTags() {
+  return [
+    ...GROOMING_SERVICES,
+    ...SHOP_PRODUCTS,
+    ...FIRST_AID_POSTS,
+    ...ALL_BLOG_POSTS,
+    ...COMMUNITY_POSTS,
+  ].flatMap((item) => item.tags || []);
+}
+
+function searchSuggestionSources() {
+  const serviceCategoryOptions = SEARCH_FILTER_GROUPS
+    .find((group) => group.id === "serviceGroups")
+    ?.options.filter((option) => !option.id.startsWith("all-")) || [];
+
+  return [
+    ...GROOMING_SERVICES.map((service) =>
+      buildKeywordSuggestion(service.title, "service", [
+        service.description,
+        "Spa & Grooming",
+        ...(service.tags || []),
+      ]),
+    ),
+    ...SHOP_PRODUCTS.map((product) =>
+      buildKeywordSuggestion(product.name, "product", [
+        getProductCategoryLabel(product),
+        product.description,
+        product.shortDescription,
+        ...(product.tags || []),
+      ]),
+    ),
+    ...serviceCategoryOptions.map((category) =>
+      buildKeywordSuggestion(category.label, "service-category", [category.label]),
+    ),
+    ...PRODUCT_CATEGORIES.map((category) =>
+      buildKeywordSuggestion(category.label, "product-category", [category.label]),
+    ),
+    ...collectAvailableTags().map((tag) => buildKeywordSuggestion(tag, "tag", [tag])),
+  ].filter(Boolean);
+}
+
+function buildProductSuggestion(product) {
+  if (!product) return null;
+
+  return {
+    id: product.id,
+    name: product.name,
+    label: product.name,
+    price: product.price,
+    image: product.image || product.imageSrc || product.thumbnail,
+    href: `/product-details/${product.id}`,
+    metadata: [
+      getProductCategoryLabel(product),
+      product.description,
+      product.shortDescription,
+      ...(product.tags || []),
+    ],
+  };
+}
+
+export function getSearchSuggestions(query, { limit = 4, productLimit = 2 } = {}) {
+  const normalizedQuery = normalizeSearchText(query);
+  if (!normalizedQuery) {
+    return {
+      suggestions: [],
+      products: [],
+      total: 0,
+    };
+  }
+
+  const suggestions = rankSearchCandidates(searchSuggestionSources(), normalizedQuery).slice(0, limit);
+  const suggestionLabels = new Set(suggestions.map((item) => normalizeSearchText(item.label)));
+  const rankedProducts = rankSearchCandidates(
+    SHOP_PRODUCTS.map(buildProductSuggestion).filter(Boolean),
+    normalizedQuery,
+    { uniqueKey: (item) => item.id },
+  );
+  const productsWithoutDuplicateNames = rankedProducts.filter(
+    (product) => !suggestionLabels.has(normalizeSearchText(product.name)),
+  );
+  const productPool = productsWithoutDuplicateNames.length >= productLimit
+    ? productsWithoutDuplicateNames
+    : rankedProducts;
+  const products = productPool.slice(0, productLimit);
+
+  return {
+    suggestions,
+    products,
+    total: suggestions.length + products.length,
+  };
 }
 
 export function mockSearchApi({ query = "tắm", type = "all", sort = "relevant" } = {}) {

@@ -129,7 +129,7 @@ function PetFormPage() {
     const updatedPets = allPets.filter((p) => p.id !== petId);
     localStorage.setItem("petsData", JSON.stringify(updatedPets));
     setShowDeleteModal(false);
-    navigate("/my-pets");
+    navigate("/thu-cung-cua-toi");
   };
 
   const handleSubmit = (e) => {
@@ -162,7 +162,7 @@ function PetFormPage() {
     }
 
     localStorage.setItem("petsData", JSON.stringify(updatedPets));
-    navigate("/my-pets");
+    navigate("/thu-cung-cua-toi");
   };
 
   const handleOpenCreateMedical = () => {
@@ -255,7 +255,7 @@ function PetFormPage() {
   return (
     <div className="max-w-4xl mx-auto pb-10 pt-6 px-4 font-sans">
       <div className="flex items-center gap-3 mb-6">
-        <Link to="/my-pets" className="text-slate-500 hover:text-slate-900 transition">
+        <Link to="/thu-cung-cua-toi" className="text-slate-500 hover:text-slate-900 transition">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
@@ -447,7 +447,7 @@ function PetFormPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Link to="/my-pets" className="text-sm font-medium text-slate-600 hover:text-slate-900 px-4 py-2 transition">
+            <Link to="/thu-cung-cua-toi" className="text-sm font-medium text-slate-600 hover:text-slate-900 px-4 py-2 transition">
               Hủy
             </Link>
             <button type="submit" className="bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 px-6 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition shadow-sm">

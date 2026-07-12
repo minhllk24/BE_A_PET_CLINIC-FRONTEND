@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { navbarImages } from "../../assets/navbarImages";
 import { USER_MENU_LINKS, USER_MENU_LOGOUT } from "./userMenuLinks";
 import { useAuth } from "../../context/AuthContext";
@@ -33,7 +34,7 @@ function NavUserMenu({ avatarSrc, onLogout }) {
               <li key={item.label}>
                 {item.children ? (
                   <div className="group/sub relative">
-                    <a href={item.href} className={`${linkClass} pr-8 font-medium`}>
+                    <Link to={item.href} className={`${linkClass} pr-8 font-medium`}>
                       {item.label}
                       <span
                         className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -41,21 +42,21 @@ function NavUserMenu({ avatarSrc, onLogout }) {
                       >
                         ›
                       </span>
-                    </a>
+                    </Link>
                     <ul className="invisible absolute right-full top-0 z-10 mr-1 min-w-[220px] rounded-2xl border border-gray-100 bg-white p-3 opacity-0 shadow-lg transition-all duration-200 group-hover/sub:visible group-hover/sub:opacity-100">
                       {item.children.map((child) => (
                         <li key={child.label}>
-                          <a href={child.href} className={linkClass}>
+                          <Link to={child.href} className={linkClass}>
                             {child.label}
-                          </a>
+                          </Link>
                         </li>
                       ))}
                     </ul>
                   </div>
                 ) : (
-                  <a href={item.href} className={linkClass}>
+                  <Link to={item.href} className={linkClass}>
                     {item.label}
-                  </a>
+                  </Link>
                 )}
               </li>
             ))}

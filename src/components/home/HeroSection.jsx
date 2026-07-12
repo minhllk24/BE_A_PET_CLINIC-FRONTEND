@@ -60,12 +60,12 @@ function HeroSection() {
                   "
                 />
 
-                <YellowButton>
+                <YellowButton to="/dat-lich">
                   ĐẶT LỊCH NGAY
                 </YellowButton>
               </div>
 
-              <YellowButton variant="light">
+              <YellowButton to="/cua-hang" variant="light">
                 MUA SẮM NGAY
               </YellowButton>
             </div>

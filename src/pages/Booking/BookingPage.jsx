@@ -44,8 +44,75 @@ const BRANCH_OPTIONS = [
 
 const formatMoney = (value) => formatVnd(value);
 
+const createEmptyPetInfo = () => ({
+  id: `other-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  name: "",
+  species: "",
+  breed: "",
+  age: "",
+  weight: "",
+  gender: "",
+  status: "",
+  notes: "",
+});
+
+const profileToPetInfo = (pet) => ({
+  id: pet.id,
+  name: pet.name || "",
+  species: pet.species || "",
+  breed: pet.breed || "",
+  age: pet.age || "",
+  weight: pet.weight || "",
+  gender: pet.gender === "♂" ? "male" : pet.gender === "♀" ? "female" : "",
+  status:
+    pet.healthStatus === "Bình thường"
+      ? "normal"
+      : pet.healthStatus === "Đang điều trị"
+        ? "treating"
+        : pet.healthStatus
+          ? "chronic"
+          : "",
+  notes: pet.medicalNotes || "",
+});
+
+const isPetInfoComplete = (petInfo) =>
+  petInfo.name.trim() &&
+  petInfo.species &&
+  String(petInfo.weight).trim() &&
+  petInfo.status;
+
 const getDateKey = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+const getStartOfDay = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+const isBeforeToday = (date) => getStartOfDay(date) < getStartOfDay(new Date());
+
+const isToday = (date) => getDateKey(date) === getDateKey(new Date());
+
+const getSlotStartMinutes = (slotValue) => {
+  const [time] = slotValue.split(" - ");
+  const [hours, minutes] = time.split(":").map(Number);
+
+  return hours * 60 + minutes;
+};
+
+const isSlotInPast = (slotValue, selectedDate) => {
+  if (!selectedDate || !isToday(selectedDate)) {
+    return false;
+  }
+
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+  return getSlotStartMinutes(slotValue) < nowMinutes;
+};
+
+const isSlotBookable = (slotValue, selectedDate) => {
+  const slot = BOOKING_TIME_SLOTS.find((item) => item.value === slotValue);
+
+  return Boolean(slot?.available && selectedDate && !isBeforeToday(selectedDate) && !isSlotInPast(slotValue, selectedDate));
+};
 
 function AssetIcon({ src, alt = "", className = "h-5 w-5" }) {
   return <img src={src} alt={alt} className={className} />;
@@ -142,6 +209,10 @@ function BookingCalendar({ selectedDate, onSelect, invalid = false }) {
   };
 
   const selectDate = (date) => {
+    if (isBeforeToday(date)) {
+      return;
+    }
+
     onSelect(date);
     setViewedMonth(new Date(date.getFullYear(), date.getMonth(), 1));
   };
@@ -169,16 +240,20 @@ function BookingCalendar({ selectedDate, onSelect, invalid = false }) {
         {calendarCells.map((cell) => {
           const active = selectedDateKey === cell.key;
           const today = todayKey === cell.key;
+          const disabled = isBeforeToday(cell.date);
 
           return (
             <button
               key={cell.key}
               type="button"
+              disabled={disabled}
               onClick={() => selectDate(cell.date)}
               className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition ${
                 active
                   ? "bg-blue-900 text-white"
-                  : cell.inCurrentMonth
+                  : disabled
+                    ? "cursor-not-allowed text-slate-300 opacity-50"
+                    : cell.inCurrentMonth
                     ? "text-slate-900 hover:bg-blue-50 hover:text-blue-900"
                     : "text-slate-300 hover:bg-slate-100"
               } ${today && !active ? "ring-1 ring-blue-900" : ""}`}
@@ -192,7 +267,7 @@ function BookingCalendar({ selectedDate, onSelect, invalid = false }) {
   );
 }
 
-function TimeSlots({ selectedSlot, onSelect, invalid = false }) {
+function TimeSlots({ selectedDate, selectedSlot, onSelect, invalid = false }) {
   return (
     <Card
       className={`flex h-full min-h-0 flex-col p-6 ${invalid ? "ring-2 ring-red-500" : ""}`}
@@ -205,7 +280,7 @@ function TimeSlots({ selectedSlot, onSelect, invalid = false }) {
       </h3>
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
         {BOOKING_TIME_SLOTS.map((slot) => {
-          const disabled = !slot.available;
+          const disabled = !slot.available || !selectedDate || isBeforeToday(selectedDate) || isSlotInPast(slot.value, selectedDate);
           const active = selectedSlot === slot.value;
           return (
             <button
@@ -222,7 +297,7 @@ function TimeSlots({ selectedSlot, onSelect, invalid = false }) {
               }`}
             >
               <span>{slot.value}</span>
-              {disabled && <span className="text-[10px] uppercase text-red-600">Hết chỗ</span>}
+              {disabled && <span className="text-[10px] uppercase text-red-600">{slot.available ? "Không khả dụng" : "Hết chỗ"}</span>}
               {active && <span>✓</span>}
             </button>
           );
@@ -301,6 +376,11 @@ function ServiceSelection({
     setOwnerInfo((current) => ({ ...current, branch }));
   };
 
+  const selectDate = (date) => {
+    setSelectedDate(date);
+    setSelectedSlot((current) => (current && isSlotBookable(current, date) ? current : null));
+  };
+
   const selectServiceType = (serviceTypeId) => {
     setSelectedServiceType(serviceTypeId);
     setSelectedServices((current) => {
@@ -312,8 +392,11 @@ function ServiceSelection({
     });
   };
 
+  const dateBookable = selectedDate && !isBeforeToday(selectedDate);
+  const slotBookable = selectedSlot && isSlotBookable(selectedSlot, selectedDate);
+
   const handleNext = () => {
-    if (selectedServiceType && selectedServices.length > 0 && ownerInfo.branch && selectedDate && selectedSlot) {
+    if (selectedServiceType && selectedServices.length > 0 && ownerInfo.branch && dateBookable && slotBookable) {
       onNext();
       return;
     }
@@ -423,8 +506,8 @@ function ServiceSelection({
         </Card>
 
         <aside className="grid h-[744px] grid-rows-[auto_minmax(0,1fr)] gap-6">
-          <BookingCalendar selectedDate={selectedDate} onSelect={setSelectedDate} invalid={validationAttempted && !selectedDate} />
-          <TimeSlots selectedSlot={selectedSlot} onSelect={setSelectedSlot} invalid={validationAttempted && !selectedSlot} />
+          <BookingCalendar selectedDate={selectedDate} onSelect={selectDate} invalid={validationAttempted && !dateBookable} />
+          <TimeSlots selectedDate={selectedDate} selectedSlot={selectedSlot} onSelect={setSelectedSlot} invalid={validationAttempted && !slotBookable} />
         </aside>
       </div>
       <FlowButtons onNext={handleNext} />
@@ -432,12 +515,15 @@ function ServiceSelection({
   );
 }
 
-function PetSummaryCard({ selectedPet, active, onClick }) {
+function PetSummaryCard({ selectedPets, active, onClick }) {
+  const selectedPet = selectedPets[0];
+  const extraCount = Math.max(selectedPets.length - 1, 0);
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`relative flex min-h-[116px] items-center gap-5 rounded-2xl bg-white p-6 text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] ${
+      className={`relative flex min-h-[116px] items-center gap-3 rounded-2xl bg-white p-[26px] text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] ${
         active ? "border-2 border-blue-900" : "border-2 border-transparent"
       }`}
     >
@@ -449,10 +535,15 @@ function PetSummaryCard({ selectedPet, active, onClick }) {
             alt={selectedPet.name}
             className="h-20 w-20 rounded-full object-cover"
           />
-          <span>
+          <span className="min-w-0 flex-1">
             <strong className="block text-lg text-slate-900">{selectedPet.name}</strong>
-            <span className="text-sm text-slate-600">{selectedPet.breed} • {selectedPet.age}</span>
+            <span className="text-sm text-slate-600">{selectedPet.breed} <br/> {selectedPet.age}</span>
           </span>
+          {extraCount > 0 && (
+            <span className="shrink-0 text-right text-base font-normal leading-6 tracking-[0.15px] text-[#d32f2f]">
+              +{extraCount} hồ sơ khác
+            </span>
+          )}
         </>
       ) : (
         <span>
@@ -465,10 +556,10 @@ function PetSummaryCard({ selectedPet, active, onClick }) {
 }
 
 function InfoForm({
-  selectedPet,
-  setSelectedPet,
-  petInfo,
-  setPetInfo,
+  selectedPets,
+  setSelectedPets,
+  petInfos,
+  setPetInfos,
   ownerInfo,
   setOwnerInfo,
   onBack,
@@ -476,18 +567,36 @@ function InfoForm({
 }) {
   const [showPetPicker, setShowPetPicker] = useState(false);
   const [validationAttempted, setValidationAttempted] = useState(false);
-  const updatePetInfo = (field, value) =>
-    setPetInfo((current) => ({ ...current, [field]: value }));
+  const profileMode = selectedPets.length > 0;
+  const activePetInfos = petInfos.length > 0 ? petInfos : [createEmptyPetInfo()];
+  const updatePetInfo = (petId, field, value) =>
+    setPetInfos((current) =>
+      current.map((petInfo) =>
+        petInfo.id === petId ? { ...petInfo, [field]: value } : petInfo,
+      ),
+    );
   const updateOwnerInfo = (field, value) =>
     setOwnerInfo((current) => ({ ...current, [field]: value }));
   const infoComplete =
-    petInfo.name.trim() &&
-    petInfo.species &&
-    String(petInfo.weight).trim() &&
-    petInfo.status &&
+    activePetInfos.every(isPetInfoComplete) &&
     ownerInfo.name.trim() &&
     ownerInfo.phone.trim() &&
     ownerInfo.agreed;
+
+  const chooseOtherPet = () => {
+    setSelectedPets([]);
+    setPetInfos([createEmptyPetInfo()]);
+  };
+
+  const addOtherPetInfo = () => {
+    setPetInfos((current) => [...current, createEmptyPetInfo()]);
+  };
+
+  const removeOtherPetInfo = (petId) => {
+    setPetInfos((current) =>
+      current.length <= 1 ? current : current.filter((petInfo) => petInfo.id !== petId),
+    );
+  };
 
   const handleNext = () => {
     if (infoComplete) {
@@ -509,63 +618,48 @@ function InfoForm({
         <div className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             <PetSummaryCard
-              selectedPet={selectedPet}
-              active={Boolean(selectedPet)}
+              selectedPets={selectedPets}
+              active={profileMode}
               onClick={() => setShowPetPicker(true)}
             />
             <button
               type="button"
-              onClick={() => setSelectedPet(null)}
+              onClick={chooseOtherPet}
               className={`relative min-h-[116px] rounded-2xl bg-white p-6 text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] ${
-                !selectedPet ? "border-2 border-blue-900" : "border-2 border-transparent"
+                !profileMode ? "border-2 border-blue-900" : "border-2 border-transparent"
               }`}
             >
-              {!selectedPet && <img src={serviceSelectedCheck} alt="" className="absolute right-4 top-4 h-5 w-5" />}
-              <strong className={`block text-xl ${!selectedPet ? "text-blue-900" : "text-slate-900"}`}>
+              {!profileMode && <img src={serviceSelectedCheck} alt="" className="absolute right-4 top-4 h-5 w-5" />}
+              <strong className={`block text-xl ${!profileMode ? "text-blue-900" : "text-slate-900"}`}>
                 Thú cưng khác
               </strong>
               <span className="mt-3 block text-base text-slate-600">Bạn chưa tạo Hồ sơ thú cưng cho bé này</span>
             </button>
           </div>
 
-          <Card className="p-8">
-            <h2 className="mb-5 text-xl font-black text-blue-900">THÔNG TIN THÚ CƯNG</h2>
-            <div className="grid gap-5 md:grid-cols-6">
-              <Field className="md:col-span-4" label="Tên thú cưng" required showError={validationAttempted} value={petInfo.name} onChange={(event) => updatePetInfo("name", event.target.value)} />
-              <Field className="md:col-span-2" label="Loài" as="select" options={["Chó", "Mèo", "Khác"]} required showError={validationAttempted} value={petInfo.species} onChange={(event) => updatePetInfo("species", event.target.value)} />
-              <Field className="md:col-span-2" label="Giống" value={petInfo.breed} onChange={(event) => updatePetInfo("breed", event.target.value)} />
-              <Field className="md:col-span-2" label="Tuổi" suffix="tuổi" value={petInfo.age} onChange={(event) => updatePetInfo("age", event.target.value)} />
-              <Field className="md:col-span-2" label="Cân nặng" suffix="kg" required showError={validationAttempted} value={petInfo.weight} onChange={(event) => updatePetInfo("weight", event.target.value)} />
-              <div className="md:col-span-3">
-                <p className="mb-3 text-sm font-medium text-slate-900">Giới tính</p>
-                <div className="flex gap-5 text-sm">
-                  <label><input type="radio" name="gender" checked={petInfo.gender === "male"} onChange={() => updatePetInfo("gender", "male")} className="mr-2 accent-blue-900" />Đực</label>
-                  <label><input type="radio" name="gender" checked={petInfo.gender === "female"} onChange={() => updatePetInfo("gender", "female")} className="mr-2 accent-blue-900" />Cái</label>
-                </div>
-              </div>
-              <div className="md:col-span-3">
-                <p className="mb-3 text-sm font-medium text-slate-900">Tình trạng sức khỏe <span className="text-red-500">*</span></p>
-                <div
-                  className={`flex flex-wrap gap-4 rounded-lg text-sm ${validationAttempted && !petInfo.status ? "ring-2 ring-red-500" : ""}`}
-                  title={validationAttempted && !petInfo.status ? "Vui lòng điền thông tin" : undefined}
-                  data-booking-error={validationAttempted && !petInfo.status ? "true" : undefined}
-                  tabIndex={validationAttempted && !petInfo.status ? -1 : undefined}
-                >
-                  <label><input type="radio" name="status" checked={petInfo.status === "normal"} onChange={() => updatePetInfo("status", "normal")} className="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900" />Bình thường</label>
-                  <label><input type="radio" name="status" checked={petInfo.status === "treating"} onChange={() => updatePetInfo("status", "treating")} className="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900" />Đang điều trị</label>
-                  <label><input type="radio" name="status" checked={petInfo.status === "chronic"} onChange={() => updatePetInfo("status", "chronic")} className="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900" />Có bệnh nền</label>
-                </div>
-              </div>
-              <label className="md:col-span-6">
-                <span className="mb-2 block text-sm font-medium text-slate-900">Thông tin thêm</span>
-                <textarea 
-                placeholder="Nhập ghi chú, yêu cầu đặc biệt hoặc thông tin bổ sung tại đây..." 
-                value={petInfo.notes}
-                onChange={(event) => updatePetInfo("notes", event.target.value)}
-                className="h-15 w-full text-sm resize-none rounded-2xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-900" />
-              </label>
-            </div>
-          </Card>
+          <div className="space-y-6">
+            {activePetInfos.map((petInfo, index) => (
+              <PetInfoCard
+                key={petInfo.id}
+                petInfo={petInfo}
+                index={index}
+                showIndex={activePetInfos.length > 1}
+                canRemove={!profileMode && activePetInfos.length > 1}
+                validationAttempted={validationAttempted}
+                onChange={updatePetInfo}
+                onRemove={removeOtherPetInfo}
+              />
+            ))}
+            {!profileMode && (
+              <button
+                type="button"
+                onClick={addOtherPetInfo}
+                className="w-full rounded-2xl border-2 border-blue-900 bg-white px-6 py-4 text-base font-bold text-blue-900 shadow-[0_4px_13px_rgba(144,202,249,0.5)] transition hover:bg-blue-50"
+              >
+                + Thêm một bé nữa
+              </button>
+            )}
+          </div>
         </div>
 
         <Card className="p-8">
@@ -589,23 +683,81 @@ function InfoForm({
       <FlowButtons onBack={onBack} onNext={handleNext} />
       {showPetPicker && (
         <PetSelectionModal
-          selectedPet={selectedPet}
+          selectedPets={selectedPets}
           onClose={() => setShowPetPicker(false)}
-          onSelect={(pet) => {
-            setSelectedPet(pet);
-            setPetInfo((current) => ({
-              ...current,
-              name: pet.name || current.name,
-              species: pet.species || current.species,
-              breed: pet.breed || current.breed,
-              age: pet.age || current.age,
-              weight: pet.weight || current.weight,
-            }));
+          onConfirm={(pets) => {
+            setSelectedPets(pets);
+            setPetInfos(pets.length > 0 ? pets.map(profileToPetInfo) : [createEmptyPetInfo()]);
             setShowPetPicker(false);
           }}
         />
       )}
     </>
+  );
+}
+
+function PetInfoCard({
+  petInfo,
+  index,
+  showIndex,
+  canRemove,
+  validationAttempted,
+  onChange,
+  onRemove,
+}) {
+  return (
+    <Card className="p-8">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <h2 className="text-xl font-black text-blue-900">
+          THÔNG TIN THÚ CƯNG{showIndex ? ` ${index + 1}` : ""}
+        </h2>
+        {canRemove && (
+          <button
+            type="button"
+            onClick={() => onRemove(petInfo.id)}
+            className="text-sm font-bold text-[#d32f2f]"
+          >
+            Xóa
+          </button>
+        )}
+      </div>
+      <div className="grid gap-5 md:grid-cols-6">
+        <Field className="md:col-span-4" label="Tên thú cưng" required showError={validationAttempted} value={petInfo.name} onChange={(event) => onChange(petInfo.id, "name", event.target.value)} />
+        <Field className="md:col-span-2" label="Loài" as="select" options={["Chó", "Mèo", "Khác"]} required showError={validationAttempted} value={petInfo.species} onChange={(event) => onChange(petInfo.id, "species", event.target.value)} />
+        <Field className="md:col-span-2" label="Giống" value={petInfo.breed} onChange={(event) => onChange(petInfo.id, "breed", event.target.value)} />
+        <Field className="md:col-span-2" label="Tuổi" suffix="tuổi" value={petInfo.age} onChange={(event) => onChange(petInfo.id, "age", event.target.value)} />
+        <Field className="md:col-span-2" label="Cân nặng" suffix="kg" required showError={validationAttempted} value={petInfo.weight} onChange={(event) => onChange(petInfo.id, "weight", event.target.value)} />
+        <div className="md:col-span-3">
+          <p className="mb-3 text-sm font-medium text-slate-900">Giới tính</p>
+          <div className="flex gap-5 text-sm">
+            <label><input type="radio" name={`gender-${petInfo.id}`} checked={petInfo.gender === "male"} onChange={() => onChange(petInfo.id, "gender", "male")} className="mr-2 accent-blue-900" />Đực</label>
+            <label><input type="radio" name={`gender-${petInfo.id}`} checked={petInfo.gender === "female"} onChange={() => onChange(petInfo.id, "gender", "female")} className="mr-2 accent-blue-900" />Cái</label>
+          </div>
+        </div>
+        <div className="md:col-span-3">
+          <p className="mb-3 text-sm font-medium text-slate-900">Tình trạng sức khỏe <span className="text-red-500">*</span></p>
+          <div
+            className={`flex flex-wrap gap-4 rounded-lg text-sm ${validationAttempted && !petInfo.status ? "ring-2 ring-red-500" : ""}`}
+            title={validationAttempted && !petInfo.status ? "Vui lòng điền thông tin" : undefined}
+            data-booking-error={validationAttempted && !petInfo.status ? "true" : undefined}
+            tabIndex={validationAttempted && !petInfo.status ? -1 : undefined}
+          >
+            <label><input type="radio" name={`status-${petInfo.id}`} checked={petInfo.status === "normal"} onChange={() => onChange(petInfo.id, "status", "normal")} className="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900" />Bình thường</label>
+            <label><input type="radio" name={`status-${petInfo.id}`} checked={petInfo.status === "treating"} onChange={() => onChange(petInfo.id, "status", "treating")} className="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900" />Đang điều trị</label>
+            <label><input type="radio" name={`status-${petInfo.id}`} checked={petInfo.status === "chronic"} onChange={() => onChange(petInfo.id, "status", "chronic")} className="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900" />Có bệnh nền</label>
+          </div>
+        </div>
+        <label className="md:col-span-6">
+          <span className="mb-2 block text-sm font-medium text-slate-900">Thông tin thêm</span>
+          <textarea
+            placeholder="Nhập ghi chú, yêu cầu đặc biệt hoặc thông tin bổ sung tại đây..."
+            value={petInfo.notes}
+            onChange={(event) => onChange(petInfo.id, "notes", event.target.value)}
+            className="h-15 w-full text-sm resize-none rounded-2xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-900"
+          />
+        </label>
+      </div>
+    </Card>
   );
 }
 
@@ -677,8 +829,21 @@ function Field({
   );
 }
 
-function PetSelectionModal({ selectedPet, onSelect, onClose }) {
-  const pets = [MOCK_PETS.find((pet) => pet.name === "Max") || MOCK_PETS[0], MOCK_PETS.find((pet) => pet.name === "Luna") || MOCK_PETS[1]].filter(Boolean);
+function PetSelectionModal({ selectedPets, onConfirm, onClose }) {
+  const pets = [
+    MOCK_PETS.find((pet) => pet.name === "Max") || MOCK_PETS[0],
+    MOCK_PETS.find((pet) => pet.name === "Luna") || MOCK_PETS[1],
+    MOCK_PETS.find((pet) => pet.name === "Snow") || MOCK_PETS[2],
+  ].filter(Boolean);
+  const [draftPets, setDraftPets] = useState(selectedPets);
+
+  const togglePet = (pet) => {
+    setDraftPets((current) =>
+      current.some((item) => item.id === pet.id)
+        ? current.filter((item) => item.id !== pet.id)
+        : [...current, pet],
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-sm">
@@ -697,9 +862,9 @@ function PetSelectionModal({ selectedPet, onSelect, onClose }) {
             <button
               key={pet.id}
               type="button"
-              onClick={() => onSelect(pet)}
+              onClick={() => togglePet(pet)}
               className={`flex w-full items-center gap-4 rounded-2xl border-2 p-4 text-left ${
-                selectedPet?.id === pet.id ? "border-blue-900" : "border-slate-200"
+                draftPets.some((item) => item.id === pet.id) ? "border-blue-900 bg-blue-50" : "border-slate-200"
               }`}
             >
               <img
@@ -711,15 +876,23 @@ function PetSelectionModal({ selectedPet, onSelect, onClose }) {
                 <strong className="block text-lg">{pet.name}</strong>
                 <span className="text-xs font-medium text-slate-600">{pet.breed} • {pet.age}</span>
               </span>
-              <span className="rounded-full bg-slate-200 px-4 py-1.5 text-xs font-bold">Chọn</span>
+              <span
+                className={`rounded-full px-4 py-1.5 text-xs font-bold ${
+                  draftPets.some((item) => item.id === pet.id)
+                    ? "bg-blue-900 text-white"
+                    : "bg-slate-200 text-slate-700"
+                }`}
+              >
+                {draftPets.some((item) => item.id === pet.id) ? "✓" : "Chọn"}
+              </span>
             </button>
           ))}
         </div>
         <div className="bg-slate-100 px-6 py-4">
           <button
             type="button"
-            disabled={!selectedPet}
-            onClick={onClose}
+            disabled={draftPets.length === 0}
+            onClick={() => onConfirm(draftPets)}
             className="w-full rounded-2xl bg-blue-900 py-3 font-bold text-white disabled:opacity-50"
           >
             Tiếp tục
@@ -758,17 +931,8 @@ function BookingPage() {
   const [selectedServices, setSelectedServices] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [selectedPet, setSelectedPet] = useState(null);
-  const [petInfo, setPetInfo] = useState({
-    name: "",
-    species: "",
-    breed: "",
-    age: "",
-    weight: "",
-    gender: "",
-    status: "",
-    notes: "",
-  });
+  const [selectedPets, setSelectedPets] = useState([]);
+  const [petInfos, setPetInfos] = useState(() => [createEmptyPetInfo()]);
   const [ownerInfo, setOwnerInfo] = useState({
     name: "",
     phone: "",
@@ -816,10 +980,10 @@ function BookingPage() {
           )}
           {step === 2 && (
             <InfoForm
-              selectedPet={selectedPet}
-              setSelectedPet={setSelectedPet}
-              petInfo={petInfo}
-              setPetInfo={setPetInfo}
+              selectedPets={selectedPets}
+              setSelectedPets={setSelectedPets}
+              petInfos={petInfos}
+              setPetInfos={setPetInfos}
               ownerInfo={ownerInfo}
               setOwnerInfo={setOwnerInfo}
               onBack={() => setStep(1)}
@@ -830,8 +994,10 @@ function BookingPage() {
             <BookingPaymentStep
               selectedDate={selectedDate}
               selectedSlot={selectedSlot}
-              selectedPet={selectedPet}
-              petInfo={petInfo}
+              selectedPet={selectedPets[0] || null}
+              selectedPets={selectedPets}
+              petInfo={petInfos[0]}
+              petInfos={petInfos}
               ownerInfo={ownerInfo}
               selectedServices={BOOKING_SERVICES.filter((service) => selectedServices.includes(service.id))}
               paymentMode={paymentMode}

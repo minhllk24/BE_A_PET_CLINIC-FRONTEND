@@ -298,7 +298,7 @@ function PetListPage() {
           onSortChange={setSortBy}
         />
 
-        <Link to="/my-pets/new" className="shrink-0">
+        <Link to="/thu-cung-cua-toi/them-moi" className="shrink-0">
           <button className="flex h-[52px] items-center gap-2 rounded-[42px] bg-[#fff176] px-5 text-[14px] font-bold text-[#031635] shadow-elevation transition hover:bg-[#fdd835]">
             <span className="text-xl leading-none">+</span> Tạo mới
           </button>
@@ -355,12 +355,12 @@ function PetListPage() {
                 </div>
 
                 <div className="flex flex-col gap-2 mt-auto">
-                  <Link to={`/my-pets/${pet.id}/edit`} className="w-full">
+                  <Link to={`/thu-cung-cua-toi/${pet.id}/chinh-sua`} className="w-full">
                     <button className="w-full bg-[#fcd34d] hover:bg-[#fbbf24] rounded-md py-2 font-medium text-xs text-slate-900 transition">
                       Chỉnh sửa hồ sơ
                     </button>
                   </Link>
-                  <Link to={`/my-pets/${pet.id}`} className="w-full">
+                  <Link to={`/thu-cung-cua-toi/${pet.id}`} className="w-full">
                     <button className="w-full bg-[#0a0f3a] hover:bg-[#070b29] rounded-md py-2 font-medium text-xs text-white transition">
                       Xem chi tiết
                     </button>

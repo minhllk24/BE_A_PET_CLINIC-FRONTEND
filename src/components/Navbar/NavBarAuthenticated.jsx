@@ -31,7 +31,7 @@ function NavBarAuthenticated({ avatarSrc, onLogout }) {
         <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-4 lg:gap-6">
           <NavSearchBar className="hidden lg:block" />
 
-          <a href="/booking" className="shrink-0">
+          <a href="/dat-lich" className="shrink-0">
             <YellowButton className="h-[35px] min-w-[82px] px-3 py-2 text-[13px] tracking-[0.1px] sm:min-w-[109px] sm:px-[22px] sm:text-base sm:tracking-[0.15px]">
               ĐẶT LỊCH
             </YellowButton>

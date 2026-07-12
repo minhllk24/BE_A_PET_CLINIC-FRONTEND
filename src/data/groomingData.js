@@ -27,6 +27,166 @@ export const GROOMING_SERVICES = [
   { id: 9, title: "Vắt tuyến hôi", description: "Giúp thú cưng không bị ngứa ngáy hậu môn, hạn chế mùi hôi đặc trưng cơ thể", price: "Từ 50.000đ", image: groomingImages.serviceScent, mask: groomingImages.serviceCardMask },
 ];
 
+export const GROOMING_PRICE_COLUMNS = [
+  { label: "Dưới 3kg", tone: "primary" },
+  { label: "3.1 - 5kg", tone: "primary" },
+  { label: "5.1 - 8kg", tone: "primary" },
+  { label: "8.1 - 12kg", tone: "secondary" },
+  { label: "12.1 - 15kg", tone: "secondary" },
+  { label: "15.1 - 20kg", tone: "secondary" },
+  { label: "20.1 - 25kg", tone: "info" },
+  { label: "25.1 - 30kg", tone: "info" },
+  { label: "Trên 30kg", tone: "info" },
+];
+
+export const SERVICE_PRICE_FILTERS = [
+  { value: "all", label: "Tất cả" },
+  { value: "medical", label: "Khám & Điều trị" },
+  { value: "grooming", label: "Grooming & Spa" },
+  { value: "combo", label: "Combo spa" },
+];
+
+export const GROOMING_PRICING_ROWS = [
+  {
+    title: "Tắm & Sấy khô",
+    icon: "bath",
+    iconColor: "#2d63c8",
+    background: "#cce1fe",
+    prices: ["50k", "70k", "90k", "120k", "150k", "190k", "240k", "300k", "Liên hệ"],
+  },
+  {
+    title: "Massage chuyên sâu",
+    icon: "sprout",
+    iconColor: "#00c7a2",
+    background: "#cffff5",
+    prices: ["50k", "75k", "100k", "130k", "160k", "200k", "250k", "310k", "Liên hệ"],
+  },
+  {
+    title: "Cắt tỉa tạo kiểu",
+    icon: "scissors",
+    iconColor: "#ef4444",
+    background: "#ffd6d6",
+    prices: ["50k", "85k", "120k", "160k", "210k", "270k", "340k", "420k", "Liên hệ"],
+  },
+  {
+    title: "Vắt tuyến hôi",
+    icon: "sparkles",
+    iconColor: "#d99a16",
+    background: "#fffbdc",
+    prices: ["50k", "65k", "80k", "100k", "120k", "150k", "180k", "220k", "Liên hệ"],
+  },
+  {
+    title: "Điều trị ký sinh trùng",
+    icon: "bug",
+    iconColor: "#8b5cf6",
+    background: "#efd8ff",
+    prices: ["80k", "110k", "140k", "180k", "220k", "270k", "330k", "400k", "Liên hệ"],
+  },
+  {
+    title: "Nhuộm lông thời trang",
+    icon: "palette",
+    iconColor: "#ff2bbb",
+    background: "#ffe0f1",
+    prices: ["80k", "120k", "170k", "230k", "300k", "380k", "480k", "600k", "Liên hệ"],
+  },
+  {
+    title: "Vệ sinh răng miệng",
+    icon: "tooth",
+    iconColor: "#f59e0b",
+    background: "#fff2dc",
+    prices: ["30k", "45k", "60k", "80k", "100k", "130k", "160k", "200k", "Liên hệ"],
+  },
+  {
+    title: "Cắt & Mài móng",
+    icon: "scissors",
+    iconColor: "#08a8e8",
+    background: "#d0e9ff",
+    prices: ["30k", "45k", "55k", "70k", "85k", "105k", "130k", "160k", "Liên hệ"],
+  },
+  {
+    title: "Chăm sóc bàn chân",
+    icon: "paw",
+    iconColor: "#d69b16",
+    background: "#f7ffdd",
+    prices: ["30k", "45k", "55k", "70k", "85k", "105k", "130k", "160k", "Liên hệ"],
+  },
+];
+
+export const MEDICAL_PRICING_ROWS = [
+  {
+    title: "Khám & Điều trị",
+    icon: "stethoscope",
+    iconColor: "#2d63c8",
+    background: "#cce1fe",
+    prices: ["30k", "45k", "60k", "80k", "100k", "130k", "160k", "200k", "Liên hệ"],
+  },
+  {
+    title: "Xét nghiệm",
+    icon: "flask",
+    iconColor: "#00c7a2",
+    background: "#cffff5",
+    prices: ["50k", "70k", "90k", "120k", "150k", "190k", "240k", "300k", "Liên hệ"],
+  },
+  {
+    title: "Siêu âm",
+    icon: "heartPulse",
+    iconColor: "#ff2bbb",
+    background: "#ffe0f1",
+    prices: ["100k", "120k", "140k", "170k", "200k", "240k", "290k", "350k", "Liên hệ"],
+  },
+  {
+    title: "Tiêm phòng",
+    icon: "syringe",
+    iconColor: "#d99a16",
+    background: "#ffffdf",
+    prices: ["100k", "115k", "130k", "150k", "175k", "205k", "240k", "280k", "Liên hệ"],
+  },
+  {
+    title: "Phẫu thuật",
+    icon: "scalpel",
+    iconColor: "#8b5cf6",
+    background: "#ecd8ff",
+    prices: ["200k", "260k", "330k", "420k", "530k", "660k", "820k", "1000k", "Liên hệ"],
+  },
+  {
+    title: "Cấp cứu 24/7",
+    icon: "siren",
+    iconColor: "#ef4444",
+    background: "#ffd8d8",
+    prices: ["150k", "180k", "210k", "250k", "300k", "360k", "430k", "520k", "Liên hệ"],
+  },
+];
+
+export const COMBO_PRICING_ROWS = [
+  {
+    title: "Combo Tắm 11 bước",
+    icon: "bath",
+    iconColor: "#2d63c8",
+    background: "#cce1fe",
+    prices: ["150k", "180k", "220k", "270k", "330k", "440k", "480k", "570k", "Liên hệ"],
+  },
+  {
+    title: "Combo Tắm cơ bản & cắt tỉa",
+    icon: "sprout",
+    iconColor: "#00c7a2",
+    background: "#cffff5",
+    prices: ["100k", "135k", "180k", "230k", "290k", "360k", "440k", "530k", "Liên hệ"],
+  },
+  {
+    title: "Combo Chăm sóc & bảo vệ móng",
+    icon: "paw",
+    iconColor: "#d69b16",
+    background: "#f7ffdd",
+    prices: ["80k", "100k", "125k", "155k", "190k", "230k", "275k", "325k", "Liên hệ"],
+  },
+];
+
+export const SERVICE_PRICE_TABLES = {
+  medical: MEDICAL_PRICING_ROWS,
+  grooming: GROOMING_PRICING_ROWS,
+  combo: COMBO_PRICING_ROWS,
+};
+
 export const GROOMING_COMBO_STEPS = [
   "Kiểm tra lông, da", "Cạo lông bàn chân", "Cạo lông bụng", "Cạo lông hậu môn",
   "Vắt tuyến hôi", "Vệ sinh tai", "Cắt, mài móng", "Tắm xả chuyên sâu 2 lần",

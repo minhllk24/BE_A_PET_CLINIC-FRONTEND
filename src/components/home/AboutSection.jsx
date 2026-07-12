@@ -99,7 +99,7 @@ function AboutSection() {
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-4">
-            <YellowButton className="h-[52px] min-w-[240px]">
+            <YellowButton to="/ve-chung-toi" className="h-[52px] min-w-[240px]">
               TÌM HIỂU THÊM →
             </YellowButton>
             <div className="flex items-center gap-3">

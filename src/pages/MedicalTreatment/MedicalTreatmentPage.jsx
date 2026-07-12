@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../../components/Footer/Footer'
 import GroomingFeedbackSection from '../../components/groomingSpa/GroomingFeedbackSection'
+import ServicePricingModal from '../../components/groomingSpa/ServicePricingModal'
 import ScaledCanvasLayout from '../../components/layout/ScaledCanvasLayout'
 import NavBar from '../../components/Navbar'
 import PetCareFaqSection from '../../components/shared/PetCareFaqSection'
@@ -97,14 +98,24 @@ function MedicalServices() {
   )
 }
 
-function MedicalCta() {
+function MedicalCta({ onOpenPricing }) {
   return (
     <section className="medical-cta">
       <div className="medical-cta__actions">
-        <Link to="/contact" className="medical-cta__item">
+        <button
+          type="button"
+          className="medical-cta__item"
+          onClick={onOpenPricing}
+          style={{
+            border: 0,
+            background: 'transparent',
+            padding: 0,
+            cursor: 'pointer',
+          }}
+        >
           <img src={medicalAssets.ctaPrice} alt="" />
           <span>BẢNG GIÁ CHI TIẾT</span>
-        </Link>
+        </button>
         <Link to="/booking" className="medical-cta__item">
           <img src={medicalAssets.ctaBook} alt="" />
           <span>ĐẶT LỊCH NGAY</span>
@@ -330,12 +341,12 @@ function MedicalFaq() {
   )
 }
 
-function MedicalCanvas() {
+function MedicalCanvas({ onOpenPricing }) {
   return (
     <>
       <MedicalHero />
       <MedicalServices />
-      <MedicalCta />
+      <MedicalCta onOpenPricing={onOpenPricing} />
       <MedicalStats />
       <MedicalWhy />
       <MedicalDoctors />
@@ -348,12 +359,19 @@ function MedicalCanvas() {
 
 function MedicalTreatmentPage() {
   const { isAuthenticated } = useAuth()
+  const [isPricingOpen, setIsPricingOpen] = useState(false)
+
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
       <NavBar isAuthenticated={isAuthenticated} />
       <ScaledCanvasLayout className="bg-white">
-        <MedicalCanvas />
+        <MedicalCanvas onOpenPricing={() => setIsPricingOpen(true)} />
       </ScaledCanvasLayout>
+      <ServicePricingModal
+        open={isPricingOpen}
+        defaultFilter="medical"
+        onClose={() => setIsPricingOpen(false)}
+      />
     </div>
   )
 }

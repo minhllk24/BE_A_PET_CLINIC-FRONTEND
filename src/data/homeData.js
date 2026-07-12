@@ -5,19 +5,19 @@ export const HOME_SERVICES = [
     image: homeImages.service1,
     title: "Khám & Điều trị",
     description: "Đội ngũ bác sĩ chuyên khoa cùng trang thiết bị hiện đại, chẩn đoán chính xác, điều trị tận tâm và hỗ trợ cấp cứu cho bé yêu 24/7.",
-    href: "/services/kham-dieu-tri",
+    href: "/dich-vu/kham-dieu-tri",
   },
   {
     image: homeImages.service2,
     title: "Grooming & Spa",
     description: "Dịch vụ tắm sấy, cắt tỉa lông và chăm sóc vệ sinh giúp thú cưng luôn sạch sẽ, khỏe mạnh và thoải mái.",
-    href: "/services/grooming-spa",
+    href: "/dich-vu/tam-cat-tia-spa",
   },
   {
     image: homeImages.service3,
     title: "Pet Shop",
     description: "Cung cấp đa dạng sản phẩm dành cho thú cưng như thức ăn, phụ kiện, đồ chơi và sản phẩm chăm sóc sức khỏe từ nhiều thương hiệu uy tín.",
-    href: "/petshop",
+    href: "/cua-hang",
   },
 ];
 

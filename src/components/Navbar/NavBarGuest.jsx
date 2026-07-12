@@ -30,7 +30,7 @@ function NavBarGuest() {
         <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
           <NavSearchBar className="hidden lg:block" />
 
-          <a href="/booking">
+          <a href="/dat-lich">
             <YellowButton className="h-[35px] min-w-[82px] px-3 py-2 text-[13px] tracking-[0.1px] sm:min-w-[109px] sm:px-[22px] sm:text-base sm:tracking-[0.15px]">
               ĐẶT LỊCH
             </YellowButton>

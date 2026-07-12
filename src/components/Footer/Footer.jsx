@@ -1,30 +1,36 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { homeImages } from "../../assets/homeImages";
+import ServicePricingModal from "../groomingSpa/ServicePricingModal";
 
-const PRODUCT_LINKS = [
+const QUICK_LINKS = [
   ["Trang chủ", "/"],
-  ["Dịch vụ", "/services/grooming-spa"],
-  ["Mua sắm", "/petshop"],
-  ["Đặt lịch", "/booking"],
-  ["Blog / Cẩm nang", "/blog/kien-thuc"],
-  ["Cộng đồng chia sẻ", "/blog/cong-dong"],
-  ["Thông tin cứu trợ", "/rescue"],
+  ["Bảng giá dịch vụ", "/dich-vu/tam-cat-tia-spa"],
+  ["Mua sắm", "/cua-hang"],
+  ["Lịch sử đơn hàng", "/don-hang-cua-toi"],
+  ["Hồ sơ thú cưng", "/thu-cung-cua-toi"],
+  ["Lịch sử đặt lịch", "/lich-su-dat-lich"],
+  ["Thông tin cứu trợ", "/cuu-tro"],
 ];
 
 const SERVICE_LINKS = [
-  ["Khám tổng quát", "/booking"],
-  ["Tiêm phòng", "/booking"],
-  ["Grooming & Spa", "/services/grooming-spa"],
-  ["Mua sắm sản phẩm", "/petshop"],
+  ["Khám & Điều trị", "/dich-vu/kham-dieu-tri"],
+  ["Grooming & Spa", "/dich-vu/tam-cat-tia-spa"],
+  ["Mua sắm sản phẩm", "/cua-hang"],
 ];
 
 const SUPPORT_LINKS = [
   ["Chính sách đặt lịch", "/policies/dat-lich"],
-  ["Chính sách đổi/hủy lịch", "/policies/doi-huy-lich"],
+  ["Chính sách vận chuyển", "/policies/van-chuyen"],
+  ["Chính sách đổi/trả hàng", "/policies/doi-tra-hang"],
   ["Chính sách thanh toán", "/policies/phuong-thuc-thanh-toan"],
-  ["Chính sách bán hàng", "/policies/huong-dan-mua-hang"],
+  ["Câu hỏi thường gặp", "/policies/cau-hoi-thuong-gap"],
+];
+
+const LEGAL_LINKS = [
   ["Chính sách bảo mật", "/policies/bao-mat"],
+  ["Điều khoản dịch vụ", "/policies/dieu-khoan-dich-vu"],
+  ["Cài đặt cookie", "/policies/cookie"],
 ];
 
 function isBlueBackground(element) {
@@ -45,15 +51,24 @@ function isBlueBackground(element) {
   return false;
 }
 
-function FooterLink({ children, to = "#" }) {
+function FooterLink({ children, onClick, to = "#" }) {
+  const className =
+    "inline-flex py-3 text-left text-[16px] leading-[1.4] text-[rgba(0,0,0,0.87)] transition-colors hover:text-[#0D47A1]";
+
   return (
     <li>
+      {onClick ? (
+        <button type="button" className={className} onClick={onClick}>
+          {children}
+        </button>
+      ) : (
       <Link
         to={to}
-        className="inline-flex py-3 text-[16px] leading-[1.4] text-[rgba(0,0,0,0.87)] transition-colors hover:text-[#0D47A1]"
+        className={className}
       >
         {children}
       </Link>
+      )}
     </li>
   );
 }
@@ -61,7 +76,7 @@ function FooterLink({ children, to = "#" }) {
 function FooterColumn({ title, children, className = "" }) {
   return (
     <section className={className}>
-      <h2 className="mb-1 whitespace-nowrap text-[20px] font-bold leading-[1.6] tracking-[0.15px] text-[#0D47A1]">
+      <h2 className="mb-3 whitespace-nowrap text-[16px] font-bold uppercase leading-[1.5] tracking-[0.15px] text-[#0D47A1]">
         {title}
       </h2>
       {children}
@@ -69,9 +84,32 @@ function FooterColumn({ title, children, className = "" }) {
   );
 }
 
+function AccountFooter() {
+  return (
+    <footer
+      className="flex h-[36px] w-full shrink-0 items-center justify-center overflow-hidden bg-[#B3E5FC] px-4 font-sans sm:px-8 lg:px-12"
+      data-footer-variant="account"
+    >
+      <div className="flex h-6 w-full max-w-[1373px] items-center justify-between gap-6 text-[14px] text-[rgba(0,0,0,0.6)]">
+        <p className="min-w-0 shrink text-left italic leading-[1.43]">
+          © 2026 Dr.Pet&apos;s House. Bản quyền thuộc về Dr.Pet&apos;s House.
+        </p>
+        <nav aria-label="Liên kết chân trang tài khoản" className="hidden shrink-0 items-center gap-3 font-medium leading-none sm:flex">
+          {LEGAL_LINKS.map(([label, to]) => (
+            <Link key={label} to={to} className="whitespace-nowrap transition-colors hover:text-[#0D47A1]">
+              {label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+    </footer>
+  );
+}
+
 function Footer({ variant = "auto" }) {
   const footerRef = useRef(null);
   const [autoVariant, setAutoVariant] = useState("blue");
+  const [isPricingOpen, setIsPricingOpen] = useState(false);
   const resolvedVariant = variant === "auto" ? autoVariant : variant;
   const isBlue = resolvedVariant === "blue";
 
@@ -89,39 +127,44 @@ function Footer({ variant = "auto" }) {
     return () => observer.disconnect();
   }, [variant]);
 
-  return (
-    <footer
-      ref={footerRef}
-      className={`relative w-full overflow-hidden font-sans ${
-        isBlue ? "bg-[#E5F6FD]" : "bg-white"
-      }`}
-      data-footer-variant={resolvedVariant}
-    >
-      <svg
-        aria-hidden="true"
-        className="absolute left-0 top-0 h-[48px] w-full"
-        preserveAspectRatio="none"
-        viewBox="0 0 1440 48"
-      >
-        <path
-          d="M0 0H1440V44C1325 0 1200 4 1080 18C920 37 760 48 604 32C603 9 597 0 589 0C578 0 566 14 557 33C540 31 523 31 506 33C492 13 477 0 470 0C460 0 456 13 458 33C278 5 111 2 0 43V0Z"
-          fill={isBlue ? "#FFFFFF" : "#E5F6FD"}
-        />
-      </svg>
+  if (resolvedVariant === "account") {
+    return <AccountFooter />;
+  }
 
-      <div className="relative mx-auto grid min-h-[530px] max-w-[1270px] grid-cols-[220px_144px_155px_210px_172px] items-start justify-between gap-8 px-6 pb-[62px] pt-[76px]">
+  return (
+    <>
+      <footer
+        ref={footerRef}
+        className={`relative w-full overflow-hidden font-sans ${
+          isBlue ? "bg-[#E5F6FD]" : "bg-white"
+        }`}
+        data-footer-variant={resolvedVariant}
+      >
+        <svg
+          aria-hidden="true"
+          className="absolute left-0 top-0 h-[48px] w-full"
+          preserveAspectRatio="none"
+          viewBox="0 0 1440 48"
+        >
+          <path
+            d="M0 0H1440V44C1325 0 1200 4 1080 18C920 37 760 48 604 32C603 9 597 0 589 0C578 0 566 14 557 33C540 31 523 31 506 33C492 13 477 0 470 0C460 0 456 13 458 33C278 5 111 2 0 43V0Z"
+            fill={isBlue ? "#FFFFFF" : "#E5F6FD"}
+          />
+        </svg>
+
+      <div className="relative mx-auto grid min-h-[530px] max-w-[1202px] grid-cols-[329px_144px_155px_210px_172px] items-start gap-12 pb-[62px] pt-[100px]">
         <section className="flex flex-col items-start gap-4">
           <Link to="/" aria-label="Dr. Pet's House - Trang chủ">
             <img
               src={homeImages.logo}
               alt="Dr. Pet's House"
-              className="h-[72px] w-[165px] object-contain object-left"
+              className="h-[88px] w-[202px] object-contain object-left"
             />
           </Link>
-          <h2 className="text-[20px] font-bold leading-[1.6] tracking-[0.15px] text-[#0D47A1]">
+          <h2 className="w-[335px] font-['Baloo_2','Baloo_Tamma_2',cursive] text-[22px] font-bold leading-[1.1] tracking-[0px] text-[#0D47A1]">
             TRUNG TÂM CHĂM SÓC THÚ CƯNG
           </h2>
-          <p className="w-[245px] text-[16px] leading-[1.4] text-[#475569]">
+          <p className="w-[335px] text-[16px] leading-[1.4] text-[#475569]">
             Cung cấp dịch vụ khám bệnh, làm đẹp, và mua sắm sản phẩm cho thú cưng
             của bạn.
           </p>
@@ -165,15 +208,25 @@ function Footer({ variant = "auto" }) {
           </div>
         </section>
 
-        <FooterColumn title="PRODUCT">
-          <ul>{PRODUCT_LINKS.map(([label, to]) => <FooterLink key={label} to={to}>{label}</FooterLink>)}</ul>
+        <FooterColumn title="LIÊN KẾT NHANH">
+          <ul>
+            {QUICK_LINKS.map(([label, to]) => (
+              <FooterLink
+                key={label}
+                to={to}
+                onClick={label === "Bảng giá dịch vụ" ? () => setIsPricingOpen(true) : undefined}
+              >
+                {label}
+              </FooterLink>
+            ))}
+          </ul>
         </FooterColumn>
 
-        <FooterColumn title="Dịch vụ nổi bật">
+        <FooterColumn title="DỊCH VỤ NỔI BẬT">
           <ul>{SERVICE_LINKS.map(([label, to]) => <FooterLink key={label} to={to}>{label}</FooterLink>)}</ul>
         </FooterColumn>
 
-        <FooterColumn title="Thông tin Trung tâm">
+        <FooterColumn title="THÔNG TIN CHUNG">
           <ul>
             <FooterLink to="/about">Về chúng tôi</FooterLink>
             <FooterLink to="/contact">Liên hệ</FooterLink>
@@ -183,12 +236,10 @@ function Footer({ variant = "auto" }) {
               </span>
             </FooterLink>
           </ul>
-          {!isBlue && (
-            <p className="py-2 text-[16px] leading-[1.4]">
-              <strong>Hotline:</strong> 086 8686868
-            </p>
-          )}
-          <p className="py-2 text-[16px] leading-[1.4]">
+          <p className="py-2 text-[16px] leading-[1.4] text-[rgba(0,0,0,0.87)]">
+            <strong>Hotline:</strong> 086 8686868
+          </p>
+          <p className="py-2 text-[16px] leading-[1.4] text-[rgba(0,0,0,0.87)]">
             <strong>Giờ làm việc:</strong>
             <br />
             Thứ 2 - Chủ nhật: 8:00 - 20:00
@@ -197,7 +248,7 @@ function Footer({ variant = "auto" }) {
           </p>
         </FooterColumn>
 
-        <FooterColumn title="Hỗ trợ khách hàng">
+        <FooterColumn title="HỖ TRỢ KHÁCH HÀNG">
           <ul>
             {SUPPORT_LINKS.map(([label, to]) => (
               <FooterLink key={label} to={to}>
@@ -208,12 +259,27 @@ function Footer({ variant = "auto" }) {
         </FooterColumn>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 flex h-[40px] items-center justify-center bg-[#B3E5FC]">
-        <p className="text-[16px] leading-[1.4] text-[rgba(0,0,0,0.6)]">
-          © 2026 Dr.Pet&apos;s House. Bản quyền thuộc về Dr.Pet&apos;s House.
-        </p>
+      <div className="absolute inset-x-0 bottom-0 flex h-[40px] items-center justify-center bg-[#B3E5FC] px-4 sm:px-8 lg:px-12">
+        <div className="flex h-6 w-full max-w-[1373px] items-center justify-between gap-6 text-[14px] text-[rgba(0,0,0,0.6)]">
+          <p className="min-w-0 shrink text-left italic leading-[1.43]">
+            © 2026 Dr.Pet&apos;s House. Bản quyền thuộc về Dr.Pet&apos;s House.
+          </p>
+          <nav aria-label="Liên kết pháp lý chân trang" className="hidden shrink-0 items-center gap-3 font-medium leading-none md:flex">
+            {LEGAL_LINKS.map(([label, to]) => (
+              <Link key={label} to={to} className="whitespace-nowrap transition-colors hover:text-[#0D47A1]">
+                {label}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </div>
-    </footer>
+      </footer>
+      <ServicePricingModal
+        open={isPricingOpen}
+        defaultFilter="all"
+        onClose={() => setIsPricingOpen(false)}
+      />
+    </>
   );
 }
 

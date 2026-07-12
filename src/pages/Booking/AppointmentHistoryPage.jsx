@@ -500,7 +500,7 @@ function AppointmentHistoryPage() {
     }
 
     if (actionKey === "rebook") {
-      window.location.href = "/booking";
+      window.location.href = "/dat-lich";
       return;
     }
 
@@ -586,7 +586,7 @@ function AppointmentHistoryPage() {
       </button> */}
 
       <a
-        href="/booking"
+        href="/dat-lich"
         className="focus-ring-brand fixed bottom-7 right-24 z-20 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fcd400] text-3xl leading-none text-[#06105a] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)]"
         aria-label="Đặt lịch mới"
       >

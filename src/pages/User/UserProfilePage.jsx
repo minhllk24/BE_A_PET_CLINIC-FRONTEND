@@ -161,7 +161,7 @@ function UserProfilePage() {
         />
       )}
       <header className="mb-4">
-        <h1 className="text-2xl font-bold leading-10">Thông tin người dùng</h1>
+        <h1 className="text-[28px] font-bold leading-10">Thông tin người dùng</h1>
         <p className="mt-1 text-base">Quản lý thông tin cá nhân và tài khoản của bạn</p>
       </header>
 

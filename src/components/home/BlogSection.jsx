@@ -9,7 +9,7 @@ import { CategoryIcon } from "../blog/BlogCard";
 function BlogPostItem({ post, highlighted }) {
   return (
     <Link
-      to={`/blog/${post.id}`}
+      to={`/bai-viet/${post.id}`}
       className={`group block rounded-[10px] px-9 py-8 transition-all hover:-translate-y-0.5 hover:shadow-md ${
         highlighted ? "bg-[#E3F2FD]" : "bg-white"
       }`}
@@ -65,7 +65,7 @@ function BlogSection() {
 
           </div>
           <Link
-            to={`/blog/${featuredPost.id}`}
+            to={`/bai-viet/${featuredPost.id}`}
             className="group flex flex-col gap-6 border border-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(13,71,161,0.12)] md:p-8"
           >
             <div className="relative overflow-hidden rounded-[24px]">
@@ -107,7 +107,7 @@ function BlogSection() {
               Bài viết mới nhất
             </h2>
             <Link
-              to="/blog#latest-posts"
+              to="/bai-viet#latest-posts"
               className="text-base font-semibold text-[#0D47A1] hover:underline"
             >
               Xem tất cả
