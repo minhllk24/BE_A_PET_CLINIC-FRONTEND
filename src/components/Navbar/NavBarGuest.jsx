@@ -15,7 +15,7 @@ function NavBarGuest() {
 
   return (
     <>
-    <header className="fixed inset-x-0 top-0 z-[70] w-full bg-white">
+    <header className="fixed inset-x-0 top-0 z-[70] hidden w-full bg-white lg:block">
       <div className="mx-auto flex max-w-page items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6 md:px-20">
         <a href="/" className="shrink-0">
           <img
@@ -55,7 +55,7 @@ function NavBarGuest() {
         </div>
       </div>
     </header>
-    <div className="h-[88px] shrink-0" aria-hidden="true" />
+    <div className="hidden h-[88px] shrink-0 lg:block" aria-hidden="true" />
     </>
   );
 }

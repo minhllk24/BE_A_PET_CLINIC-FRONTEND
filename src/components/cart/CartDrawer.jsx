@@ -9,14 +9,14 @@ function CartDrawer() {
   }
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[60]" role="presentation">
+    <div className="pointer-events-none fixed inset-0 z-[95] lg:z-[60]" role="presentation">
       <button
         type="button"
-        className="pointer-events-auto absolute inset-0 top-[88px] bg-transparent"
+        className="pointer-events-auto absolute inset-0 top-[88px] hidden bg-transparent lg:block"
         onClick={closeCart}
         aria-label="Đóng giỏ hàng"
       />
-      <div className="pointer-events-auto absolute inset-x-0 top-[88px] mx-auto max-w-page">
+      <div className="pointer-events-auto absolute inset-0 lg:inset-x-0 lg:top-[88px] lg:mx-auto lg:max-w-page">
         <MyCartPanel onClose={closeCart} />
       </div>
     </div>
