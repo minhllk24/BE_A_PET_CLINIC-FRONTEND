@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { homeImages } from '../../assets/homeImages'
 import { mobileNavbarImages } from '../../assets/mobileNavbarImages'
 
@@ -46,21 +46,17 @@ function isBlueBackground(element) {
   return false
 }
 
+const branchDirectoryHref = '/contact#branches'
+
 function FooterLink({ children, to = '#' }) {
   return (
     <li>
-      <NavLink
+      <Link
         to={to}
-        className={({ isActive }) =>
-          `inline-flex rounded-[6px] px-[6px] py-3 text-[16px] leading-[1.4] transition-colors ${
-            isActive
-              ? 'bg-[#FFF176] text-[#0D47A1]'
-              : 'text-[rgba(0,0,0,0.87)] hover:bg-[#FFF9C4] hover:text-[#0D47A1]'
-          }`
-        }
+        className="inline-flex rounded-[6px] px-[6px] py-3 text-[16px] leading-[1.4] text-[rgba(0,0,0,0.87)] transition-colors hover:bg-[#FFF9C4] hover:text-[#0D47A1]"
       >
         {children}
-      </NavLink>
+      </Link>
     </li>
   )
 }
@@ -84,7 +80,7 @@ const MOBILE_FOOTER_SECTIONS = [
     [
       ['Về chúng tôi', '/about'],
       ['Liên hệ', '/contact'],
-      ['Danh sách chi nhánh', '/contact'],
+      ['Danh sách chi nhánh', branchDirectoryHref],
     ],
   ],
   ['Hỗ trợ khách hàng', SUPPORT_LINKS],
@@ -123,18 +119,12 @@ function MobileFooterSection({ title, links, open, onToggle }) {
         <ul className="w-[320px] bg-[#FFFDE7] pl-[20px]">
           {links.map(([label, href]) => (
             <li key={`${title}-${label}`}>
-              <NavLink
+              <Link
                 to={href}
-                className={({ isActive }) =>
-                  `flex h-[34px] items-center rounded-[4px] border-b-[0.5px] border-[#1565C0] px-[4px] font-['Roboto'] text-[11px] leading-[1.5] tracking-[0.15px] transition-colors ${
-                    isActive
-                      ? 'bg-[#FFF176] text-[#0D47A1]'
-                      : 'text-[#1565C0] hover:bg-[#FFF9C4] hover:text-[#0D47A1]'
-                  }`
-                }
+                className="flex h-[34px] items-center rounded-[4px] border-b-[0.5px] border-[#1565C0] px-[4px] font-['Roboto'] text-[11px] leading-[1.5] tracking-[0.15px] text-[#1565C0] transition-colors hover:bg-[#FFF9C4] hover:text-[#0D47A1]"
               >
                 {label}
-              </NavLink>
+              </Link>
             </li>
           ))}
         </ul>
@@ -401,7 +391,7 @@ function Footer({ variant = 'auto' }) {
             <ul>
               <FooterLink to="/about">Về chúng tôi</FooterLink>
               <FooterLink to="/contact">Liên hệ</FooterLink>
-              <FooterLink>
+              <FooterLink to={branchDirectoryHref}>
                 <span className="flex items-center gap-2">
                   Danh sách chi nhánh <span aria-hidden="true">→</span>
                 </span>
