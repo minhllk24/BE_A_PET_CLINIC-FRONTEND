@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import ScaledCanvasLayout from "../components/layout/ScaledCanvasLayout";
+import CanvasLayout from "../components/layout/CanvasLayout";
 import Breadcrumb from "../components/layout/Breadcrumb";
 import Footer from "../components/Footer/Footer";
 import NavBar from "../components/Navbar";
@@ -15,12 +15,6 @@ import {
 
 const PAGE_SIZE = 20;
 
-function isPriceInRange(price, range) {
-  if (!range) return false;
-  if (range.max === Infinity) return price >= range.min;
-  return price >= range.min && price < range.max;
-}
-
 function FilterHeading({ children }) {
   return (
     <div className="flex items-center gap-[17px]">
@@ -32,8 +26,8 @@ function FilterHeading({ children }) {
 
 function FilterSidebar({
   categoryOptions,
-  selectedCategories,
-  selectedPrices,
+  selectedCategory,
+  selectedPrice,
   onCategoryChange,
   onPriceChange,
   onClear,
@@ -59,12 +53,8 @@ function FilterSidebar({
             >
               <input
                 type="checkbox"
-                checked={
-                  category.index === null
-                    ? selectedCategories.length === 0
-                    : selectedCategories.includes(category.index)
-                }
-                onChange={() => onCategoryChange(category.index)}
+                checked={category.index === selectedCategory}
+                onChange={() => onCategoryChange(category.index === selectedCategory ? null : category.index)}
                 className="size-5 accent-[#0D47A1]"
               />
               <span className="whitespace-nowrap text-[15px] leading-[27px]">
@@ -85,8 +75,8 @@ function FilterSidebar({
             >
               <input
                 type="checkbox"
-                checked={selectedPrices.includes(index)}
-                onChange={() => onPriceChange(index)}
+                checked={selectedPrice === index}
+                onChange={() => onPriceChange(selectedPrice === index ? null : index)}
                 className="size-5 accent-[#0D47A1]"
               />
               <span className="whitespace-nowrap text-[15px] leading-[27px]">{range.label}</span>
@@ -108,15 +98,7 @@ function FilterSidebar({
   );
 }
 
-function SearchAndSort({ search, onSearchChange, onSearch, onClearSearch, sortOrder, onSortChange }) {
-  const inputRef = useRef(null);
-
-  const selectSearchText = () => {
-    if (search) {
-      window.requestAnimationFrame(() => inputRef.current?.select());
-    }
-  };
-
+function SearchAndSort({ search, onSearchChange, onSearch, sortOrder, onSortChange }) {
   return (
     <form
       className="flex w-full gap-[10px]"
@@ -127,26 +109,11 @@ function SearchAndSort({ search, onSearchChange, onSearch, onClearSearch, sortOr
     >
       <label className="flex h-[56px] min-w-0 flex-1 items-center justify-between rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white/80 py-2 pl-5 pr-2 backdrop-blur-[11px]">
         <input
-          ref={inputRef}
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          onFocus={selectSearchText}
           placeholder="Bạn đang tìm kiếm gì?"
           className="min-w-0 flex-1 bg-transparent text-[16px] text-[#5F5F5F] outline-none placeholder:text-[#5F5F5F]"
         />
-        {search && (
-          <button
-            type="button"
-            onClick={() => {
-              onClearSearch();
-              inputRef.current?.focus();
-            }}
-            className="mr-1 flex h-8 w-8 items-center justify-center rounded-full text-[24px] leading-none text-[#5F5F5F] transition-colors hover:bg-[#E3F2FD] hover:text-[#0D47A1]"
-            aria-label="Xóa tìm kiếm"
-          >
-            ×
-          </button>
-        )}
         <button
           type="submit"
           className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[#FFF176]"
@@ -166,9 +133,7 @@ function SearchAndSort({ search, onSearchChange, onSearch, onClearSearch, sortOr
           className="w-full cursor-pointer appearance-none bg-transparent text-center text-[16px] font-medium tracking-[0.5px] text-[rgba(0,0,0,0.87)] outline-none"
           aria-label="Sắp xếp giá"
         >
-          <option value="" disabled hidden>
-            Sắp xếp giá
-          </option>
+          <option value="default">Sắp xếp giá</option>
           <option value="asc">Giá tăng dần</option>
           <option value="desc">Giá giảm dần</option>
         </select>
@@ -231,9 +196,9 @@ export default function ProductPage() {
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOrder, setSortOrder] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedPrices, setSelectedPrices] = useState([]);
+  const [sortOrder, setSortOrder] = useState("default");
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedPrice, setSelectedPrice] = useState(null);
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -241,7 +206,7 @@ export default function ProductPage() {
     const categorySlug = searchParams.get("category");
     const keyword = searchParams.get("keyword");
     const categoryIndex = CATEGORIES.findIndex((category) => category.slug === categorySlug);
-    setSelectedCategories(categoryIndex >= 0 ? [categoryIndex] : []);
+    if (categoryIndex >= 0) setSelectedCategory(categoryIndex);
     setSearch(keyword ?? "");
     setSearchQuery(keyword ?? "");
     setDisplayCount(PAGE_SIZE);
@@ -250,13 +215,10 @@ export default function ProductPage() {
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLocaleLowerCase("vi");
     const products = ALL_PRODUCTS.filter((product) => {
-      if (selectedCategories.length > 0 && !selectedCategories.includes(product.categoryIdx)) return false;
-      if (selectedPrices.length > 0) {
-        const matchesSelectedPrice = selectedPrices.some((priceIndex) => {
-          const range = PRICE_RANGES[priceIndex];
-          return isPriceInRange(product.price, range);
-        });
-        if (!matchesSelectedPrice) return false;
+      if (selectedCategory !== null && product.categoryIdx !== selectedCategory) return false;
+      if (selectedPrice !== null) {
+        const range = PRICE_RANGES[selectedPrice];
+        if (product.price < range.min || product.price > range.max) return false;
       }
       return !normalizedSearch || product.name.toLocaleLowerCase("vi").includes(normalizedSearch);
     });
@@ -264,7 +226,7 @@ export default function ProductPage() {
     if (sortOrder === "asc") return [...products].sort((a, b) => a.price - b.price);
     if (sortOrder === "desc") return [...products].sort((a, b) => b.price - a.price);
     return products;
-  }, [searchQuery, selectedCategories, selectedPrices, sortOrder]);
+  }, [searchQuery, selectedCategory, selectedPrice, sortOrder]);
 
   const categoryOptions = useMemo(() => {
     const categoryCounts = ALL_PRODUCTS.reduce((counts, product) => {
@@ -299,34 +261,9 @@ export default function ProductPage() {
     setDisplayCount(PAGE_SIZE);
   }, []);
 
-  const toggleCategory = useCallback((categoryIndex) => {
-    setSelectedCategories((current) => {
-      if (categoryIndex === null) return [];
-      return current.includes(categoryIndex)
-        ? current.filter((index) => index !== categoryIndex)
-        : [...current, categoryIndex];
-    });
-    setDisplayCount(PAGE_SIZE);
-  }, []);
-
-  const togglePrice = useCallback((priceIndex) => {
-    setSelectedPrices((current) =>
-      current.includes(priceIndex)
-        ? current.filter((index) => index !== priceIndex)
-        : [...current, priceIndex],
-    );
-    setDisplayCount(PAGE_SIZE);
-  }, []);
-
-  const clearSearch = useCallback(() => {
-    setSearch("");
-    setSearchQuery("");
-    setDisplayCount(PAGE_SIZE);
-  }, []);
-
   const clearFilters = useCallback(() => {
-    setSelectedCategories([]);
-    setSelectedPrices([]);
+    setSelectedCategory(null);
+    setSelectedPrice(null);
     setDisplayCount(PAGE_SIZE);
   }, []);
 
@@ -339,9 +276,10 @@ export default function ProductPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5]">
-      <NavBar isAuthenticated={isAuthenticated} />
-      <ScaledCanvasLayout className="bg-white">
+    <div className="min-h-screen bg-white">
+      <CanvasLayout>
+        <NavBar isAuthenticated={isAuthenticated} />
+
         <Breadcrumb
           items={[
             { label: "Mua sắm", to: "/petshop" },
@@ -353,10 +291,10 @@ export default function ProductPage() {
           <div className="flex gap-[24px]">
             <FilterSidebar
               categoryOptions={categoryOptions}
-              selectedCategories={selectedCategories}
-              selectedPrices={selectedPrices}
-              onCategoryChange={toggleCategory}
-              onPriceChange={togglePrice}
+              selectedCategory={selectedCategory}
+              selectedPrice={selectedPrice}
+              onCategoryChange={(value) => resetDisplayCount(setSelectedCategory, value)}
+              onPriceChange={(value) => resetDisplayCount(setSelectedPrice, value)}
               onClear={clearFilters}
             />
 
@@ -369,7 +307,6 @@ export default function ProductPage() {
                   search={search}
                   onSearchChange={setSearch}
                   onSearch={() => resetDisplayCount(setSearchQuery, search.trim())}
-                  onClearSearch={clearSearch}
                   sortOrder={sortOrder}
                   onSortChange={(value) => resetDisplayCount(setSortOrder, value)}
                 />
@@ -393,8 +330,8 @@ export default function ProductPage() {
           </div>
         </main>
 
-        <Footer variant="white" />
-      </ScaledCanvasLayout>
+        <Footer variant="white"/>
+      </CanvasLayout>
     </div>
   );
 }
