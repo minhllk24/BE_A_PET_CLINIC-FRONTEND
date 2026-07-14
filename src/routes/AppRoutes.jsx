@@ -37,7 +37,6 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<HomePage />} />
       
-      <Route path="/booking" element={<BookingPage />} />
       <Route path="/dat-lich" element={<BookingPage />} />
 
       <Route path="/petshop" element={<ShopPage />} />

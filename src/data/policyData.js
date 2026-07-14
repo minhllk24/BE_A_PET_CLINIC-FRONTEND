@@ -38,43 +38,28 @@ const basePolicy = {
   meta: createMeta(),
 };
 
-const supportContacts = [
-  paragraph(part("Hotline: 0868.686.868", { strong: true })),
-  paragraph(part("Email: drpetshouse.cskh@gmail.com", { strong: true })),
-];
-
 export const DEFAULT_POLICY_SLUG = "doi-tra-hang";
 
 export const POLICY_ORDER = [
   "phuong-thuc-thanh-toan",
   "dat-lich-doi-huy-lich",
+  "huong-dan-mua-hang",
   "van-chuyen",
   "doi-tra-hang",
   "bao-mat",
   "cau-hoi-thuong-gap",
-  "dieu-khoan-dich-vu",
 ];
 
 export const POLICIES = {
   "phuong-thuc-thanh-toan": {
     ...basePolicy,
-    title: "Chính sách thanh toán",
+    title: "Phương thức thanh toán",
     sections: [
       {
         id: "intro",
         paragraphs: [
           paragraph(
-            "Dr.Pet’s House khuyến khích bạn tìm hiểu về chính sách thanh toán của chúng tôi trước khi thực hiện giao dịch để chúng tôi phục vụ bạn tốt hơn nhé! 🐾",
-          ),
-        ],
-      },
-      {
-        id: "payment-methods",
-        heading: "I. PHƯƠNG THỨC THANH TOÁN",
-        headingColor: "#0D47A1",
-        paragraphs: [
-          paragraph(
-            "Dr.Pet’s House hỗ trợ đa dạng hình thức thanh toán để bạn có thể mua sắm cho “boss” một cách thuận tiện nhất. Bạn có thể lựa chọn một trong các phương thức thanh toán sau khi đặt hàng hoặc đặt lịch hẹn tại website Dr.Pet’s House:",
+            "Dr.Pet’s House hỗ trợ đa dạng hình thức thanh toán để bạn có thể mua sắm cho “boss” một cách thuận tiện nhất 🐾",
           ),
         ],
       },
@@ -105,19 +90,20 @@ export const POLICIES = {
         paragraphsAfter: [
           paragraph(
             part(
-              "Sau khi chuyển khoản, bạn vui lòng chụp lại biên nhận để Dr.Pet’s House xác nhận đơn hàng nhanh hơn nhé.",
+              "Sau khi chuyển khoản, bạn vui lòng chụp lại biên nhận để Paddy xác nhận đơn hàng nhanh hơn nhé.",
               { italic: true },
             ),
           ),
         ],
       },
       {
-        id: "e-wallet",
-        heading: "3. Thanh toán qua ví điện tử (MoMo, ZaloPay, VNPay...)",
+        id: "ewallet",
+        heading: "3. Thanh toán qua ví điện tử (MoMo, ShopeePay, VNPay...)",
         paragraphs: [
           paragraph(
-            "Dr.Pet’s House hỗ trợ thanh toán qua các ví điện tử phổ biến tại Việt Nam thông qua cổng thanh toán MoMo, ZaloPay hoặc VNPay. Bạn chỉ cần quét mã QR để hoàn tất giao dịch một cách an toàn và nhanh chóng.",
+            "Dr.Pet’s House hỗ trợ thanh toán qua các ví điện tử phổ biến tại Việt Nam thông qua cổng thanh toán MoMo, ZaloPay hoặc VNPay.",
           ),
+          paragraph("Bạn chỉ cần quét mã QR để hoàn tất giao dịch một cách an toàn và nhanh chóng."),
         ],
       },
       {
@@ -125,8 +111,9 @@ export const POLICIES = {
         heading: "4. Thẻ tín dụng, thẻ ghi nợ (Visa, Mastercard, JCB)",
         paragraphs: [
           paragraph(
-            "Bạn có thể sử dụng các loại thẻ quốc tế hoặc thẻ ATM nội địa có đăng ký Internet Banking để thanh toán trực tuyến. Mọi giao dịch đều được bảo mật tuyệt đối qua các cổng thanh toán uy tín.",
+            "Bạn có thể sử dụng các loại thẻ quốc tế hoặc thẻ ATM nội địa có đăng ký Internet Banking để thanh toán trực tuyến.",
           ),
+          paragraph("Mọi giao dịch đều được bảo mật tuyệt đối qua các cổng thanh toán uy tín."),
         ],
       },
       {
@@ -134,56 +121,23 @@ export const POLICIES = {
         heading: "5. Thanh toán tại cửa hàng",
         paragraphs: [
           paragraph(
-            "Nếu mua hàng trực tiếp tại các chi nhánh của Dr.Pet’s House, bạn có thể thanh toán bằng tiền mặt, quẹt thẻ (POS) hoặc chuyển khoản.",
+            "Nếu mua hàng trực tiếp tại các chi nhánh của Dr.Pet’s House, bạn có thể thanh toán bằng: Tiền mặt, Quẹt thẻ (POS) hoặc Chuyển khoản.",
           ),
           paragraph(
-            "Mọi thắc mắc về thanh toán, bạn vui lòng liên hệ Hotline: 0868.686.868 để được hỗ trợ nhanh nhất.",
+            "Mọi thắc mắc về thanh toán, bạn vui lòng liên hệ Hotline: 0867 677 891 để được hỗ trợ nhanh nhất.",
           ),
-        ],
-      },
-      {
-        id: "payment-note",
-        heading: "II. LƯU Ý KHI THANH TOÁN",
-        headingColor: "#0D47A1",
-        bullets: [
-          paragraph(part("Khách hàng cần kiểm tra kỹ thông tin trước khi xác nhận thanh toán.", { strong: true })),
-          paragraph("Dr.Pet’s House có quyền từ chối hoặc hủy đơn hàng nếu phát hiện dấu hiệu gian lận hoặc giao dịch bất thường."),
-        ],
-      },
-      {
-        id: "refund",
-        heading: "III. XỬ LÝ LỖI THANH TOÁN",
-        headingColor: "#0D47A1",
-        paragraphs: [paragraph("Các trường hợp lỗi giao dịch như:")],
-        bullets: [
-          paragraph("Sai thông tin tài khoản"),
-          paragraph("Không đủ số dư"),
-          paragraph("Lỗi kết nối hệ thống"),
-        ],
-        paragraphsAfter: [
-          paragraph("Trong trường hợp này, Dr.Pet’s House sẽ hỗ trợ kiểm tra và xử lý theo quy định của cổng thanh toán hoặc ngân hàng liên quan."),
-        ],
-      },
-      {
-        id: "security",
-        heading: "IV. BẢO MẬT THANH TOÁN",
-        headingColor: "#0D47A1",
-        bullets: [
-          paragraph("Dr.Pet’s House không lưu trữ thông tin thẻ hoặc tài khoản ngân hàng của bạn."),
-          paragraph("Giao dịch được mã hóa và xử lý qua cổng thanh toán bảo mật."),
-          paragraph("Khách hàng tự chịu trách nhiệm bảo mật thông tin cá nhân."),
         ],
       },
       {
         id: "support",
-        heading: "V. LIÊN HỆ HỖ TRỢ",
-        headingColor: "#0D47A1",
+        heading: "6. Liên hệ hỗ trợ",
         paragraphs: [
           paragraph("Đội ngũ CSKH luôn sẵn sàng hướng dẫn bạn chi tiết nhất."),
           paragraph(
-            "Mọi thắc mắc về thanh toán, bạn vui lòng liên hệ Hotline: 0868.686.868 để được hỗ trợ nhanh nhất.",
+            "Mọi thắc mắc về thanh toán, bạn vui lòng liên hệ Hotline: 0867 677 891 để được hỗ trợ nhanh nhất.",
           ),
-          ...supportContacts,
+          paragraph(part("Hotline: 0868.686.868", { strong: true })),
+          paragraph(part("Email: drpetshouse.cskh@gmail.com", { strong: true })),
         ],
       },
     ],
@@ -205,72 +159,64 @@ export const POLICIES = {
         id: "booking",
         heading: "1. Đặt lịch hẹn",
         paragraphs: [
-          paragraph("Đặt lịch qua ", part("website", { strong: true }), ", ", part("hotline", { strong: true }), " 0868.686.868, hoặc đến ", part("trực tiếp", { strong: true }), " phòng khám."),
-          paragraph("Sau khi gửi yêu cầu, Trung tâm sẽ xác nhận trong thời gian sớm nhất qua điện thoại, tin nhắn hoặc thông báo trên hệ thống tùy theo kênh bạn đặt lịch."),
-          paragraph("Vui lòng đặt lịch trước ", part("ít nhất 3 giờ", { strong: true }), " so với giờ dự kiến sử dụng dịch vụ để chúng mình chuẩn bị tốt nhất để phục vụ bạn. Với các dịch vụ cần chuẩn bị chuyên môn hoặc có thời gian thực hiện dài, phòng khám có thể đề nghị khách hàng đặt lịch sớm hơn."),
+          paragraph("Đặt lịch qua website, hotline 0332 986 116, hoặc đến trực tiếp phòng khám."),
+          paragraph("Lịch hẹn được xác nhận qua điện thoại hoặc tin nhắn trong vòng 30 phút."),
+          paragraph("Vui lòng đặt lịch trước ít nhất 3 giờ so với thời gian check-in."),
         ],
       },
       {
         id: "reschedule",
         heading: "2. Đổi lịch",
         bullets: [
-          paragraph("Thông báo đổi lịch trước ", part("ít nhất 3 giờ", { strong: true }), " so với giờ hẹn."),
-          paragraph("Khi cần đổi lịch, bạn có thể liên hệ hotline hoặc các kênh chính thức của Dr.Pet’s House để đổi lịch."),
-          paragraph("Tự thao tác trên website bằng cách vào Tài khoản của tôi → Lịch sử đặt lịch → nhấn vào lịch cần đổi để mở Chi tiết lịch hẹn → chọn Đổi lịch."),
-          paragraph("Mỗi lịch hẹn được đổi lịch ", part("tối đa 2 lần", { strong: true }), ". Lịch mới phụ thuộc vào tình trạng khung giờ, bác sĩ và dịch vụ còn trống tại thời điểm đổi lịch."),
+          paragraph("Bạn có thể đổi lịch trước giờ hẹn tối thiểu 2 giờ để Dr.Pet’s House kịp sắp xếp lại bác sĩ và phòng dịch vụ."),
+          paragraph("Liên hệ hotline hoặc nhắn tin qua Zalo/Facebook để đổi lịch."),
+          paragraph("Mỗi lịch hẹn được đổi lịch tối đa 2 lần."),
+          paragraph(
+            part("Sau khi chuyển khoản, bạn vui lòng chụp lại biên nhận để Paddy xác nhận đơn hàng nhanh hơn nhé.", {
+              italic: true,
+            }),
+          ),
         ],
       },
       {
         id: "cancel",
         heading: "3. Hủy lịch",
         bullets: [
-          paragraph("Khách hàng có thể hủy lịch hẹn trực tiếp trên website hoặc liên hệ hotline để được hỗ trợ."),
-          paragraph("Vui lòng thông báo hủy lịch ", part("ít nhất 24 giờ", { strong: true }), " trước thời gian hẹn để Dr.Pet’s House có thể sắp xếp lịch khám hợp lý và phục vụ các khách hàng khác đang có nhu cầu."),
-          paragraph("Nếu không thể hủy trước, khách hàng vui lòng thông báo với phòng khám ngay khi có thể để được hỗ trợ cập nhật lịch hẹn."),
-          paragraph("Việc hủy lịch hẹn ", part("không phát sinh bất kỳ khoản phí nào.", { strong: true })),
+          paragraph("Bạn vui lòng báo hủy càng sớm càng tốt nếu không thể đến đúng lịch hẹn."),
+          paragraph("Lịch hẹn đã thanh toán trước sẽ được hỗ trợ hoàn/giữ cọc theo từng trường hợp cụ thể."),
+          paragraph("Dr.Pet’s House có quyền hủy lịch nếu không thể liên hệ xác nhận với khách hàng."),
         ],
       },
       {
         id: "emergency",
         heading: "4. Trường hợp khẩn cấp",
-        paragraphs: [
-          paragraph("Các trường hợp cấp cứu thú y được ưu tiên tiếp nhận ngay, không cần đặt lịch trước. Gọi ngay Hotline: 0868.686.868 để được hướng dẫn."),
+        bullets: [
+          paragraph("Các ca cấp cứu sẽ được ưu tiên tiếp nhận trước lịch hẹn thông thường."),
+          paragraph("Nếu lịch của bạn bị ảnh hưởng, đội ngũ CSKH sẽ chủ động thông báo và hỗ trợ đổi sang khung giờ phù hợp."),
         ],
       },
       {
-        id: "late",
-        heading: "5. Thời gian chờ và quy định đến trễ",
-        bullets: [
-          paragraph("Dr.Pet’s House luôn ưu tiên lịch hẹn trước, chúng mình luôn cố gắng phục vụ đúng giờ hẹn."),
-          paragraph("Khách hàng nên có mặt trước giờ hẹn khoảng 05–10 phút để hoàn tất thủ tục tiếp nhận."),
-          paragraph("Nếu đến trễ dưới 15 phút, phòng khám sẽ cố gắng sắp xếp tiếp tục trong khung giờ đã đặt."),
-          paragraph("Nếu đến trễ từ 15 phút trở lên, lịch hẹn có thể được chuyển sang khung giờ khác để không ảnh hưởng đến các khách hàng tiếp theo."),
-          paragraph("Trong trường hợp phát sinh ca cấp cứu hoặc phòng khám quá tải, thời gian chờ có thể kéo dài khoảng 15–30 phút. Dr.Pet’s House sẽ chủ động thông báo đến khách hàng nếu có thay đổi."),
-        ],
-      },
-      {
-        id: "no-show",
-        heading: "6. Quy định về việc không đến lịch hẹn",
+        id: "waiting",
+        heading: "5. Thời gian chờ",
         paragraphs: [
-          paragraph("Trường hợp khách hàng không đến theo lịch hẹn và không thông báo trước, lịch hẹn sẽ được ghi nhận với trạng thái không đến."),
-          paragraph("Đối với tài khoản khách hàng không đến lịch hẹn, Dr.Pet’s House áp dụng quy định sau:"),
-        ],
-        bullets: [
-          paragraph(part("Không đến lần đầu:", { strong: true }), " hệ thống ghi nhận lịch sử và gửi thông báo nhắc nhở."),
-          paragraph(part("Không đến từ 02 lần trở lên:", { strong: true }), " hệ thống sẽ hiển thị cảnh báo khi khách hàng đặt lịch mới."),
-          paragraph(part("Không đến từ 03 lần trở lên:", { strong: true }), " khách hàng cần liên hệ Hotline để được xác nhận trước khi tiếp tục đặt lịch trực tuyến."),
-        ],
-        paragraphsAfter: [
-          paragraph("Quy định này nhằm đảm bảo việc sử dụng lịch hẹn hiệu quả và tạo điều kiện phục vụ công bằng cho tất cả khách hàng."),
+          paragraph(
+            "Dr.Pet's House luôn ưu tiên lịch hẹn trước, chúng mình luôn cố gắng phục vụ đúng giờ hẹn.",
+          ),
+          paragraph(
+            "Trong trường hợp có ca cấp cứu hoặc quá tải, thời gian chờ có thể lên đến 15–30 phút. Chúng tôi sẽ thông báo nếu có thay đổi.",
+          ),
         ],
       },
       {
         id: "support",
-        heading: "7. Liên hệ hỗ trợ",
+        heading: "6. Liên hệ hỗ trợ",
         paragraphs: [
-          paragraph("Đội ngũ CSKH luôn sẵn sàng hướng dẫn bạn chi tiết nhất:"),
-          paragraph("Mọi thắc mắc về việc đặt lịch hẹn, đổi lịch hoặc hủy lịch, bạn vui lòng liên hệ Hotline: 0868.686.868 để được hỗ trợ nhanh nhất."),
-          ...supportContacts,
+          paragraph("Đội ngũ CSKH luôn sẵn sàng hướng dẫn bạn chi tiết nhất."),
+          paragraph(
+            "Mọi thắc mắc về thanh toán, bạn vui lòng liên hệ Hotline: 0867 677 891 để được hỗ trợ nhanh nhất.",
+          ),
+          paragraph(part("Hotline: 0868.686.868", { strong: true })),
+          paragraph(part("Email: drpetshouse.cskh@gmail.com", { strong: true })),
         ],
       },
     ],
@@ -278,7 +224,7 @@ export const POLICIES = {
 
   "huong-dan-mua-hang": {
     ...basePolicy,
-    title: "Chính sách bán hàng",
+    title: "Hướng dẫn mua hàng",
     sections: [
       {
         id: "intro",
@@ -293,7 +239,7 @@ export const POLICIES = {
         heading: "Bước 1: Tìm kiếm sản phẩm",
         paragraphs: [
           paragraph(
-            "Sử dụng thanh tìm kiếm hoặc duyệt theo danh mục để tìm sản phẩm cần mua. Bạn có thể lọc theo thương hiệu, giá hoặc loại sản phẩm để tìm nhanh hơn.",
+            "Sử dụng thanh tìm kiếm hoặc duyệt theo danh mục (Cho Chó, Cho Mèo) để tìm sản phẩm cần mua. Bạn có thể lọc theo thương hiệu, giá hoặc loại sản phẩm để tìm nhanh hơn.",
           ),
         ],
       },
@@ -302,7 +248,7 @@ export const POLICIES = {
         heading: "Bước 2: Chọn sản phẩm và thêm vào giỏ hàng",
         paragraphs: [
           paragraph(
-            "Chọn phân loại, số lượng và nhấn “Thêm vào giỏ hàng”. Bạn có thể tiếp tục mua sắm hoặc nhấn vào biểu tượng giỏ hàng để kiểm tra.",
+            'Chọn phân loại (kích cỡ, trọng lượng, hương vị) nếu có, sau đó nhấn "Thêm vào giỏ hàng". Bạn có thể tiếp tục mua sắm hoặc nhấn vào biểu tượng giỏ hàng để kiểm tra.',
           ),
         ],
       },
@@ -324,16 +270,33 @@ export const POLICIES = {
         heading: "Bước 5: Chọn phương thức vận chuyển và thanh toán",
         paragraphs: [
           paragraph(
-            "Chọn đơn vị vận chuyển phù hợp và hình thức thanh toán tiện lợi nhất cho bạn.",
+            "Chọn đơn vị vận chuyển phù hợp và hình thức thanh toán tiện lợi nhất cho bạn (COD, Chuyển khoản, Ví điện tử hoặc Thẻ).",
           ),
         ],
       },
       {
-        id: "support",
+        id: "step-6",
+        heading: "Bước 6. Nhập mã giảm giá (nếu có)",
+        bullets: [paragraph("Nhập mã khuyến mãi vào ô mã giảm giá trước khi xác nhận đơn hàng.")],
+      },
+      {
+        id: "step-7",
+        heading: "Bước 7: Xác nhận và đặt hàng",
+        paragraphs: [
+          paragraph(
+            'Kiểm tra lại toàn bộ thông tin lần cuối và nhấn "Đặt hàng". Hệ thống sẽ gửi xác nhận đơn hàng cho bạn qua SMS hoặc Email ngay lập tức.',
+          ),
+        ],
+      },
+      {
+        id: "quick-support",
         heading: "Hỗ trợ đặt hàng nhanh",
         paragraphs: [
-          paragraph("Nếu gặp khó khăn khi đặt hàng, bạn có thể liên hệ chúng tôi, chúng tôi luôn sẵn sàng hỗ trợ bạn:"),
-          ...supportContacts,
+          paragraph(
+            "Nếu gặp khó khăn khi đặt hàng, bạn có thể liên hệ chúng tôi, chúng tôi luôn sẵn sàng hỗ trợ bạn:",
+          ),
+          paragraph(part("Hotline: 0868.686.868", { strong: true })),
+          paragraph(part("Email: drpetshouse.cskh@gmail.com", { strong: true })),
         ],
       },
     ],
@@ -354,8 +317,8 @@ export const POLICIES = {
         heading: "1. Phương thức giao hàng",
         paragraphs: [paragraph("Bạn có thể chọn:")],
         bullets: [
-          paragraph("Giao hàng tận nơi: chúng mình giao đến địa chỉ của bạn"),
-          paragraph("Nhận tại cửa hàng: nhận trực tiếp tại 1 trong 10 cửa hàng Dr.Pet’s House ở TP.HCM (miễn phí)"),
+          paragraph("Giao hàng tận nơi thông qua đối tác vận chuyển."),
+          paragraph("Nhận hàng trực tiếp tại cửa hàng/chi nhánh của Dr.Pet’s House."),
         ],
       },
       {
@@ -363,9 +326,9 @@ export const POLICIES = {
         heading: "2. Thời gian giao hàng",
         paragraphs: [paragraph(part("Nội thành TP.HCM:", { strong: true }))],
         bullets: [
-          paragraph("Giao hỏa tốc trong 2 giờ — áp dụng cho đơn đặt trước 16h, trong khu vực hỗ trợ"),
-          paragraph("Giao trong ngày — áp dụng cho đơn đặt trước 16h"),
-          paragraph("Nhận tại cửa hàng — sẵn sàng trong vòng 30 phút sau khi đơn được xác nhận"),
+          paragraph("Đơn hàng đặt trước 15:00: giao trong ngày hoặc ngày làm việc tiếp theo."),
+          paragraph("Đơn hàng đặt sau 15:00: giao trong 1–2 ngày làm việc."),
+          paragraph("Một số khu vực có thể được hỗ trợ giao nhanh trong ngày tùy tình trạng đơn hàng."),
         ],
         paragraphsAfter: [
           paragraph(part("Ngoại thành TP.HCM:", { strong: true }), " 1–2 ngày làm việc"),
@@ -381,37 +344,36 @@ export const POLICIES = {
       {
         id: "fee",
         heading: "3. Phí vận chuyển",
-        paragraphs: [
-          paragraph(
-            "Phí vận chuyển sẽ được hiển thị cụ thể tại bước thanh toán. Phí ship được tính dựa trên: khu vực giao hàng, trọng lượng và kích thước đơn hàng, cũng như đơn vị vận chuyển phù hợp.",
-          ),
-          paragraph("Đặc biệt, Dr.Pet’s House hỗ trợ miễn phí vận chuyển cho đơn hàng từ 500k."),
+        bullets: [
+          paragraph("Phí vận chuyển được tính theo khu vực nhận hàng, khối lượng sản phẩm và chính sách của đơn vị vận chuyển."),
+          paragraph("Một số chương trình ưu đãi có thể miễn phí hoặc giảm phí vận chuyển theo điều kiện từng thời điểm."),
         ],
       },
       {
         id: "tracking",
         heading: "4. Theo dõi đơn hàng",
-        paragraphs: [
-          paragraph("Sau khi đơn hàng được gửi đi, bạn sẽ nhận được mã vận đơn qua SMS, email hoặc Zalo."),
-          paragraph("Bạn có thể dễ dàng theo dõi tại mục Tài khoản → Đơn hàng trên website của Dr.Pet’s House."),
+        bullets: [
+          paragraph("Sau khi đơn hàng được xác nhận, bạn sẽ nhận được thông tin theo dõi qua SMS, Email hoặc tài khoản mua hàng."),
+          paragraph("Bạn cũng có thể liên hệ CSKH để được kiểm tra tình trạng đơn hàng."),
         ],
       },
       {
         id: "receive",
         heading: "5. Lưu ý khi nhận hàng",
+        paragraphs: [paragraph("Khi nhận hàng, bạn vui lòng:")],
         bullets: [
-          paragraph("Kiểm tra tình trạng kiện hàng trước khi nhận"),
-          paragraph("Nếu thấy sản phẩm có dấu hiệu hư hỏng hoặc giao sai, bạn có thể từ chối nhận hàng và báo lại cho Dr.Pet’s House"),
-          paragraph("Tụi mình khuyến khích quay video khi mở hàng để hỗ trợ xử lý nhanh hơn nếu có vấn đề phát sinh"),
+          paragraph("Kiểm tra tình trạng bao bì, số lượng và sản phẩm trước khi thanh toán/nhận hàng."),
+          paragraph("Quay/chụp lại tình trạng kiện hàng nếu phát hiện dấu hiệu móp méo, rách, ướt hoặc thiếu sản phẩm."),
+          paragraph("Thông báo ngay cho Dr.Pet’s House để được hỗ trợ xử lý kịp thời."),
         ],
       },
       {
         id: "failed",
         heading: "6. Trường hợp giao hàng không thành công",
         bullets: [
-          paragraph("Đơn vị vận chuyển sẽ liên hệ trước khi giao hàng"),
-          paragraph("Nếu không liên hệ được, đơn có thể được giao lại hoặc hoàn về"),
-          paragraph("Trong trường hợp cần hỗ trợ, bạn có thể liên hệ tụi mình để kiểm tra và xử lý nhanh nhất"),
+          paragraph("Đơn vị vận chuyển sẽ liên hệ lại để sắp xếp giao hàng lần tiếp theo."),
+          paragraph("Nếu không thể liên hệ hoặc giao hàng nhiều lần không thành công, đơn hàng có thể được hoàn về Dr.Pet’s House."),
+          paragraph("Các chi phí phát sinh sẽ được xử lý theo chính sách của đơn vị vận chuyển và tình trạng đơn hàng."),
         ],
       },
       {
@@ -419,7 +381,8 @@ export const POLICIES = {
         heading: "7. Liên hệ hỗ trợ",
         paragraphs: [
           paragraph("Đội ngũ CSKH luôn sẵn sàng hướng dẫn bạn chi tiết nhất:"),
-          ...supportContacts,
+          paragraph(part("Hotline: 0868.686.868", { strong: true })),
+          paragraph(part("Email: drpetshouse.cskh@gmail.com", { strong: true })),
         ],
       },
     ],
@@ -440,12 +403,16 @@ export const POLICIES = {
         id: "free-return",
         heading: "1. Đổi – trả miễn phí (trong 7 ngày)",
         paragraphs: [
-          paragraph("Bạn được đổi hoặc trả hàng hoàn toàn miễn phí trong vòng 7 ngày kể từ khi nhận hàng nếu:"),
+          paragraph(
+            "Bạn được ",
+            part("đổi hoặc trả hàng hoàn toàn miễn phí", { strong: true }),
+            " trong vòng 7 ngày kể từ khi nhận hàng nếu:",
+          ),
         ],
         bullets: [
           paragraph("Sản phẩm chưa qua sử dụng, còn nguyên tem mác, bao bì"),
-          paragraph("Có đầy đủ hóa đơn mua hàng."),
-          paragraph("Lỗi từ nhà sản xuất hoặc Dr.Pet's House giao sai sản phẩm."),
+          paragraph("Có đầy đủ hóa đơn mua hàng"),
+          paragraph("Lỗi từ nhà sản xuất hoặc Dr.Pet's giao sai sản phẩm"),
         ],
       },
       {
@@ -457,35 +424,46 @@ export const POLICIES = {
           ),
         ],
         bullets: [
-          paragraph("Sản phẩm chưa sử dụng: Trả hàng phí 15–20% giá trị sản phẩm"),
-          paragraph("Sản phẩm đã mở bao bì (nhưng chưa sử dụng): Đổi sản phẩm khác phí 15%, trả hàng phí 30%"),
-          paragraph("Sản phẩm đã sử dụng: Rất tiếc, Dr.Pet's House không hỗ trợ đổi - trả với sản phẩm đã qua sử dụng."),
+          paragraph(part("Sản phẩm chưa sử dụng:", { strong: true }), " Trả hàng phí 15–20% giá trị sản phẩm"),
+          paragraph(
+            part("Sản phẩm đã mở bao bì (nhưng chưa sử dụng):", { strong: true }),
+            " Đổi sản phẩm khác phí 15%, trả hàng phí 20–30%",
+          ),
         ],
       },
       {
         id: "notes",
-        heading: "4. Một số lưu ý quan trọng",
+        heading: "3. Một số lưu ý quan trọng",
         bullets: [
-          paragraph("Thức ăn, bánh thưởng, sản phẩm tiêu dùng: Vì yếu tố vệ sinh và sức khỏe cho thú cưng, Dr.Pet's không hỗ trợ đổi – trả nếu đã mở bao bì (trừ trường hợp sản phẩm bị lỗi hỏng do nhà sản xuất)."),
-          paragraph("Sản phẩm đặt riêng (như bảng tên): Rất tiếc tụi mình không thể hỗ trợ đổi – trả"),
-          paragraph("Hóa đơn VAT: Nếu bạn đã nhận hóa đơn VAT, vui lòng hỗ trợ thực hiện các thủ tục điều chỉnh/hoàn trả hóa đơn theo quy định"),
+          paragraph(
+            part("Thức ăn, bánh thưởng, sản phẩm tiêu dùng:", { strong: true }),
+            " Vì yếu tố vệ sinh và sức khỏe cho thú cưng, Dr.Pet's không hỗ trợ đổi – trả nếu đã mở bao bì (trừ trường hợp sản phẩm bị lỗi hỏng do nhà sản xuất)",
+          ),
+          paragraph(
+            part("Sản phẩm đặt riêng (như bảng tên):", { strong: true }),
+            " Rất tiếc tụi mình không thể hỗ trợ đổi – trả",
+          ),
+          paragraph(
+            part("Hóa đơn VAT:", { strong: true }),
+            " Nếu bạn đã nhận hóa đơn VAT, vui lòng hỗ trợ thực hiện các thủ tục điều chỉnh/hoàn trả hóa đơn theo quy định",
+          ),
         ],
       },
       {
-        id: "rules",
-        heading: "5. Quy định đổi – trả",
+        id: "shipping-fee",
+        heading: "4. Chi phí vận chuyển",
         bullets: [
-          paragraph("Trường hợp lỗi từ nhà sản xuất hoặc giao sai sản phẩm, bạn vui lòng liên hệ với Dr.Pet's House để được hỗ trợ đổi - trả theo quy định."),
-          paragraph("Với các trường hợp khác, Dr.Pet's House chỉ hỗ trợ đổi - trả trực tiếp tại cửa hàng."),
-          paragraph("Trong mọi trường hợp, quyết định của Dr.Pet's House là quyết định cuối cùng."),
+          paragraph("Nếu sản phẩm lỗi hoặc giao sai: Dr.Pet's chịu 100% phí vận chuyển hai chiều"),
+          paragraph("Nếu bạn muốn đổi/trả theo nhu cầu cá nhân: Bạn vui lòng hỗ trợ phí vận chuyển giúp tụi mình nhé"),
         ],
       },
       {
         id: "support",
-        heading: "6. Liên hệ hỗ trợ",
+        heading: "5. Liên hệ hỗ trợ",
         paragraphs: [
-          paragraph("Đội ngũ CSKH luôn sẵn sàng hướng dẫn bạn chi tiết nhất. Vui lòng liên hệ chúng tôi nếu bạn muốn đổi - trả hàng online."),
-          ...supportContacts,
+          paragraph("Đội ngũ CSKH luôn sẵn sàng hướng dẫn bạn chi tiết nhất:"),
+          paragraph(part("Hotline: 0868.686.868", { strong: true })),
+          paragraph(part("Email: drpetshouse.cskh@gmail.com", { strong: true })),
         ],
       },
     ],
@@ -499,30 +477,32 @@ export const POLICIES = {
         id: "intro",
         paragraphs: [
           paragraph(
-            "Dr.Pet’s House cam kết bảo mật tuyệt đối thông tin cá nhân của khách hàng theo các quy định dưới đây. Tụi mình hiểu rằng sự tin tưởng của bạn là tài sản quý giá nhất 🐾",
+            "Paddy.vn cam kết bảo mật tuyệt đối thông tin cá nhân của khách hàng khi mua sắm và sử dụng dịch vụ tại Dr.Pet’s House.",
           ),
         ],
       },
       {
         id: "purpose",
         heading: "1. Mục đích thu thập thông tin",
-        paragraphs: [
-          paragraph("Việc thu thập dữ liệu giúp Dr.Pet’s House hỗ trợ bạn tốt nhất trong quá trình mua sắm, bao gồm:"),
-        ],
+        paragraphs: [paragraph("Việc thu thập dữ liệu giúp Paddy hỗ trợ bạn tốt nhất trong quá trình mua sắm:")],
         bullets: [
           paragraph("Xử lý và giao đơn hàng đến tận tay bạn"),
           paragraph("Xác nhận đơn hàng qua điện thoại hoặc email"),
           paragraph("Giải quyết các thắc mắc, yêu cầu hỗ trợ nhanh nhất"),
-          paragraph("Cập nhật các chương trình khuyến mãi, ưu đãi dành riêng cho Khách hàng có tài khoản"),
-          paragraph("Cải thiện trải nghiệm mua sắm trên website Dr.Pet’s House"),
+          paragraph("Cập nhật các chương trình khuyến mãi, ưu đãi dành riêng cho khách hàng"),
+          paragraph("Cải thiện trải nghiệm mua sắm trên website Paddy.vn"),
         ],
       },
       {
         id: "scope",
         heading: "2. Phạm vi thu thập thông tin",
         paragraphs: [
-          paragraph(part("Các thông tin bạn cung cấp khi đăng ký tài khoản hoặc đặt hàng bao gồm: Họ tên, Số điện thoại, Email, Địa chỉ giao hàng.", { strong: true })),
-          paragraph("Ngoài ra, hệ thống có thể thu thập thông tin về trình duyệt, địa chỉ IP và hành vi mua sắm thông qua Cookie để cá nhân hoá trải nghiệm của bạn."),
+          paragraph(
+            "Thông tin bạn cung cấp khi đăng ký tài khoản hoặc đặt hàng có thể bao gồm: họ tên, số điện thoại, email, địa chỉ nhận hàng và thông tin thanh toán.",
+          ),
+          paragraph(
+            "Ngoài ra, hệ thống có thể thu thập thông tin về trình duyệt, thiết bị, lịch sử truy cập để tối ưu trải nghiệm sử dụng website.",
+          ),
         ],
       },
       {
@@ -530,7 +510,7 @@ export const POLICIES = {
         heading: "3. Thời gian lưu trữ thông tin",
         paragraphs: [
           paragraph(
-            "Dữ liệu cá nhân của bạn sẽ được lưu trữ an toàn trong suốt thời gian tài khoản của bạn hoạt động hoặc cho đến khi bạn có yêu cầu hủy bỏ.",
+            "Dữ liệu cá nhân của bạn sẽ được lưu trữ an toàn trong thời gian cần thiết để hoàn thành mục đích thu thập hoặc theo quy định pháp luật hiện hành.",
           ),
         ],
       },
@@ -538,12 +518,14 @@ export const POLICIES = {
         id: "commitment",
         heading: "4. Cam kết bảo mật",
         paragraphs: [
-          paragraph("Dr.Pet’s House cam kết không bán, không chia sẻ thông tin cá nhân của bạn cho bất kỳ bên thứ ba nào, ngoại trừ:"),
+          paragraph(
+            "Paddy cam kết không bán, không chia sẻ thông tin cá nhân của khách hàng cho bên thứ ba nếu không có sự đồng ý của bạn, trừ trường hợp pháp luật yêu cầu.",
+          ),
         ],
         bullets: [
-          paragraph("Các đơn vị vận chuyển uy tín để giao hàng"),
-          paragraph("Cổng thanh toán để xử lý các giao dịch trực tuyến an toàn"),
-          paragraph("Khi có yêu cầu chính thức từ cơ quan pháp luật có thẩm quyền"),
+          paragraph("Áp dụng các biện pháp kỹ thuật phù hợp để bảo vệ dữ liệu cá nhân."),
+          paragraph("Chỉ nhân sự có thẩm quyền mới được truy cập thông tin khách hàng."),
+          paragraph("Thường xuyên rà soát và cải thiện hệ thống bảo mật."),
         ],
       },
       {
@@ -551,16 +533,18 @@ export const POLICIES = {
         heading: "5. Quyền của khách hàng",
         paragraphs: [
           paragraph(
-            "Bạn có toàn quyền kiểm tra, cập nhật hoặc điều chỉnh thông tin cá nhân của mình bằng cách đăng nhập vào tài khoản trên Dr.Pet’s House hoặc liên hệ trực tiếp với tụi mình.",
+            "Bạn có toàn quyền kiểm tra, cập nhật hoặc điều chỉnh thông tin cá nhân của mình bằng cách đăng nhập tài khoản hoặc liên hệ đội ngũ CSKH.",
           ),
         ],
       },
       {
         id: "cookie",
         heading: "6. Sử dụng Cookie",
-        paragraphs: [
-          paragraph("Cookie giúp Dr.Pet’s House ghi nhớ giỏ hàng và các tùy chọn cá nhân của bạn."),
-          paragraph("Bạn có thể chọn từ chối cookie trong cài đặt trình duyệt, tuy nhiên điều này có thể làm ảnh hưởng đến một số tính năng mua sắm."),
+        bullets: [
+          paragraph("Cookie giúp Paddy ghi nhớ giỏ hàng và các tùy chọn của bạn để trải nghiệm mua sắm thuận tiện hơn."),
+          paragraph(
+            "Bạn có thể chọn từ chối cookie trong cài đặt trình duyệt, tuy nhiên một số tính năng trên website có thể hoạt động chưa đầy đủ.",
+          ),
         ],
       },
       {
@@ -568,7 +552,8 @@ export const POLICIES = {
         heading: "7. Liên hệ hỗ trợ",
         paragraphs: [
           paragraph("Đội ngũ CSKH luôn sẵn sàng hướng dẫn bạn chi tiết nhất:"),
-          ...supportContacts,
+          paragraph(part("Hotline: 0868.686.868", { strong: true })),
+          paragraph(part("Email: drpetshouse.cskh@gmail.com", { strong: true })),
         ],
       },
     ],
@@ -582,156 +567,53 @@ export const POLICIES = {
         id: "intro",
         paragraphs: [
           paragraph(
-            "Dưới đây là các câu hỏi mà Dr.Pet’s House thường xuyên nhận được. Hy vọng sẽ giúp giải đáp những thắc mắc của khách yêu. Nếu bạn còn băn khoăn gì khác, đừng ngần ngại liên hệ với Dr.Pet’s House để được hỗ trợ nha! 🐾",
+            "Tổng hợp các câu hỏi thường gặp khi mua sắm, đặt lịch và sử dụng dịch vụ tại Dr.Pet’s House.",
           ),
         ],
       },
       {
-        id: "faq-shipping",
-        heading: "1. Chính sách giao hàng và phí vận chuyển như thế nào?",
+        id: "faq-booking",
+        heading: "1. Tôi có cần đặt lịch trước khi đến không?",
         paragraphs: [
           paragraph(
-            "Dr.Pet’s House hỗ trợ giao hàng tận nơi trên toàn quốc. Chính sách vận chuyển sẽ có các mức hỗ trợ phí tùy thuộc vào giá trị đơn hàng và khu vực của bạn.",
+            "Bạn nên đặt lịch trước để Dr.Pet’s House chuẩn bị bác sĩ, phòng dịch vụ và giảm thời gian chờ cho “boss”.",
           ),
         ],
       },
       {
-        id: "faq-cod",
-        heading: "2. Cửa hàng có chấp nhận thanh toán khi nhận hàng (COD) không?",
+        id: "faq-order",
+        heading: "2. Làm sao để kiểm tra tình trạng đơn hàng?",
         paragraphs: [
-          paragraph("Có, bạn có thể kiểm tra hàng trước khi thanh toán. Ngoài ra, chúng tôi hỗ trợ chuyển khoản ngân hàng và ví điện tử."),
+          paragraph(
+            "Bạn có thể kiểm tra trong tài khoản mua hàng hoặc liên hệ CSKH qua hotline để được hỗ trợ tra cứu nhanh.",
+          ),
+        ],
+      },
+      {
+        id: "faq-payment",
+        heading: "3. Dr.Pet’s House hỗ trợ những hình thức thanh toán nào?",
+        paragraphs: [
+          paragraph(
+            "Hiện tại bạn có thể thanh toán COD, chuyển khoản ngân hàng, ví điện tử, thẻ hoặc thanh toán trực tiếp tại cửa hàng.",
+          ),
         ],
       },
       {
         id: "faq-return",
-        heading: "3. Tôi có thể đổi trả sản phẩm nếu thú cưng không thích hoặc bị lỗi không?",
-        paragraphs: [
-          paragraph("Sản phẩm được đổi - trả trong vòng 7-15 ngày kể từ ngày nhận hàng. Chi tiết vui lòng xem tại Chính sách đổi - trả hàng."),
-        ],
-      },
-      {
-        id: "faq-food",
-        heading: "4. Làm thế nào để chọn đúng loại thức ăn cho chó mèo con?",
+        heading: "4. Sản phẩm đã mở bao bì có đổi trả được không?",
         paragraphs: [
           paragraph(
-            "Dinh dưỡng cần phù hợp với từng độ tuổi và giống loài. Bạn có thể liên hệ với Dr.Pet’s House để được tư vấn chi tiết hơn về khẩu phần hạt, pate và các lưu ý khác.",
+            "Một số sản phẩm tiêu dùng như thức ăn, bánh thưởng sẽ không hỗ trợ đổi trả nếu đã mở bao bì, trừ trường hợp lỗi từ nhà sản xuất.",
           ),
         ],
       },
       {
-        id: "faq-spa",
-        heading: "5. Thú cưng chưa tiêm phòng đầy đủ có được chọn dịch vụ spa không?",
-        paragraphs: [
-          paragraph(
-            "Các spa thường từ chối nhận thú cưng chưa tiêm đủ mũi vắc xin cơ bản. Để bảo vệ sức khỏe cho chính thú cưng của bạn và tránh lây nhiễm chéo cho các bé khác tại cửa hàng, bạn có thể đặt lịch và sử dụng dịch vụ tiêm phòng của chúng tôi.",
-          ),
-        ],
-      },
-      {
-        id: "faq-adoption",
-        heading: "6. Quy trình đăng ký nhận nuôi thú cưng tại Dr.Pet’s House diễn ra như thế nào?",
-        paragraphs: [
-          paragraph("Quy trình nhận nuôi tại Dr.Pet’s House được thiết kế khép kín, minh bạch và kết nối chặt chẽ với mạng lưới cứu trợ, diễn ra qua các bước sau:"),
-        ],
-        bullets: [
-          paragraph("Bước 1: Khách hàng điền biểu mẫu điều kiện nuôi và gửi đơn đăng ký nhận nuôi thú cưng trực tiếp trên hệ thống."),
-          paragraph("Bước 2: Hệ thống sẽ ghi nhận và tự động phân luồng biểu mẫu đến Đội ngũ phụ trách của Dr.Pet’s House hoặc các Đối tác/Trạm cứu trợ liên kết."),
-          paragraph("Bước 3: Đại diện từ Dr.Pet’s House hoặc Đối tác liên kết sẽ xem xét thông tin và đánh giá mức độ phù hợp để đưa ra quyết định phê duyệt hoặc từ chối đơn đăng ký. Thời gian xem xét hồ sơ dự kiến trong vòng 7 ngày làm việc kể từ khi gửi đơn thành công."),
-        ],
-      },
-      {
-        id: "faq-medical-record",
-        heading: "7. Thú cưng của tôi từng khám ở nơi khác, tôi có thể lưu sổ tiêm phòng lên Dr.Pet’s House được không?",
-        paragraphs: [
-          paragraph("Việc lưu trữ và liên thông dữ liệu là một trong những tính năng nổi bật của Dr.Pet’s House."),
-        ],
-        bullets: [
-          paragraph("Khách hàng thành viên có quyền tự cập nhật hoặc upload các lịch sử bệnh án, khám chữa bệnh của thú cưng từ các cơ sở y tế bên ngoài lên hệ thống."),
-          paragraph("Đối với các bản ghi do người dùng tự upload, bạn có toàn quyền thêm, sửa hoặc xóa lịch sử khám chữa bệnh tại các trung tâm khác trước đó để làm phong phú dữ liệu theo dõi sức khỏe cho bé pet nhà mình."),
-        ],
-      },
-      {
-        id: "support",
-        heading: "8. Liên hệ hỗ trợ",
+        id: "faq-support",
+        heading: "5. Tôi cần hỗ trợ thêm thì liên hệ ở đâu?",
         paragraphs: [
           paragraph("Đội ngũ CSKH luôn sẵn sàng hướng dẫn bạn chi tiết nhất:"),
-          ...supportContacts,
-        ],
-      },
-    ],
-  },
-
-  "dieu-khoan-dich-vu": {
-    ...basePolicy,
-    title: "Điều khoản dịch vụ",
-    sections: [
-      {
-        id: "intro",
-        paragraphs: [
-          paragraph(
-            "Dr.Pet’s House là website chính thức thuộc hệ thống trung tâm chăm sóc thú cưng Dr.Pet’s House. Chúng tôi cam kết mang đến cho khách hàng sự thuận tiện, an tâm và trải nghiệm mua sắm trọn vẹn nhất. 🐾",
-          ),
-          paragraph(
-            "Khi truy cập hoặc sử dụng dịch vụ tại ",
-            part("drpetshouse.lat", { strong: true }),
-            ", quý khách được xem là đã đồng ý tuân thủ và chịu ràng buộc bởi các Điều khoản và Điều kiện sử dụng dưới đây.",
-          ),
-          paragraph(
-            "Vui lòng đọc kỹ để đảm bảo quyền lợi của Quý khách và hoạt động dịch vụ được phục vụ tốt nhất. Dr.Pet’s House có thể cập nhật các quy định này theo thời gian. Khách hàng vui lòng kiểm tra thường xuyên để nắm rõ những thay đổi mới nhất.",
-          ),
-        ],
-      },
-      {
-        id: "usage",
-        heading: "1. Hướng dẫn sử dụng",
-        bullets: [
-          paragraph("Dr.Pet’s House (website: www.drpetshouse.lat) dành cho người dùng từ 18 tuổi trở lên. Các trường hợp khác có thể truy cập dưới sự giám sát của cha mẹ hoặc người giám hộ hợp pháp."),
-          paragraph("Khách hàng cam kết có đầy đủ năng lực hành vi dân sự để thực hiện giao dịch mua bán theo quy định pháp luật Việt Nam."),
-          paragraph("Khi đăng ký tài khoản tại website, Quý khách phải cung cấp thông tin chính xác, đầy đủ và cập nhật. Mỗi cá nhân truy cập có trách nhiệm bảo mật mật khẩu, tài khoản và mọi hoạt động của mình trên website."),
-          paragraph("Trong quá trình sử dụng website, Quý khách có thể nhận email thông tin hoặc ưu đãi từ Dr.Pet’s House. Nếu không muốn tiếp tục nhận, Quý khách có thể hủy đăng ký nhận email bất cứ lúc nào."),
-          paragraph("Nghiêm cấm mọi hành vi sử dụng website Dr.Pet’s House với mục đích thương mại, sao chép, phân phối hoặc nhân danh bên thứ ba khi chưa có văn bản chấp thuận chính thức từ Dr.Pet’s House. Vi phạm có thể dẫn đến việc khóa hoặc hủy tài khoản mà không cần thông báo trước."),
-          paragraph("Dr.Pet’s House cam kết bảo vệ quyền lợi của khách hàng khi sử dụng website."),
-        ],
-      },
-      {
-        id: "account",
-        heading: "2. Tài khoản và bảo mật",
-        bullets: [
-          paragraph("Khách hàng chịu trách nhiệm bảo mật thông tin đăng nhập và mọi hoạt động phát sinh từ tài khoản của mình."),
-          paragraph("Nếu phát hiện tài khoản bị truy cập trái phép, khách hàng cần thông báo ngay cho Dr.Pet’s House để được hỗ trợ xử lý."),
-        ],
-      },
-      {
-        id: "orders",
-        heading: "3. Đặt hàng và sử dụng dịch vụ",
-        bullets: [
-          paragraph("Thông tin sản phẩm, dịch vụ và giá hiển thị trên website có thể được cập nhật theo từng thời điểm."),
-          paragraph("Dr.Pet’s House có quyền xác nhận, từ chối hoặc hủy đơn hàng nếu phát hiện thông tin không hợp lệ, giao dịch bất thường hoặc sản phẩm/dịch vụ không còn khả dụng."),
-          paragraph("Khách hàng cần kiểm tra kỹ thông tin trước khi xác nhận đơn hàng hoặc lịch hẹn."),
-        ],
-      },
-      {
-        id: "intellectual-property",
-        heading: "4. Quyền sở hữu trí tuệ",
-        bullets: [
-          paragraph("Toàn bộ nội dung, hình ảnh, biểu tượng, giao diện và dữ liệu trên website thuộc quyền sở hữu hoặc quyền sử dụng hợp pháp của Dr.Pet’s House."),
-          paragraph("Không được sao chép, chỉnh sửa, phân phối hoặc sử dụng nội dung website cho mục đích thương mại khi chưa có sự đồng ý bằng văn bản."),
-        ],
-      },
-      {
-        id: "liability",
-        heading: "5. Giới hạn trách nhiệm",
-        bullets: [
-          paragraph("Dr.Pet’s House luôn nỗ lực đảm bảo thông tin trên website chính xác và ổn định, tuy nhiên không cam kết website luôn vận hành không gián đoạn trong mọi trường hợp."),
-          paragraph("Các sự cố phát sinh do đường truyền, thiết bị người dùng, đơn vị thanh toán, đơn vị vận chuyển hoặc các nguyên nhân bất khả kháng sẽ được hỗ trợ trong phạm vi phù hợp."),
-        ],
-      },
-      {
-        id: "support",
-        heading: "6. Liên hệ hỗ trợ",
-        paragraphs: [
-          paragraph("Đội ngũ CSKH luôn sẵn sàng hướng dẫn bạn chi tiết nhất:"),
-          ...supportContacts,
+          paragraph(part("Hotline: 0868.686.868", { strong: true })),
+          paragraph(part("Email: drpetshouse.cskh@gmail.com", { strong: true })),
         ],
       },
     ],
@@ -741,28 +623,20 @@ export const POLICIES = {
 const POLICY_ALIASES = {
   "dat-lich": "dat-lich-doi-huy-lich",
   "doi-huy-lich": "dat-lich-doi-huy-lich",
-  "dat-lich-doi-lich-huy-lich": "dat-lich-doi-huy-lich",
-  "chinh-sach-dat-lich": "dat-lich-doi-huy-lich",
   "thanh-toan": "phuong-thuc-thanh-toan",
-  "chinh-sach-thanh-toan": "phuong-thuc-thanh-toan",
   "ban-hang": "huong-dan-mua-hang",
-  "chinh-sach-ban-hang": "huong-dan-mua-hang",
   "doi-tra": "doi-tra-hang",
-  "doi-tra-hang": "doi-tra-hang",
   privacy: "bao-mat",
-  "chinh-sach-bao-mat": "bao-mat",
-  faq: "cau-hoi-thuong-gap",
-  "dieu-khoan": "dieu-khoan-dich-vu",
 };
 
 export const POLICY_NAV_ITEMS = [
-  { label: "Chính sách thanh toán", slug: "phuong-thuc-thanh-toan" },
-  { label: "Chính sách đặt lịch, đổi lịch & hủy lịch", slug: "dat-lich-doi-huy-lich" },
+  { label: "Phương thức thanh toán", slug: "phuong-thuc-thanh-toan" },
+  { label: "Chính sách đặt lịch", slug: "dat-lich-doi-huy-lich" },
+  { label: "Hướng dẫn mua hàng", slug: "huong-dan-mua-hang" },
   { label: "Chính sách vận chuyển", slug: "van-chuyen" },
   { label: "Chính sách đổi - trả hàng", slug: "doi-tra-hang" },
   { label: "Chính sách bảo mật", slug: "bao-mat" },
   { label: "Câu hỏi thường gặp", slug: "cau-hoi-thuong-gap" },
-  { label: "Điều khoản dịch vụ", slug: "dieu-khoan-dich-vu" },
 ];
 
 export function normalizePolicySlug(slug) {
