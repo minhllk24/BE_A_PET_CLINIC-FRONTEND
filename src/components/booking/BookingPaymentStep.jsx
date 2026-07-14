@@ -71,17 +71,17 @@ function AppointmentDetails({
   const petWeightValue = getWeightValue(petWeight);
 
   return (
-    <Card className="p-5 md:p-8">
-      <div className="mb-6 flex items-start justify-between gap-3">
+    <Card className="p-8">
+      <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-black text-blue-900 md:text-2xl lg:text-xl">CHI TIẾT ĐẶT LỊCH</h1>
+          <h1 className="text-xl font-black text-blue-900">CHI TIẾT ĐẶT LỊCH</h1>
           <p className="mt-2 text-sm font-medium text-slate-600">Mã số: BK-8712-2023</p>
         </div>
-        <span className="rounded-2xl bg-[#FFF9C4] px-3 py-2 text-center text-xs font-bold text-slate-900 shadow-elevation md:px-4">
+        <span className="rounded-2xl bg-[#FFF9C4] px-4 py-2 text-xs font-bold text-slate-900 shadow-elevation">
           Đang chờ thanh toán
         </span>
       </div>
-      <div className="grid gap-3 border-b border-slate-200 pb-6 md:grid-cols-2 md:gap-4">
+      <div className="grid gap-4 border-b border-slate-200 pb-6 md:grid-cols-2">
         <Detail label="LỊCH HẸN CỦA BẠN" value={formatAppointmentDate(selectedDate, selectedSlot)} icon={paymentCalendarIcon} />
         <Detail
           label="THÔNG TIN THÚ CƯNG"
@@ -93,15 +93,15 @@ function AppointmentDetails({
         <Detail label="SỐ ĐIỆN THOẠI LIÊN HỆ" value={ownerInfo?.phone || "Chưa cung cấp"} icon={paymentPhoneIcon} />
       </div>
       <h2 className="mt-6 text-xl font-black text-blue-900">DỊCH VỤ ĐÃ CHỌN</h2>
-      <div className="mt-5 space-y-3 md:space-y-4">
+      <div className="mt-5 space-y-4">
         {selectedServices.map((service) => {
           const quantity = quantities[service.id] || 1;
           const weightSurcharge = getWeightSurcharge(service, petWeightValue) * quantity;
           const serviceTotal = service.price * quantity + weightSurcharge;
 
           return (
-            <div key={service.id} className="flex items-start justify-between gap-3 rounded-2xl bg-[#f2f4f6] p-4 md:items-center md:p-5">
-              <div className="min-w-0">
+            <div key={service.id} className="flex items-center justify-between rounded-2xl bg-[#f2f4f6] p-5">
+              <div>
                 <p className="font-bold text-blue-900">{service.name}</p>
                 <p className="mt-1 text-sm text-slate-700">{service.desc}</p>
                 <span className="mt-3 inline-flex h-9 items-center overflow-hidden rounded-full border border-blue-900 bg-white text-sm font-bold text-blue-900">
@@ -110,8 +110,8 @@ function AppointmentDetails({
                   <button type="button" onClick={() => onQuantityChange(service.id, 1)} className="h-full px-3 hover:bg-blue-50">+</button>
                 </span>
               </div>
-              <div className="shrink-0 text-right">
-                <p className="text-base font-black text-blue-900 md:text-lg">{formatMoney(serviceTotal)}</p>
+              <div className="text-right">
+                <p className="text-lg font-black text-blue-900">{formatMoney(serviceTotal)}</p>
                 <p className="text-xs text-slate-700">{formatMoney(service.price)} x {quantity}</p>
                 {weightSurcharge > 0 && (
                   <p className="mt-1 text-xs text-slate-500">
@@ -135,7 +135,7 @@ function Detail({ label, value, subValue, icon }) {
   return (
     <div className="rounded-2xl bg-[#f2f4f6] p-4">
       <p className="text-xs font-bold tracking-wider text-slate-500">{label}</p>
-      <p className="mt-2 flex items-center gap-3 text-sm font-bold text-slate-900 md:text-base">
+      <p className="mt-2 flex items-center gap-3 text-base font-bold text-slate-900">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white shadow">
           <img src={icon} alt="" className="h-5 w-5" />
         </span>
@@ -178,7 +178,7 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surcha
   };
 
   return (
-    <Card className="p-5 md:p-8">
+    <Card className="p-8">
       <h2 className="mb-5 text-xl font-black text-blue-900">
         PHƯƠNG THỨC THANH TOÁN
       </h2>
@@ -188,7 +188,7 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surcha
           <button
             type="button"
             onClick={() => selectPaymentMode("store")}
-            className={`rounded-2xl px-2 py-3 transition ${
+            className={`rounded-2xl py-3 transition ${
               paymentMode === "store" ? "bg-white text-blue-900 shadow-elevation" : "text-slate-500 hover:text-blue-900"
             }`}
           >
@@ -198,7 +198,7 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surcha
           <button
             type="button"
             onClick={() => selectPaymentMode("online")}
-            className={`rounded-2xl px-2 py-3 transition ${
+            className={`rounded-2xl py-3 transition ${
               online ? "bg-white text-blue-900 shadow-elevation" : "text-slate-500 hover:text-blue-900"
             }`}
           >
@@ -287,13 +287,13 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surcha
         <PriceRow label="Giảm giá" value="0đ" />
       </div>
 
-      <div className="mb-5 flex items-end justify-between gap-3 rounded-2xl bg-[#d5e4f3] p-5">
+      <div className="mb-5 flex items-end justify-between rounded-2xl bg-[#d5e4f3] p-5">
         <div>
           <p className="text-xl font-black text-blue-900">Tổng cộng</p>
           <p className="text-xs text-slate-500">(Đã bao gồm thuế VAT)</p>
         </div>
 
-        <p className="text-xl font-black text-blue-900 md:text-2xl">
+        <p className="text-2xl font-black text-blue-900">
           {formatMoney(total)}
         </p>
       </div>
@@ -362,7 +362,7 @@ function BookingPaymentStep({
 
   return (
     <>
-      <div className="grid gap-5 md:gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
         <AppointmentDetails
           selectedDate={selectedDate}
           selectedSlot={selectedSlot}
@@ -384,11 +384,11 @@ function BookingPaymentStep({
           total={total}
         />
       </div>
-      <div className="mt-5 md:mt-6">
+      <div className="mt-6">
         <button
           type="button"
           onClick={onBack}
-          className="rounded bg-secondary-light px-5 py-2 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation md:px-6 md:py-3"
+          className="rounded bg-secondary-light px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation"
         >
           ‹ Quay lại
         </button>

@@ -126,20 +126,18 @@ function Field({
   placeholder,
   icon: Icon,
   error = "",
-  variant = "default",
 }) {
   const [visible, setVisible] = useState(false);
   const isPassword = type === "password";
   const invalid = Boolean(error);
-  const isSoft = variant === "soft";
 
   return (
-    <label className={`block text-sm ${isSoft ? "font-medium text-[#060B16]" : "font-semibold text-[rgba(0,0,0,0.87)]"}`}>
+    <label className="block text-sm font-semibold text-[rgba(0,0,0,0.87)]">
       <span>
         {label}
         {required && <span className="text-[#c62828]">*</span>}
       </span>
-      <span className={`${isSoft ? "mt-[6px]" : "mt-1"} relative block`}>
+      <span className="relative mt-1 block">
         {Icon && (
           <Icon
             aria-hidden="true"
@@ -156,14 +154,10 @@ function Field({
           data-auth-error={invalid ? "true" : undefined}
           aria-invalid={invalid || undefined}
           className={[
-            isSoft
-              ? "h-12 w-full rounded-xl border bg-[#FAFEFF] px-4 text-[16px] font-normal text-[#060B16] outline-none transition placeholder:text-[rgba(6,11,22,0.5)]"
-              : "h-[37px] w-full rounded-[6px] border bg-white px-3 text-sm font-normal outline-none transition md:h-[37px]",
+            "h-[38px] w-full rounded border bg-white px-3 text-sm font-normal outline-none transition",
             invalid
               ? "border-[#c62828] ring-1 ring-[#c62828]"
-              : isSoft
-                ? "border-[#C6DCE3] hover:border-[#90caf9] focus:border-[#0d47a1] focus:ring-1 focus:ring-[#0d47a1]"
-                : "border-[rgba(0,0,0,0.42)] hover:border-[#90caf9] focus:border-[#0d47a1] focus:ring-1 focus:ring-[#0d47a1]",
+              : "border-[rgba(0,0,0,0.23)] hover:border-[#90caf9] focus:border-[#0d47a1] focus:ring-1 focus:ring-[#0d47a1]",
             Icon ? "pl-9" : "",
             isPassword ? "pr-10" : "",
           ].join(" ")}
@@ -187,7 +181,7 @@ function Field({
 
 function PrimaryButton({ children, disabled = false }) {
   return (
-    <button type="submit" disabled={disabled} className="btn-yellow h-[43px] w-full disabled:opacity-50">
+    <button type="submit" disabled={disabled} className="btn-yellow h-[43px] w-full">
       {children}
     </button>
   );
@@ -238,20 +232,20 @@ function AuthBackgroundBlob({ className = "" }) {
 function SplitSide({ variant }) {
   const content = SIDE_CONTENT[variant];
   return (
-    <aside className="relative flex h-[242px] w-full shrink-0 flex-col items-center justify-center overflow-hidden bg-[#90CAF9] px-5 text-center md:h-auto md:w-1/2 md:self-stretch md:px-8 lg:w-[48%]">
-      <AuthBackgroundBlob className="-left-[124px] top-[48px] h-[624px] w-[561px] md:-left-[235px] md:-top-[105px] md:h-[817.884px] md:w-[910.149px]" />
+    <aside className="relative hidden w-[48%] shrink-0 flex-col items-center justify-center overflow-hidden bg-[#90CAF9] px-8 text-center md:flex">
+      <AuthBackgroundBlob className="-left-[235px] -top-[105px] h-[817.884px] w-[910.149px]" />
       <img
         src={authImages.logo}
         alt="Dr. Pet's House"
-        className="absolute left-[13px] top-[3px] z-10 h-[56px] w-[101px] object-contain md:left-5 md:top-5 md:h-[78px] md:w-auto"
+        className="absolute left-5 top-5 z-10 h-[78px] w-auto object-contain"
       />
       <img
         src={content.image}
         alt=""
-        className="relative z-10 h-[116px] w-[118px] rounded-full border-4 border-white bg-white object-cover shadow-lg md:h-[183px] md:w-[180px] lg:h-64 lg:w-64"
+        className="relative z-10 h-64 w-64 rounded-full border-4 border-white bg-white object-cover shadow-lg"
       />
-      <h2 className="relative z-10 mt-1 text-[16px] font-semibold leading-8 text-[#191C1E] md:mt-6 md:text-2xl">{content.title}</h2>
-      <p className="relative z-10 max-w-[320px] text-center text-[12px] leading-[1.3] md:mt-2 md:text-[16px] md:leading-6">{content.text}</p>
+      <h2 className="relative z-10 mt-7 text-2xl font-bold">{content.title}</h2>
+      <p className="relative z-10 mt-2 max-w-[330px] leading-6">{content.text}</p>
     </aside>
   );
 }
@@ -266,7 +260,7 @@ function LoginForm({ form, setForm, changeScreen, completeLogin }) {
     <form noValidate className="flex flex-col gap-5" onSubmit={(event) => submitValidatedForm(event, errors, setValidationAttempted, () => completeLogin({ phone: form.phone }))}>
       <Field label="Số điện thoại" name="phone" value={form.phone} onChange={update} icon={Phone} required error={validationAttempted ? errors.phone : ""} />
       <Field label="Mật khẩu" name="password" value={form.password} onChange={update} icon={LockKeyhole} type="password" required error={validationAttempted ? errors.password : ""} />
-      <div className="flex items-center justify-between pb-2 text-sm">
+      <div className="flex items-center justify-between text-sm">
         <label className="flex items-center gap-2">
           <input name="remember" type="checkbox" checked={form.remember} onChange={update} className="size-4" />
           Ghi nhớ đăng nhập
@@ -307,7 +301,7 @@ function RegisterForm({ form, setForm, changeScreen, updateUserProfile }) {
       })}
     >
       <Field label="Họ và Tên" name="name" value={form.name} onChange={update} required error={validationAttempted ? errors.name : ""} />
-      <div className="grid grid-cols-2 gap-[9px] md:gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Số điện thoại" name="phone" value={form.phone} onChange={update} type="tel" required error={validationAttempted ? errors.phone : ""} />
         <Field label="Email" name="email" value={form.email} onChange={update} type="email" error={validationAttempted ? errors.email : ""} />
       </div>
@@ -338,8 +332,8 @@ function OtpForm({ changeScreen, nextScreen, previousScreen }) {
   };
 
   return (
-    <form className="flex flex-col gap-[23.5px]" onSubmit={(event) => { event.preventDefault(); if (complete) changeScreen(nextScreen); }}>
-      <div className="flex h-14 justify-between gap-0">
+    <form className="flex flex-col gap-6" onSubmit={(event) => { event.preventDefault(); if (complete) changeScreen(nextScreen); }}>
+      <div className="flex justify-between gap-2">
         {otp.map((digit, index) => (
           <input
             key={index}
@@ -349,12 +343,12 @@ function OtpForm({ changeScreen, nextScreen, previousScreen }) {
             onKeyDown={(event) => { if (event.key === "Backspace" && !digit) refs.current[index - 1]?.focus(); }}
             inputMode="numeric"
             aria-label={`Số OTP thứ ${index + 1}`}
-            className="h-14 min-w-0 max-w-14 flex-1 rounded-xl border border-[#C6DCE3] bg-[#FAFEFF] text-center text-xl font-bold outline-none transition focus:border-[#0D47A1] focus:ring-1 focus:ring-[#0D47A1]"
+            className="input-brand h-14 min-w-0 flex-1 rounded-xl text-center text-xl font-bold"
           />
         ))}
       </div>
       <PrimaryButton disabled={!complete}>XÁC NHẬN</PrimaryButton>
-      <p className="text-center text-sm text-[#4f5359]">Không nhận được mã? <button type="button" className="text-[#7E8085]">Gửi lại sau 54s</button></p>
+      <p className="text-center text-sm text-[#4f5359]">Không nhận được mã? <button type="button" className="text-blue-900">Gửi lại mã</button></p>
       <button type="button" onClick={() => changeScreen(previousScreen)} className="flex items-center justify-center gap-2 text-sm text-[#7e8085]">
         <ArrowLeft className="size-4" /> Quay lại
       </button>
@@ -382,18 +376,18 @@ function RecoveryPanel({ screen, forms, setForms, changeScreen }) {
   }[screen];
 
   return (
-    <div className="relative flex w-full flex-col items-center overflow-hidden rounded-xl bg-[#90CAF9] px-5 pb-[15px] pt-14 shadow-2xl md:min-h-[637px] md:flex-row md:p-12">
-      <AuthBackgroundBlob className="absolute -left-[142px] top-[-1px] h-[865px] w-[802px] max-w-none md:-left-[3px] md:top-[23px] md:h-[817.884px] md:w-[950.149px]" />
-      <img src={authImages.logo} alt="Dr. Pet's House" className="absolute left-[13px] top-[3px] z-10 h-[56px] w-[101px] object-contain md:left-5 md:top-5 md:h-[78px] md:w-auto" />
-      <div className="relative z-10 flex h-[244px] w-[232px] shrink-0 items-center justify-center md:w-1/2 md:pr-7 md:pt-10">
-        <img src={authImages.searchDog} alt="" className="h-[206px] w-[232px] rounded-full bg-white object-cover shadow-lg md:h-[350px] md:w-[380px]" />
+    <div className="relative flex min-h-[520px] w-full items-center overflow-hidden rounded-xl bg-[#90CAF9] p-6 shadow-2xl md:min-h-[637px] md:p-12">
+      <AuthBackgroundBlob className="-left-[3px] top-[23px] h-[817.884px] w-[950.149px]" />
+      <img src={authImages.logo} alt="Dr. Pet's House" className="absolute left-5 top-5 z-10 h-[78px] w-auto" />
+      <div className="relative z-10 hidden w-1/2 justify-center md:flex pr-7 pt-10">
+        <img src={authImages.searchDog} alt="" className="h-[350px] w-[380px] rounded-full bg-white object-cover shadow-lg" />
       </div>
-      <section className="relative z-10 mx-auto w-full max-w-[420px] pb-[15px]">
-        <h1 className="mb-[-8px] text-[20px] font-extrabold leading-9 tracking-[-0.75px] text-[#060b16] md:mb-0 md:text-[30px]">{content[0]}</h1>
-        <p className="mb-[23.5px] text-[12px] leading-[26px] text-[#4f5359] md:mb-6 md:mt-2 md:text-[16px]">{content[1]}</p>
+      <section className="relative z-10 mx-auto w-full max-w-[420px] pt-10">
+        <h1 className="text-[30px] font-extrabold tracking-[-0.75px] text-[#060b16]">{content[0]}</h1>
+        <p className="mb-6 mt-2 text-[#4f5359]">{content[1]}</p>
         {screen === "forgot" && (
-          <form noValidate className="flex flex-col gap-[23.5px]" onSubmit={(event) => submitValidatedForm(event, forgotErrors, setForgotValidationAttempted, () => changeScreen("resetOtp"))}>
-            <Field label="Số điện thoại / Email" name="account" value={forms.forgot.account} onChange={update("forgot")} variant="soft" error={forgotValidationAttempted ? forgotErrors.account : ""} />
+          <form noValidate className="flex flex-col gap-6" onSubmit={(event) => submitValidatedForm(event, forgotErrors, setForgotValidationAttempted, () => changeScreen("resetOtp"))}>
+            <Field label="Số điện thoại / Email" name="account" value={forms.forgot.account} onChange={update("forgot")} required error={forgotValidationAttempted ? forgotErrors.account : ""} />
             <PrimaryButton>GỬI MÃ XÁC NHẬN</PrimaryButton>
             <button type="button" onClick={() => changeScreen("login")} className="flex items-center justify-center gap-2 text-sm text-[#7e8085]">
               <ArrowLeft className="size-4" /> Quay lại đăng nhập
@@ -408,15 +402,10 @@ function RecoveryPanel({ screen, forms, setForms, changeScreen }) {
           />
         )}
         {screen === "reset" && (
-          <form noValidate className="flex flex-col gap-[23.5px]" onSubmit={(event) => submitValidatedForm(event, resetErrors, setResetValidationAttempted, () => changeScreen("login"))}>
-            <div className="flex flex-col gap-4">
-              <Field label="Mật khẩu mới" name="password" value={forms.reset.password} onChange={update("reset")} type="password" placeholder="Tối thiểu 8 ký tự" variant="soft" error={resetValidationAttempted ? resetErrors.password : ""} />
-              <Field label="Xác nhận mật khẩu" name="confirmPassword" value={forms.reset.confirmPassword} onChange={update("reset")} type="password" placeholder="Nhập lại mật khẩu mới" variant="soft" error={resetValidationAttempted ? resetErrors.confirmPassword : ""} />
-            </div>
-            <PrimaryButton>GỬI MÃ XÁC NHẬN</PrimaryButton>
-            <button type="button" onClick={() => changeScreen("login")} className="flex items-center justify-center gap-2 text-sm text-[#7e8085]">
-              <ArrowLeft className="size-4" /> Quay lại đăng nhập
-            </button>
+          <form noValidate className="flex flex-col gap-4" onSubmit={(event) => submitValidatedForm(event, resetErrors, setResetValidationAttempted, () => changeScreen("login"))}>
+            <Field label="Mật khẩu mới" name="password" value={forms.reset.password} onChange={update("reset")} type="password" placeholder="Tối thiểu 8 ký tự" required error={resetValidationAttempted ? resetErrors.password : ""} />
+            <Field label="Xác nhận mật khẩu" name="confirmPassword" value={forms.reset.confirmPassword} onChange={update("reset")} type="password" placeholder="Nhập lại mật khẩu mới" required error={resetValidationAttempted ? resetErrors.confirmPassword : ""} />
+            <PrimaryButton>ĐỔI MẬT KHẨU</PrimaryButton>
           </form>
         )}
       </section>
@@ -426,19 +415,19 @@ function RecoveryPanel({ screen, forms, setForms, changeScreen }) {
 
 function SuccessPanel({ changeScreen }) {
   return (
-    <div className="relative flex min-h-[646px] w-full flex-col items-center overflow-hidden rounded-xl rounded-bl-none bg-white pb-[15px] pt-[67px] shadow-2xl md:min-h-[560px] md:flex-row md:justify-center md:gap-10 md:rounded-bl-xl md:p-10">
-      <img src={authImages.logo} alt="Dr. Pet's House" className="absolute left-[13px] top-[3px] h-[56px] w-[101px] object-contain md:left-6 md:top-5 md:h-[78px] md:w-auto" />
-      <div className="border-[1.903px] border-dashed border-secondary p-[6.344px] md:border-[3px] md:p-2">
-        <img src={authImages.successDog} alt="" className="h-[222.689px] w-[197.311px] rounded-[7.613px] bg-[#E5F6FD] object-cover md:h-[300px] md:w-[270px]" />
+    <div className="relative flex min-h-[560px] w-full items-center justify-center gap-10 overflow-hidden rounded-xl bg-white p-10 shadow-2xl">
+      <img src={authImages.logo} alt="Dr. Pet's House" className="absolute left-6 top-5 h-[78px] w-auto" />
+      <div className="hidden border-[3px] border-dashed border-secondary p-2 md:block">
+        <img src={authImages.successDog} alt="" className="h-[300px] w-[270px] object-cover bg-[#E5F6FD]" />
       </div>
-      <div className="flex w-full max-w-[425px] flex-col items-center px-5 pt-3 text-center md:px-0">
+      <div className="flex max-w-[425px] flex-col items-center text-center">
         <span className="flex size-[74px] items-center justify-center rounded-full bg-[#2e7d32] text-white"><Check className="size-12" /></span>
-        <h1 className="mt-5 text-[20px] font-bold leading-10 md:text-3xl">Đăng ký thành công!</h1>
-        <p className="mt-3 text-[16px] leading-[29.25px] md:text-lg">Chào mừng bạn đến với <strong>Dr. Pet&apos;s House</strong></p>
-        <button type="button" onClick={() => changeScreen("login")} className="btn-yellow mt-6">
+        <h1 className="mt-5 text-3xl font-bold">Đăng ký thành công!</h1>
+        <p className="mt-3 text-lg">Chào mừng bạn đến với <strong>Dr. Pet&apos;s House</strong></p>
+        <button type="button" onClick={() => changeScreen("login")} className="btn-yellow mt-7">
           ĐĂNG NHẬP NGAY <ArrowRight className="size-5" />
         </button>
-        <p className="mt-6 w-full border-t border-[rgba(206,198,178,0.3)] pt-4 text-sm">Cần hỗ trợ? <a href="tel:0900000000" className="font-semibold text-blue-900">Liên hệ đội ngũ chăm sóc</a></p>
+        <p className="mt-6 w-full border-t pt-4 text-sm">Cần hỗ trợ? <a href="tel:0900000000" className="font-semibold text-blue-900">Liên hệ đội ngũ chăm sóc</a></p>
       </div>
     </div>
   );
@@ -464,18 +453,16 @@ function AuthModal() {
 
   return (
     <div className="overlay-fade-in fixed inset-0 z-[200] flex items-center justify-center bg-[#06105a40] p-3 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) closeAuth(); }}>
-      <div role="dialog" aria-modal="true" aria-label="Tài khoản" className="relative max-h-[calc(100vh-24px)] w-full max-w-[360px] overflow-y-auto rounded-xl md:max-w-[744px] lg:max-w-[930px]">
-        <button type="button" onClick={closeAuth} className="btn-icon-subtle absolute right-[13px] top-[13px] z-20 p-0 text-gray-500 md:right-[17px] md:top-8" aria-label="Đóng">
-          <X className="size-[14px] md:size-5" />
+      <div role="dialog" aria-modal="true" aria-label="Tài khoản" className="relative max-h-[calc(100vh-24px)] w-full max-w-[930px] overflow-y-auto rounded-xl">
+        <button type="button" onClick={closeAuth} className="btn-icon-subtle absolute right-5 top-5 z-20 p-1 text-gray-500" aria-label="Đóng">
+          <X className="size-5" />
         </button>
         {isSplit ? (
-          <div className="flex flex-col overflow-hidden rounded-xl bg-white shadow-2xl md:min-h-[637px] md:flex-row">
+          <div className="flex min-h-[637px] overflow-hidden rounded-xl bg-white shadow-2xl">
             <SplitSide variant={authModal} />
-            <section className="flex flex-1 flex-col justify-center bg-white px-5 pb-[15px] md:h-[637px] md:px-[30px] md:py-12 lg:px-12">
-              <div className={authModal === "login" ? "pb-8 pt-4" : "pb-[19px] pt-4"}>
-                <h1 className="text-[20px] font-bold leading-[1.5] md:text-[32px] md:leading-10">{authModal === "login" ? "Đăng Nhập" : "Đăng Ký Tài Khoản"}</h1>
-                {authModal === "login" && <p className="mt-2 text-[12px] leading-6 md:text-[16px]">Vui lòng nhập thông tin của bạn.</p>}
-              </div>
+            <section className="flex flex-1 flex-col justify-center p-7 md:p-12">
+              <h1 className="mb-2 text-[32px] font-bold leading-10">{authModal === "login" ? "Đăng Nhập" : "Đăng Ký Tài Khoản"}</h1>
+              {authModal === "login" && <p className="mb-8">Vui lòng nhập thông tin của bạn.</p>}
               {authModal === "login" ? (
                 <LoginForm form={forms.login} setForm={(updater) => setForms((current) => ({ ...current, login: updater(current.login) }))} changeScreen={openAuth} completeLogin={completeLogin} />
               ) : (

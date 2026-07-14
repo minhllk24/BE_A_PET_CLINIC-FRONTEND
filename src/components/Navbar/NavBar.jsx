@@ -7,7 +7,6 @@
  */
 import NavBarAuthenticated from "./NavBarAuthenticated";
 import NavBarGuest from "./NavBarGuest";
-import MobileNavBar from "./MobileNavBar";
 import { useAuth } from "../../context/AuthContext";
 
 function NavBar({ avatarSrc, onLogout }) {
@@ -15,19 +14,11 @@ function NavBar({ avatarSrc, onLogout }) {
 
   if (isAuthenticated) {
     return (
-      <>
-        <MobileNavBar isAuthenticated avatarSrc={avatarSrc} />
-        <NavBarAuthenticated avatarSrc={avatarSrc} onLogout={onLogout ?? logout} />
-      </>
+      <NavBarAuthenticated avatarSrc={avatarSrc} onLogout={onLogout ?? logout} />
     );
   }
 
-  return (
-    <>
-      <MobileNavBar isAuthenticated={false} avatarSrc={avatarSrc} />
-      <NavBarGuest />
-    </>
-  );
+  return <NavBarGuest />;
 }
 
 export default NavBar;

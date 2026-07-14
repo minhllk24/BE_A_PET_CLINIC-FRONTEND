@@ -18,7 +18,7 @@ function CartItemRow({ item }) {
 
   return (
     <div
-      className={`relative flex h-[80px] w-full shrink-0 items-center gap-[10px] border-b border-solid border-[#e0e0e0] py-0 transition-all duration-200 lg:h-[100px] lg:w-[503px] lg:py-[10px] ${
+      className={`relative flex h-[100px] w-[503px] shrink-0 items-center gap-[10px] border-b border-solid border-[#e0e0e0] py-[10px] transition-all duration-200 ${
         deleting ? "translate-x-full opacity-0" : "translate-x-0 opacity-100"
       }`}
     >
@@ -44,7 +44,7 @@ function CartItemRow({ item }) {
 
       {/* Product image */}
       <div className="flex h-full shrink-0 items-center justify-center">
-        <div className="h-[60px] w-[60px] lg:h-full lg:w-[80px]">
+        <div className="h-full w-[80px]">
           <img
             src={item.image || item.imageUrl || item.thumbnail || cartImages.productThumb}
             alt={item.name}
@@ -54,15 +54,15 @@ function CartItemRow({ item }) {
       </div>
 
       {/* Product info */}
-      <div className="flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-[3px] lg:gap-[10px]">
+      <div className="flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-[10px]">
         <div className="flex w-full items-start justify-between">
-          <p className="mr-[-58px] w-[278px] break-words font-['Roboto'] text-[12px] font-bold leading-[1.43] tracking-[0.17px] text-[#0d47a1] lg:mr-0 lg:text-[14px]">
+          <p className="w-[278px] break-words font-['Roboto'] text-[14px] font-bold leading-[1.43] tracking-[0.17px] text-[#0d47a1]">
             {item.name}
           </p>
           <button
             type="button"
             onClick={handleDelete}
-            className="group relative h-[15px] w-[14px] shrink-0 transition-all duration-micro hover:scale-110 focus-ring-brand lg:h-5 lg:w-[17px]"
+            className="group relative h-5 w-[17px] shrink-0 transition-all duration-micro hover:scale-110 focus-ring-brand"
             aria-label="Xóa sản phẩm"
           >
             <img
@@ -74,24 +74,24 @@ function CartItemRow({ item }) {
         </div>
 
         <div className="flex w-full items-center justify-between text-[#353535]">
-          <p className="shrink-0 whitespace-nowrap font-['Roboto'] text-[12px] font-bold leading-[1.43] tracking-[0.17px] lg:text-[14px]">
+          <p className="shrink-0 whitespace-nowrap font-['Roboto'] text-[14px] font-bold leading-[1.43] tracking-[0.17px]">
             {formatPrice(item.price)}
           </p>
           {/* Quantity stepper */}
-          <div className="flex h-5 w-14 shrink-0 items-center justify-between rounded border border-solid border-[#353535] px-2 font-['Josefin_Sans'] text-[20px] font-medium leading-normal lg:h-[27px] lg:w-[78px] lg:px-[16px] lg:py-[5px]">
+          <div className="flex h-[27px] w-[78px] shrink-0 items-center justify-between rounded border border-solid border-[#353535] px-[16px] py-[5px] font-['Josefin_Sans'] text-[20px] font-medium leading-normal">
             <button
               type="button"
               onClick={() => updateCartQty(item.id, -1)}
-              className="flex h-5 w-3 shrink-0 items-center justify-center text-[20px] leading-5 text-[#353535] transition-colors duration-micro hover:text-[#0d47a1] active:scale-90 focus-ring-brand lg:h-6 lg:w-6"
+              className="flex h-6 w-6 shrink-0 items-center justify-center text-[20px] leading-5 text-[#353535] transition-colors duration-micro hover:text-[#0d47a1] active:scale-90 focus-ring-brand"
               aria-label="Giảm số lượng"
             >
               −
             </button>
-            <span className="shrink-0 text-[13px] leading-5 text-[#353535] lg:text-[20px]">{item.qty}</span>
+            <span className="shrink-0 text-[20px] leading-5 text-[#353535]">{item.qty}</span>
             <button
               type="button"
               onClick={() => updateCartQty(item.id, 1)}
-              className="flex h-5 w-3 shrink-0 items-center justify-center text-[20px] leading-5 text-[#353535] transition-colors duration-micro hover:text-[#0d47a1] active:scale-90 focus-ring-brand lg:h-6 lg:w-6"
+              className="flex h-6 w-6 shrink-0 items-center justify-center text-[20px] leading-5 text-[#353535] transition-colors duration-micro hover:text-[#0d47a1] active:scale-90 focus-ring-brand"
               aria-label="Tăng số lượng"
             >
               +
@@ -99,13 +99,13 @@ function CartItemRow({ item }) {
           </div>
         </div>
 
-        <div className="flex w-full items-center gap-10 whitespace-nowrap font-['Roboto'] text-[10px] leading-[1.66] tracking-[0.4px] text-[#353535] lg:text-[12px]">
-          <div className="flex items-center gap-[5px] lg:gap-[10px]">
+        <div className="flex w-full items-center gap-10 whitespace-nowrap font-['Roboto'] text-[12px] leading-[1.66] tracking-[0.4px] text-[#353535]">
+          <div className="flex items-center gap-[10px]">
             <span>Loại:</span>
             <span>{item.type || "Mặc định"}</span>
           </div>
-          <div className="flex items-center gap-[5px] lg:gap-[10px]">
-            <span>Kích cỡ:</span>
+          <div className="flex items-center gap-[10px]">
+            <span>Size:</span>
             <span>{item.size || "Mặc định"}</span>
           </div>
         </div>
@@ -125,13 +125,13 @@ function MyCartPanel({ onClose }) {
 
   return (
     <aside
-      className="cart-panel-motion absolute inset-0 flex h-screen w-full flex-col items-center gap-[10px] overflow-hidden bg-[#fffde7] px-[10px] py-0 lg:inset-auto lg:right-[94px] lg:top-0 lg:h-[638px] lg:max-h-[calc(100vh-104px)] lg:w-[551px] lg:rounded lg:px-5 lg:py-[10px] lg:shadow-[0_4px_24px_rgba(0,0,0,0.12)]"
+      className="panel-slide-in absolute right-[94px] top-0 flex h-[638px] max-h-[calc(100vh-104px)] w-[551px] flex-col items-center gap-[10px] overflow-hidden rounded bg-[#fffde7] px-5 py-[10px] shadow-[0_4px_24px_rgba(0,0,0,0.12)]"
       data-name="my cart"
       role="dialog"
       aria-label="Giỏ hàng"
     >
       {/* Header */}
-      <div className="flex h-12 w-full shrink-0 items-center justify-between bg-white pr-[10px] lg:h-auto lg:w-[503px] lg:bg-transparent lg:pr-0">
+      <div className="flex w-[503px] shrink-0 items-center justify-between">
         <p className="whitespace-nowrap tracking-[0.15px] text-[#353535]">
           <span className="font-['Roboto'] text-[16px] font-bold leading-[1.5]">
             Giỏ hàng{" "}
@@ -151,7 +151,7 @@ function MyCartPanel({ onClose }) {
       </div>
 
       {/* Item list */}
-      <div className="flex min-h-0 w-full max-w-[340px] flex-1 flex-col items-start overflow-x-clip overflow-y-auto lg:max-w-none">
+      <div className="flex min-h-0 w-full flex-1 flex-col items-start overflow-x-clip overflow-y-auto">
         {hasItems ? (
           cartItems.map((item) => (
             <CartItemRow key={item.id} item={item} />
