@@ -122,15 +122,15 @@ function Stepper({ step }) {
   const steps = ["Lựa chọn dịch vụ", "Điền thông tin", "Thanh toán"];
 
   return (
-    <div className="mx-auto flex w-full max-w-xl items-start justify-center px-4 py-5">
+    <div className="mx-auto flex w-full max-w-[320px] items-start justify-center px-0 py-5 md:max-w-[688px] md:px-0 lg:max-w-xl lg:px-4">
       {steps.map((label, index) => {
         const current = index + 1;
         const complete = current < step;
         const active = current === step;
 
         return (
-          <div key={label} className="flex items-start">
-            <div className="flex min-w-[104px] flex-col items-center">
+          <div key={label} className="flex min-w-0 items-start">
+            <div className="flex min-w-0 flex-1 flex-col items-center md:min-w-[94px] lg:min-w-[104px]">
               <span
                 className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-bold ${
                   complete
@@ -143,7 +143,7 @@ function Stepper({ step }) {
                 {complete ? <AssetIcon src={informationStepCheck} className="h-4 w-4" /> : ""}
               </span>
               <span
-                className={`mt-2 text-center text-xs font-bold ${
+                className={`mt-2 max-w-[94px] text-center text-xs font-bold leading-4 ${
                   active || complete ? "text-blue-900" : "text-slate-500"
                 }`}
               >
@@ -152,7 +152,7 @@ function Stepper({ step }) {
             </div>
             {index < steps.length - 1 && (
               <span
-                className={`mt-3 h-0.5 w-28 ${
+                className={`mx-1 mt-3 h-[3px] w-5 md:mx-[10px] md:w-[100px] lg:w-28 ${
                   current < step ? "bg-blue-900" : "bg-[#e5e1f0]"
                 }`}
               />
@@ -219,13 +219,13 @@ function BookingCalendar({ selectedDate, onSelect, invalid = false }) {
 
   return (
     <Card
-      className={`p-6 ${invalid ? "ring-2 ring-red-500" : ""}`}
+      className={`p-6 max-sm:p-6 ${invalid ? "ring-2 ring-red-500" : ""}`}
       title={invalid ? "Vui lòng điền thông tin" : undefined}
       data-booking-error={invalid ? "true" : undefined}
       tabIndex={invalid ? -1 : undefined}
     >
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-xl font-bold text-slate-900">
+        <h3 className="text-[20px] font-bold text-slate-900">
           Tháng {viewedMonth.getMonth() + 1}, {viewedMonth.getFullYear()}
         </h3>
         <div className="flex gap-3 text-lg text-slate-500">
@@ -233,7 +233,7 @@ function BookingCalendar({ selectedDate, onSelect, invalid = false }) {
           <button type="button" onClick={() => changeMonth(1)} aria-label="Tháng sau">›</button>
         </div>
       </div>
-      <div className="grid grid-cols-7 gap-4 text-center text-sm">
+      <div className="grid grid-cols-7 gap-2 text-center text-sm md:gap-4">
         {days.map((day) => (
           <span key={day} className="font-bold text-slate-300">{day}</span>
         ))}
@@ -411,9 +411,9 @@ function ServiceSelection({
 
   return (
     <>
-      <div className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,2fr)_320px]">
+      <div className="grid items-stretch gap-5 md:gap-6 lg:grid-cols-[minmax(0,2fr)_320px]">
         <div
-          className={`grid h-full gap-6 rounded-2xl md:grid-cols-2 ${
+          className={`grid h-full gap-3 rounded-2xl md:grid-cols-2 md:gap-4 lg:gap-6 ${
             validationAttempted && !selectedServiceType ? "ring-2 ring-red-500" : ""
           }`}
           title={validationAttempted && !selectedServiceType ? "Vui lòng điền thông tin" : undefined}
@@ -428,7 +428,7 @@ function ServiceSelection({
                 key={serviceType.id}
                 type="button"
                 onClick={() => selectServiceType(serviceType.id)}
-                className={`relative h-full rounded-2xl border-2 bg-white p-7 text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] transition ${
+                className={`relative h-full rounded-2xl border-2 bg-white p-[26px] text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] transition ${
                   active ? "border-blue-900" : "border-transparent"
                 }`}
               >
@@ -439,7 +439,7 @@ function ServiceSelection({
                     {serviceType.title}
                   </h3>
                 </div>
-                <p className="mt-5 text-base text-slate-600">{serviceType.desc}</p>
+                <p className="mt-3 text-base leading-6 text-slate-600 lg:mt-5">{serviceType.desc}</p>
               </button>
             );
           })}
@@ -452,7 +452,7 @@ function ServiceSelection({
         />
 
         <Card
-          className={`flex h-[744px] flex-col p-6 ${validationAttempted && selectedServices.length === 0 ? "ring-2 ring-red-500" : ""}`}
+          className={`flex h-[757px] flex-col p-6 lg:h-[744px] ${validationAttempted && selectedServices.length === 0 ? "ring-2 ring-red-500" : ""}`}
           title={validationAttempted && selectedServices.length === 0 ? "Vui lòng điền thông tin" : undefined}
           data-booking-error={validationAttempted && selectedServices.length === 0 ? "true" : undefined}
           tabIndex={validationAttempted && selectedServices.length === 0 ? -1 : undefined}
@@ -468,25 +468,25 @@ function ServiceSelection({
               className="w-full rounded-lg border border-slate-300 py-3 pl-12 pr-5 text-base outline-none focus:border-blue-900"
             />
           </div>
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-2">
+          <div className="min-h-0 flex-1 space-y-[10px] overflow-y-auto pr-1 md:pr-2">
             {visibleServices.map((service) => {
               const active = selectedServices.includes(service.id);
               return (
                 <div
                   key={service.id}
-                  className={`flex items-center justify-between rounded-2xl p-5 ${
+                  className={`flex items-center justify-between gap-3 rounded-2xl p-5 ${
                     active ? "border-l-4 border-blue-900 bg-[#d5e4f3]" : "bg-[#f2f4f6]"
                   }`}
                 >
-                  <div>
-                    <h3 className="font-bold text-slate-900">{service.name}</h3>
-                    <p className="text-sm text-slate-700">{service.desc}</p>
-                    <p className="font-bold text-blue-900">{formatMoney(service.price)}</p>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-slate-900 md:text-base">{service.name}</h3>
+                    <p className="text-xs font-medium leading-4 text-slate-700 md:text-sm">{service.desc}</p>
+                    <p className="text-sm font-bold text-blue-900 md:text-base">{formatMoney(service.price)}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => toggleService(service.id)}
-                    className={`flex min-w-[68px] items-center justify-center rounded-full border px-5 py-2 text-sm font-bold ${
+                    className={`flex min-w-[58px] items-center justify-center rounded-full border px-4 py-2 text-xs font-bold md:min-w-[68px] md:px-5 md:text-sm ${
                       active ? "border-blue-900 bg-blue-900 text-white" : "border-blue-900 bg-white text-blue-900"
                     }`}
                   >
@@ -497,15 +497,15 @@ function ServiceSelection({
             })}
           </div>
           <div className="mt-5 flex items-center justify-between rounded-xl bg-slate-100 p-5 shadow">
-            <span className="font-bold text-slate-900">Tổng tiền tạm tính</span>
+            <span className="text-sm font-bold text-slate-900 md:text-base">Tổng tiền tạm tính</span>
             <div className="text-right">
-              <p className="text-2xl font-black text-blue-900">{formatMoney(total)}</p>
+              <p className="text-base font-black text-blue-900 md:text-2xl">{formatMoney(total)}</p>
               <p className="text-xs text-slate-500">(Chưa bao gồm thuế)</p>
             </div>
           </div>
         </Card>
 
-        <aside className="grid h-[744px] grid-rows-[auto_minmax(0,1fr)] gap-6">
+        <aside className="grid gap-6 lg:h-[744px] lg:grid-rows-[auto_minmax(0,1fr)]">
           <BookingCalendar selectedDate={selectedDate} onSelect={selectDate} invalid={validationAttempted && !dateBookable} />
           <TimeSlots selectedDate={selectedDate} selectedSlot={selectedSlot} onSelect={setSelectedSlot} invalid={validationAttempted && !slotBookable} />
         </aside>
@@ -523,7 +523,7 @@ function PetSummaryCard({ selectedPets, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`relative flex min-h-[116px] items-center gap-3 rounded-2xl bg-white p-[26px] text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] ${
+      className={`relative flex min-h-[116px] items-center gap-3 rounded-2xl bg-white p-5 text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] md:p-[26px] ${
         active ? "border-2 border-blue-900" : "border-2 border-transparent"
       }`}
     >
@@ -533,14 +533,14 @@ function PetSummaryCard({ selectedPets, active, onClick }) {
           <img
             src={selectedPet.name === "Max" ? informationSelectedPetPhoto : selectedPet.avatar || petImages[selectedPet.name] || buddyImg}
             alt={selectedPet.name}
-            className="h-20 w-20 rounded-full object-cover"
+            className="h-[60px] w-[60px] shrink-0 rounded-full object-cover md:h-20 md:w-20"
           />
           <span className="min-w-0 flex-1">
             <strong className="block text-lg text-slate-900">{selectedPet.name}</strong>
             <span className="text-sm text-slate-600">{selectedPet.breed} <br/> {selectedPet.age}</span>
           </span>
           {extraCount > 0 && (
-            <span className="shrink-0 text-right text-base font-normal leading-6 tracking-[0.15px] text-[#d32f2f]">
+            <span className="shrink-0 text-right text-sm font-normal leading-6 tracking-[0.15px] text-[#d32f2f] md:text-base">
               +{extraCount} hồ sơ khác
             </span>
           )}
@@ -614,9 +614,9 @@ function InfoForm({
 
   return (
     <>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
+      <div className="grid gap-5 md:gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
         <div className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2 md:gap-6">
             <PetSummaryCard
               selectedPets={selectedPets}
               active={profileMode}
@@ -625,7 +625,7 @@ function InfoForm({
             <button
               type="button"
               onClick={chooseOtherPet}
-              className={`relative min-h-[116px] rounded-2xl bg-white p-6 text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] ${
+              className={`relative min-h-[116px] rounded-2xl bg-white p-5 text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] md:p-6 ${
                 !profileMode ? "border-2 border-blue-900" : "border-2 border-transparent"
               }`}
             >
@@ -662,7 +662,7 @@ function InfoForm({
           </div>
         </div>
 
-        <Card className="p-8">
+        <Card className="p-5 md:p-8">
           <h2 className="mb-5 text-xl font-black text-blue-900">THÔNG TIN CHỦ THÚ CƯNG</h2>
           <div className="grid gap-5">
             <Field label="Họ và tên" required showError={validationAttempted} value={ownerInfo.name} onChange={(event) => updateOwnerInfo("name", event.target.value)}/>
@@ -706,7 +706,7 @@ function PetInfoCard({
   onRemove,
 }) {
   return (
-    <Card className="p-8">
+    <Card className="p-5 md:p-8">
       <div className="mb-5 flex items-center justify-between gap-4">
         <h2 className="text-xl font-black text-blue-900">
           THÔNG TIN THÚ CƯNG{showIndex ? ` ${index + 1}` : ""}
@@ -729,7 +729,7 @@ function PetInfoCard({
         <Field className="md:col-span-2" label="Cân nặng" suffix="kg" required showError={validationAttempted} value={petInfo.weight} onChange={(event) => onChange(petInfo.id, "weight", event.target.value)} />
         <div className="md:col-span-3">
           <p className="mb-3 text-sm font-medium text-slate-900">Giới tính</p>
-          <div className="flex gap-5 text-sm">
+          <div className="flex flex-wrap gap-5 text-sm">
             <label><input type="radio" name={`gender-${petInfo.id}`} checked={petInfo.gender === "male"} onChange={() => onChange(petInfo.id, "gender", "male")} className="mr-2 accent-blue-900" />Đực</label>
             <label><input type="radio" name={`gender-${petInfo.id}`} checked={petInfo.gender === "female"} onChange={() => onChange(petInfo.id, "gender", "female")} className="mr-2 accent-blue-900" />Cái</label>
           </div>
@@ -778,7 +778,7 @@ function Field({
 
   return (
     <label className={className} title={invalid ? "Vui lòng điền thông tin" : undefined}>
-      <span className="mb-2 block text-sm font-medium text-slate-900">
+      <span className="mb-2 block text-sm font-medium text-slate-900 md:text-base lg:text-sm">
         {label} {required && <span className="text-red-600">*</span>}
       </span>
 
@@ -790,7 +790,7 @@ function Field({
               onChange={onChange}
               required={required}
               data-booking-error={invalid ? "true" : undefined}
-              className={`h-10 w-full appearance-none rounded-2xl border bg-white px-4 pr-12 text-sm outline-none ${
+              className={`h-10 w-full appearance-none rounded-2xl border bg-white px-4 pr-12 text-sm outline-none md:h-[42px] md:text-base lg:h-10 lg:text-sm ${
                 invalid ? "border-red-500 ring-1 ring-red-500" : "border-slate-300 focus:border-blue-900"
               }`}
             >
@@ -813,7 +813,7 @@ function Field({
             onChange={onChange}
             required={required}
             data-booking-error={invalid ? "true" : undefined}
-            className={`h-10 w-full rounded-2xl border px-4 pr-10 text-sm outline-none ${
+            className={`h-10 w-full rounded-2xl border px-4 pr-10 text-sm outline-none md:h-[42px] md:text-base lg:h-10 lg:text-sm ${
               invalid ? "border-red-500 ring-1 ring-red-500" : "border-slate-300 focus:border-blue-900"
             }`}
           />
@@ -846,7 +846,7 @@ function PetSelectionModal({ selectedPets, onConfirm, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/45 p-5 backdrop-blur-sm">
       <div className="w-full max-w-md overflow-hidden rounded-lg bg-white shadow-2xl">
         <div className="flex items-start justify-between border-b border-slate-200 px-6 py-4">
           <div>
@@ -863,7 +863,7 @@ function PetSelectionModal({ selectedPets, onConfirm, onClose }) {
               key={pet.id}
               type="button"
               onClick={() => togglePet(pet)}
-              className={`flex w-full items-center gap-4 rounded-2xl border-2 p-4 text-left ${
+              className={`flex w-full items-center gap-4 rounded-2xl border-2 p-[18px] text-left md:p-4 ${
                 draftPets.some((item) => item.id === pet.id) ? "border-blue-900 bg-blue-50" : "border-slate-200"
               }`}
             >
@@ -905,18 +905,18 @@ function PetSelectionModal({ selectedPets, onConfirm, onClose }) {
 
 function FlowButtons({ onBack, onNext }) {
   return (
-    <div className="mt-6 flex items-center justify-between">
+    <div className="mt-5 flex w-full items-center justify-between md:mt-6">
       <button
         type="button"
         onClick={onBack}
-        className="rounded bg-secondary-light px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation"
+        className="rounded bg-secondary-light px-5 py-2 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation md:px-6 md:py-3"
       >
         ‹ Quay lại
       </button>
       <button
         type="button"
         onClick={onNext}
-        className="rounded bg-secondary px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation"
+        className="rounded bg-secondary px-5 py-2 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation md:px-6 md:py-3"
       >
         Tiếp tục ›
       </button>
@@ -962,7 +962,7 @@ function BookingPage() {
       <NavBar />
       <main className="bg-[#e5f6fd]">
         <Stepper step={step} />
-        <div className="mx-auto w-full max-w-[1280px] px-6 pb-8 pt-6">
+        <div className="mx-auto w-full max-w-[360px] px-5 pb-6 pt-0 md:max-w-[768px] md:px-10 md:pb-8 lg:max-w-[1280px] lg:px-6 lg:pt-6">
           {step === 1 && (
             <ServiceSelection
               selectedServiceType={selectedServiceType}

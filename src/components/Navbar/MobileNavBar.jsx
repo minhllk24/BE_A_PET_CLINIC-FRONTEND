@@ -40,6 +40,23 @@ function FigmaMenuIcon() {
   );
 }
 
+function TabletSearchTrigger({ onOpen }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="relative hidden h-[37px] w-[204px] shrink-0 overflow-hidden rounded border border-[#FDD835] bg-white text-left md:block lg:hidden"
+      aria-label="Mở tìm kiếm"
+    >
+      <img src={navbarImages.dogSearch} alt="" className="absolute -left-[2.25px] top-px h-[37px] w-[39px] object-cover" />
+      <span className="absolute left-[43px] top-[8.5px] w-[117px] text-center font-['Roboto'] text-[12px] font-normal leading-[20px] tracking-[0.4px] text-black/40">
+        Bạn muốn tìm gì nè?
+      </span>
+      <SearchAssetIcon className="absolute left-[172px] top-[7.5px] size-6" />
+    </button>
+  );
+}
+
 function MobileSearchPanel({ open, onClose }) {
   const navigate = useNavigate();
   const [term, setTerm] = useState("");
@@ -96,7 +113,7 @@ function MobileSearchPanel({ open, onClose }) {
   return (
     <div className="fixed inset-0 z-[95] bg-[rgba(6,16,90,0.2)] backdrop-blur-[6px] lg:hidden" role="dialog" aria-label="Tìm kiếm">
       <div className="mobile-panel-enter h-full w-full bg-white">
-        <div className="flex h-12 w-full items-center justify-center bg-white px-[15px]">
+        <div className="flex h-12 w-full items-center justify-center bg-white px-[15px] md:h-16">
           <form
             className="flex h-[26px] min-w-0 flex-1 items-center justify-between gap-[13px]"
             onSubmit={(event) => {
@@ -126,7 +143,7 @@ function MobileSearchPanel({ open, onClose }) {
           </form>
         </div>
 
-        <div className="h-[calc(100vh-48px)] overflow-y-auto bg-[#FFFDE7] pt-1">
+        <div className="h-[calc(100vh-48px)] overflow-y-auto bg-[#FFFDE7] pt-1 md:h-[calc(100vh-64px)]">
           <section className="flex w-full flex-col gap-3 px-4 py-[10px]">
             <h2 className="font-['Roboto'] text-[16px] font-bold leading-6 tracking-[0.15px] text-[#353535]">Gợi ý phù hợp</h2>
             <div className="flex min-h-[172px] flex-col justify-between">
@@ -194,7 +211,7 @@ function MobileSearchPanel({ open, onClose }) {
 }
 
 function MobileMenuPanel({ open, onClose }) {
-  const [expanded, setExpanded] = useState(() => new Set(["Dịch vụ"]));
+  const [expanded, setExpanded] = useState(() => new Set());
 
   useEffect(() => {
     if (!open) return undefined;
@@ -219,9 +236,9 @@ function MobileMenuPanel({ open, onClose }) {
   return (
     <div className="fixed inset-0 z-[95] bg-[rgba(6,16,90,0.2)] backdrop-blur-[6px] lg:hidden" role="dialog" aria-label="Menu chính">
       <div className="mobile-panel-enter flex h-full w-full flex-col bg-[#FFFDE7]">
-        <div className="flex h-12 shrink-0 items-center justify-between border-b border-[#ECEFF1] bg-white pr-[10px]">
-          <Link to="/" onClick={onClose} className="flex h-12 min-w-[120px] items-center">
-            <img src={homeImages.logo} alt="Dr. Pet's House" className="h-9 w-[82px] object-contain" />
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-[#ECEFF1] bg-white pr-[10px] md:h-16 md:px-[15px]">
+          <Link to="/" onClick={onClose} className="flex h-12 min-w-[120px] items-center md:h-16 md:min-w-[145px]">
+            <img src={homeImages.logo} alt="Dr. Pet's House" className="h-9 w-[82px] object-contain md:h-[52px] md:w-[120px]" />
           </Link>
           <button type="button" onClick={onClose} className="flex h-[30px] w-[30px] items-center justify-center" aria-label="Đóng menu">
             <X aria-hidden="true" className="size-[18px] text-[#0D47A1]" strokeWidth={2.5} />
@@ -301,21 +318,23 @@ function MobileNavBar({ isAuthenticated, avatarSrc }) {
 
   const rightGroupClass = useMemo(
     () => isAuthenticated
-      ? "flex flex-1 items-center justify-between pl-[35px]"
-      : "flex flex-1 items-center justify-end gap-[10.75px] pl-[35px]",
+      ? "flex flex-1 items-center justify-between pl-[35px] md:flex-none md:w-[210px] md:gap-[23.25px] md:pl-0 md:pr-[10px]"
+      : "flex flex-1 items-center justify-end gap-[10.75px] pl-[35px] md:flex-none md:w-[210px] md:gap-[23.25px] md:pl-0 md:pr-[10px]",
     [isAuthenticated],
   );
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-[70] h-12 border-b border-[#ECEFF1] bg-white pr-[10px] lg:hidden">
+      <header className="fixed inset-x-0 top-0 z-[70] h-12 border-b border-[#ECEFF1] bg-white pr-[10px] md:h-16 md:min-w-[744px] md:border md:px-[15px] md:py-[10px] lg:hidden">
         <div className="flex h-full w-full items-center justify-between">
-          <Link to="/" className="flex h-12 min-w-[100px] items-center">
-            <img src={homeImages.logo} alt="Dr. Pet's House" className="h-9 w-[82px] object-contain" />
+          <Link to="/" className="flex h-12 min-w-[100px] items-center md:h-[44px] md:min-w-[145px]">
+            <img src={homeImages.logo} alt="Dr. Pet's House" className="h-9 w-[82px] object-contain md:h-[52px] md:w-[120px]" />
           </Link>
 
+          <TabletSearchTrigger onOpen={() => setActivePanel("search")} />
+
           <div className={`${rightGroupClass} max-w-[250px] min-w-[120px]`}>
-            <button type="button" onClick={() => setActivePanel("search")} className="flex size-[22px] items-center justify-center" aria-label="Tìm kiếm">
+            <button type="button" onClick={() => setActivePanel("search")} className="flex size-[22px] items-center justify-center md:hidden" aria-label="Tìm kiếm">
               <SearchAssetIcon />
             </button>
 
@@ -323,41 +342,43 @@ function MobileNavBar({ isAuthenticated, avatarSrc }) {
               <NotificationBell
                 className="inline-flex"
                 buttonClassName="p-0"
-                iconClassName="h-[22px] w-[22px]"
+                iconClassName="h-[22px] w-[22px] md:h-[30px] md:w-[30px]"
                 badgeClassName="hidden"
               />
             )}
 
-            <button type="button" onClick={openMobileCart} className="relative flex size-[22px] items-center justify-center" aria-label="Giỏ hàng">
-              <img src={isAuthenticated ? navbarImages.cartYellow : cartIcon} alt="" className="size-[18px]" />
+            <button type="button" onClick={openMobileCart} className="relative flex size-[22px] items-center justify-center md:size-[30px]" aria-label="Giỏ hàng">
+              <img src={isAuthenticated ? navbarImages.cartYellow : cartIcon} alt="" className="size-[18px] md:size-[30px]" />
             </button>
 
             {isAuthenticated ? (
-              <Link to="/thong-tin-nguoi-dung" className="flex size-[18px] items-center justify-center overflow-hidden rounded-full border border-black/80" aria-label="Tài khoản">
+              <Link to="/thong-tin-nguoi-dung" className="flex size-[18px] items-center justify-center overflow-hidden rounded-full border border-black/80 md:h-[31px] md:w-[30px]" aria-label="Tài khoản">
                 <img src={avatar} alt="" className="size-full object-cover" />
               </Link>
             ) : (
               <button
                 type="button"
                 onClick={() => openAuth("login")}
-                className="flex h-[22px] w-[76px] items-center justify-center rounded bg-[#FDD835] px-[22px] py-2 shadow-elevation"
+                className="flex h-[22px] w-[76px] items-center justify-center rounded bg-[#FDD835] px-[22px] py-2 shadow-elevation md:h-[30px] md:w-[102px]"
               >
-                <span className="whitespace-nowrap font-['Roboto'] text-[9px] font-bold leading-[14.94px] tracking-[0.4px] text-black/87">ĐĂNG NHẬP</span>
+                <span className="whitespace-nowrap font-['Roboto'] text-[9px] font-bold leading-[14.94px] tracking-[0.4px] text-black/87 md:text-[12px] md:leading-[19.92px]">ĐĂNG NHẬP</span>
               </button>
             )}
 
             <button
               type="button"
               onClick={() => setActivePanel("menu")}
-              className="flex h-[22px] w-[21px] items-center justify-center"
+              className="flex h-[22px] w-[21px] items-center justify-center md:h-[40px] md:w-[40px]"
               aria-label="Mở menu"
             >
-              <FigmaMenuIcon />
+              <span className="flex h-[17px] w-5 items-center justify-center md:h-[30px] md:w-[25px]">
+                <FigmaMenuIcon />
+              </span>
             </button>
           </div>
         </div>
       </header>
-      <div className="h-12 shrink-0 lg:hidden" aria-hidden="true" />
+      <div className="h-12 shrink-0 md:h-16 lg:hidden" aria-hidden="true" />
 
       <MobileSearchPanel open={activePanel === "search"} onClose={closePanel} />
       <MobileMenuPanel open={activePanel === "menu"} onClose={closePanel} />
