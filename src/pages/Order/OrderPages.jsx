@@ -1,16 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { productImages } from "../../assets/productImages";
+import WriteReviewForm from "../../components/product/WriteReviewForm";
 import {
   formatCurrency,
   formatOrderDate,
   getOrderSubtotal,
   getOrderTotal,
+  ORDERS,
   ORDER_FILTERS,
   ORDER_STATUS,
 } from "../../data/orderData";
-import { getMyOrders, getOrderDetails } from "../../services/orderService";
+import {
+  canReviewOrderProduct,
+  cancelOrder,
+  getMyOrders,
+  getOrderDetails,
+  repayOrder,
+} from "../../services/orderService";
 import { addCartItem } from "../../services/cartService";
+import { createProductReview } from "../../services/productService";
 
 const STATUS_STEPS = ["processing", "shipping", "delivered"];
 
@@ -104,11 +113,10 @@ function ProductSummary({ product, large = false }) {
 function OrderActions({
   order,
   onNavigate,
-  onPaymentUnavailable,
-  onCancelUnavailable,
-  onReviewUnavailable,
+  onRepay,
+  onCancel,
+  onReview,
   onReorder,
-  paymentExpired,
   isActionLoading,
 }) {
   const stopAndRun = (callback) => (event) => {
@@ -118,7 +126,7 @@ function OrderActions({
 
   if (order.status === "awaiting_payment") {
     return (
-      <YellowButton onClick={stopAndRun(onPaymentUnavailable)} disabled={paymentExpired || isActionLoading}>
+      <YellowButton onClick={stopAndRun(onRepay)} disabled={isActionLoading}>
         Thanh toán
       </YellowButton>
     );
@@ -129,7 +137,7 @@ function OrderActions({
       <>
         <YellowButton onClick={stopAndRun(onNavigate)}>Theo dõi</YellowButton>
         <OutlineButton
-          onClick={stopAndRun(onCancelUnavailable)}
+          onClick={stopAndRun(onCancel)}
           className="border-[#C62828] text-[#C62828]"
           disabled={isActionLoading}
         >
@@ -146,7 +154,7 @@ function OrderActions({
   if (order.status === "delivered") {
     return (
       <>
-        <YellowButton onClick={stopAndRun(onReviewUnavailable)} disabled={isActionLoading}>
+        <YellowButton onClick={stopAndRun(onReview)} disabled={isActionLoading}>
           Đánh giá
         </YellowButton>
         <OutlineButton onClick={stopAndRun(onReorder)} disabled={isActionLoading}>
@@ -163,14 +171,22 @@ function OrderActions({
   );
 }
 
-function OrderCard({ order, actionMessage, actionMessageType, onActionMessage, isActionLoading, onReorder }) {
+function OrderCard({
+  order,
+  actionMessage,
+  actionMessageType,
+  isActionLoading,
+  onReorder,
+  onRepay,
+  onCancel,
+  onReview,
+}) {
   const navigate = useNavigate();
   const [paymentExpired, setPaymentExpired] = useState(
     order.status === "awaiting_payment" && new Date(order.paymentExpiresAt).getTime() <= Date.now(),
   );
   const status = ORDER_STATUS[order.status];
   const openDetails = () => navigate(`/don-hang-cua-toi/${order.id}`);
-  const showUnavailableMessage = (message) => onActionMessage(message, "info");
 
   return (
     <article className="rounded-[16px] border border-[#C2C6D4] bg-white px-[21px] py-[11px] transition hover:border-[#1976D2] hover:shadow-md">
@@ -206,17 +222,10 @@ function OrderCard({ order, actionMessage, actionMessageType, onActionMessage, i
           <OrderActions
             order={order}
             onNavigate={openDetails}
-            onPaymentUnavailable={() =>
-              showUnavailableMessage("Backend hiện chưa có API thanh toán lại đơn hàng đang chờ thanh toán.")
-            }
-            onCancelUnavailable={() =>
-              showUnavailableMessage("Backend hiện chưa mở API hủy đơn cho khách hàng.")
-            }
-            onReviewUnavailable={() =>
-              showUnavailableMessage("Mục đánh giá từ trang đơn hàng mình sẽ nối tiếp khi chốt luồng review sản phẩm.")
-            }
+            onRepay={() => onRepay(order)}
+            onCancel={() => onCancel(order)}
+            onReview={() => onReview(order)}
             onReorder={() => onReorder(order)}
-            paymentExpired={paymentExpired}
             isActionLoading={isActionLoading}
           />
         </div>
@@ -227,6 +236,106 @@ function OrderCard({ order, actionMessage, actionMessageType, onActionMessage, i
         </p>
       ) : null}
     </article>
+  );
+}
+
+function OrderReviewModal({
+  order,
+  reviewableProducts,
+  isLoading,
+  submitLoading,
+  onClose,
+  onSubmit,
+}) {
+  const [selectedProductId, setSelectedProductId] = useState("");
+
+  useEffect(() => {
+    if (!reviewableProducts.length) {
+      setSelectedProductId("");
+      return;
+    }
+
+    setSelectedProductId((current) =>
+      reviewableProducts.some((product) => String(product.productId) === String(current))
+        ? current
+        : String(reviewableProducts[0].productId),
+    );
+  }, [reviewableProducts]);
+
+  const selectedProduct = reviewableProducts.find(
+    (product) => String(product.productId) === String(selectedProductId),
+  );
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/30 px-6 py-10 backdrop-blur-[2px]">
+      <div className="w-full max-w-[1040px]">
+        <div className="rounded-[18px] bg-white p-6 shadow-xl">
+          <div className="mb-5 flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-[28px] font-bold text-[#031635]">Đánh giá sản phẩm</h2>
+              <p className="text-[14px] text-[#667085]">Đơn hàng #{order.id}</p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded p-2 text-[24px] leading-none text-[#667085] transition hover:bg-black/5"
+              aria-label="Đóng đánh giá"
+            >
+              ×
+            </button>
+          </div>
+
+          {isLoading ? (
+            <p className="py-10 text-center text-[#0D47A1]">Đang kiểm tra sản phẩm có thể đánh giá...</p>
+          ) : reviewableProducts.length ? (
+            <div className="space-y-5">
+              <div className="flex flex-wrap gap-3">
+                {reviewableProducts.map((product) => {
+                  const active = String(product.productId) === String(selectedProductId);
+                  return (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => setSelectedProductId(String(product.productId))}
+                      className={`flex items-center gap-3 rounded-[12px] border px-4 py-3 text-left transition ${
+                        active
+                          ? "border-[#0D47A1] bg-[#EAF2FF]"
+                          : "border-[#D0D5DD] bg-white hover:border-[#98A2B3]"
+                      }`}
+                    >
+                      <img
+                        src={product.image || productImages.detailImage}
+                        alt={product.name}
+                        className="h-12 w-12 rounded object-cover"
+                      />
+                      <span className="max-w-[220px] text-[14px] font-medium text-[#1D2939]">
+                        {product.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {selectedProduct ? (
+                <div className={submitLoading ? "pointer-events-none opacity-70" : ""}>
+                  <WriteReviewForm
+                    key={selectedProduct.productId}
+                    targetType="product"
+                    targetId={selectedProduct.productId}
+                    targetName={selectedProduct.name}
+                    onSubmit={onSubmit}
+                  />
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <p className="py-10 text-center text-[#667085]">
+              Hiện chưa có sản phẩm nào trong đơn hàng này đủ điều kiện để đánh giá.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -288,6 +397,9 @@ export function MyOrdersPage() {
   const [loadError, setLoadError] = useState("");
   const [activeOrderId, setActiveOrderId] = useState("");
   const [actionFeedback, setActionFeedback] = useState({});
+  const [reviewOrderId, setReviewOrderId] = useState("");
+  const [reviewableProducts, setReviewableProducts] = useState([]);
+  const [reviewEligibilityLoading, setReviewEligibilityLoading] = useState(false);
   const navigate = useNavigate();
 
   const updateActionFeedback = (orderId, message, type = "info") => {
@@ -327,6 +439,124 @@ export function MyOrdersPage() {
     }
   };
 
+  const handleCancelOrder = async (order) => {
+    const confirmed = window.confirm("Bạn chắc chắn muốn hủy đơn hàng này?");
+    if (!confirmed) return;
+
+    setActiveOrderId(order.id);
+    updateActionFeedback(order.id, "");
+
+    try {
+      await cancelOrder(order.id);
+      setOrdersData((current) =>
+        current.map((item) =>
+          item.id === order.id
+            ? {
+                ...item,
+                status: "cancelled",
+                order_status: "cancelled",
+              }
+            : item,
+        ),
+      );
+      updateActionFeedback(order.id, "Đã hủy đơn hàng thành công.");
+    } catch (error) {
+      updateActionFeedback(order.id, error?.message || "Không thể hủy đơn hàng lúc này.", "error");
+    } finally {
+      setActiveOrderId("");
+    }
+  };
+
+  const handleRepayOrder = async (order) => {
+    setActiveOrderId(order.id);
+    updateActionFeedback(order.id, "");
+
+    try {
+      const result = await repayOrder(order.id, { paymentMethod: "online" });
+      if (result?.payment_url) {
+        window.open(result.payment_url, "_blank", "noopener,noreferrer");
+      }
+      updateActionFeedback(order.id, "Đã tạo yêu cầu thanh toán lại. Cửa sổ thanh toán đã được mở.");
+    } catch (error) {
+      updateActionFeedback(order.id, error?.message || "Không thể tạo yêu cầu thanh toán lại.", "error");
+    } finally {
+      setActiveOrderId("");
+    }
+  };
+
+  const handleOpenReview = async (order) => {
+    setReviewOrderId(order.id);
+    setReviewEligibilityLoading(true);
+    setReviewableProducts([]);
+    updateActionFeedback(order.id, "");
+
+    try {
+      const eligibilityResults = await Promise.all(
+        order.products.map(async (product) => {
+          if (!product.productId) {
+            return { ...product, allowed: false };
+          }
+
+          try {
+            const eligibility = await canReviewOrderProduct(product.productId);
+            return { ...product, allowed: eligibility.allowed, message: eligibility.message };
+          } catch (error) {
+            return {
+              ...product,
+              allowed: false,
+              message: error?.message || "Không thể kiểm tra quyền đánh giá.",
+            };
+          }
+        }),
+      );
+
+      const allowedProducts = eligibilityResults.filter((product) => product.allowed);
+      setReviewableProducts(allowedProducts);
+
+      if (!allowedProducts.length) {
+        const firstReason = eligibilityResults.find((product) => product.message)?.message;
+        updateActionFeedback(order.id, firstReason || "Đơn hàng này hiện chưa có sản phẩm nào có thể đánh giá.", "error");
+      }
+    } finally {
+      setReviewEligibilityLoading(false);
+    }
+  };
+
+  const handleReviewSubmit = async ({ targetId, rating, review }) => {
+    if (!reviewOrderId) return;
+
+    if (!targetId || !rating) {
+      updateActionFeedback(reviewOrderId, "Vui lòng chọn số sao trước khi gửi đánh giá.", "error");
+      return;
+    }
+
+    setActiveOrderId(reviewOrderId);
+
+    try {
+      await createProductReview(targetId, { rating, content: review });
+      const submittedProduct = reviewableProducts.find(
+        (product) => String(product.productId) === String(targetId),
+      );
+      const remainingProducts = reviewableProducts.filter(
+        (product) => String(product.productId) !== String(targetId),
+      );
+
+      setReviewableProducts(remainingProducts);
+      updateActionFeedback(
+        reviewOrderId,
+        `Đã gửi đánh giá cho sản phẩm ${submittedProduct?.name || ""}`.trim(),
+      );
+
+      if (!remainingProducts.length) {
+        setReviewOrderId("");
+      }
+    } catch (error) {
+      updateActionFeedback(reviewOrderId, error?.message || "Không thể gửi đánh giá lúc này.", "error");
+    } finally {
+      setActiveOrderId("");
+    }
+  };
+
   useEffect(() => {
     let active = true;
     setIsLoading(true);
@@ -338,8 +568,8 @@ export function MyOrdersPage() {
       })
       .catch((error) => {
         if (!active) return;
-        setOrdersData([]);
-        setLoadError(error?.message || "Không thể tải danh sách đơn hàng.");
+        setOrdersData(ORDERS);
+        setLoadError(error?.message || "Không thể tải danh sách đơn hàng, đang hiển thị dữ liệu mẫu.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -415,8 +645,6 @@ export function MyOrdersPage() {
       <div className="flex flex-col gap-4">
         {isLoading ? (
           <p className="py-16 text-center text-[#0D47A1]">Đang tải đơn hàng...</p>
-        ) : loadError ? (
-          <p className="py-16 text-center text-[#D32F2F]">{loadError}</p>
         ) : orders.length ? (
           orders.map((order) => (
             <OrderCard
@@ -424,15 +652,31 @@ export function MyOrdersPage() {
               order={order}
               actionMessage={actionFeedback[order.id]?.message}
               actionMessageType={actionFeedback[order.id]?.type}
-              onActionMessage={(message, type) => updateActionFeedback(order.id, message, type)}
               isActionLoading={activeOrderId === order.id}
               onReorder={handleReorder}
+              onRepay={handleRepayOrder}
+              onCancel={handleCancelOrder}
+              onReview={handleOpenReview}
             />
           ))
         ) : (
           <p className="py-16 text-center text-[#667085]">Không tìm thấy đơn hàng phù hợp.</p>
         )}
       </div>
+      {loadError && !isLoading && (
+        <p className="-mt-2 text-center text-sm text-[#0D47A1]">{loadError}</p>
+      )}
+
+      {reviewOrderId ? (
+        <OrderReviewModal
+          order={ordersData.find((order) => order.id === reviewOrderId) || { id: reviewOrderId, products: [] }}
+          reviewableProducts={reviewableProducts}
+          isLoading={reviewEligibilityLoading}
+          submitLoading={activeOrderId === reviewOrderId}
+          onClose={() => setReviewOrderId("")}
+          onSubmit={handleReviewSubmit}
+        />
+      ) : null}
     </div>
   );
 }
@@ -501,6 +745,12 @@ export function OrderDetailsPage() {
   const [order, setOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionMessage, setActionMessage] = useState(null);
+  const [reviewableProducts, setReviewableProducts] = useState([]);
+  const [reviewEligibilityLoading, setReviewEligibilityLoading] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let active = true;
@@ -513,8 +763,9 @@ export function OrderDetailsPage() {
       })
       .catch((error) => {
         if (!active) return;
-        setOrder(null);
-        setLoadError(error?.message || "Không thể tải chi tiết đơn hàng.");
+        const fallbackOrder = ORDERS.find((item) => String(item.id) === String(orderId)) || ORDERS[0] || null;
+        setOrder(fallbackOrder);
+        setLoadError(error?.message || "Không thể tải chi tiết đơn hàng, đang hiển thị dữ liệu mẫu.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -525,6 +776,166 @@ export function OrderDetailsPage() {
     };
   }, [orderId]);
 
+  const handleReorder = async () => {
+    const validItems = (order?.products || []).filter((product) => product.productId);
+    if (!validItems.length) {
+      setActionMessage({ type: "error", text: "Không thể đặt lại vì đơn hàng này không còn dữ liệu sản phẩm hợp lệ." });
+      return;
+    }
+
+    setActionLoading(true);
+    setActionMessage(null);
+
+    try {
+      await Promise.all(
+        validItems.map((product) =>
+          addCartItem({
+            productId: product.productId,
+            variantId: product.variantId,
+            qty: product.quantity,
+          }),
+        ),
+      );
+      setActionMessage({ type: "success", text: "Đã thêm lại sản phẩm vào giỏ hàng." });
+      navigate("/gio-hang");
+    } catch (error) {
+      setActionMessage({
+        type: "error",
+        text: error?.message || "Không thể thêm lại sản phẩm vào giỏ hàng.",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    const confirmed = window.confirm("Bạn chắc chắn muốn hủy đơn hàng này?");
+    if (!confirmed) return;
+
+    setActionLoading(true);
+    setActionMessage(null);
+
+    try {
+      await cancelOrder(order.id);
+      setOrder((current) =>
+        current
+          ? {
+              ...current,
+              status: "cancelled",
+              order_status: "cancelled",
+            }
+          : current,
+      );
+      setActionMessage({ type: "success", text: "Đã hủy đơn hàng thành công." });
+    } catch (error) {
+      setActionMessage({
+        type: "error",
+        text: error?.message || "Không thể hủy đơn hàng lúc này.",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRepay = async () => {
+    setActionLoading(true);
+    setActionMessage(null);
+
+    try {
+      const result = await repayOrder(order.id, { paymentMethod: "online" });
+      if (result?.payment_url) {
+        window.open(result.payment_url, "_blank", "noopener,noreferrer");
+      }
+      setActionMessage({
+        type: "success",
+        text: "Đã tạo yêu cầu thanh toán lại. Cửa sổ thanh toán đã được mở.",
+      });
+    } catch (error) {
+      setActionMessage({
+        type: "error",
+        text: error?.message || "Không thể tạo yêu cầu thanh toán lại.",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleOpenReview = async () => {
+    setReviewOpen(true);
+    setReviewEligibilityLoading(true);
+    setReviewableProducts([]);
+    setActionMessage(null);
+
+    try {
+      const eligibilityResults = await Promise.all(
+        (order?.products || []).map(async (product) => {
+          if (!product.productId) return { ...product, allowed: false };
+
+          try {
+            const eligibility = await canReviewOrderProduct(product.productId);
+            return { ...product, allowed: eligibility.allowed, message: eligibility.message };
+          } catch (error) {
+            return {
+              ...product,
+              allowed: false,
+              message: error?.message || "Không thể kiểm tra quyền đánh giá.",
+            };
+          }
+        }),
+      );
+
+      const allowedProducts = eligibilityResults.filter((product) => product.allowed);
+      setReviewableProducts(allowedProducts);
+
+      if (!allowedProducts.length) {
+        const firstReason = eligibilityResults.find((product) => product.message)?.message;
+        setActionMessage({
+          type: "error",
+          text: firstReason || "Đơn hàng này hiện chưa có sản phẩm nào có thể đánh giá.",
+        });
+      }
+    } finally {
+      setReviewEligibilityLoading(false);
+    }
+  };
+
+  const handleReviewSubmit = async ({ targetId, rating, review }) => {
+    if (!targetId || !rating) {
+      setActionMessage({ type: "error", text: "Vui lòng chọn số sao trước khi gửi đánh giá." });
+      return;
+    }
+
+    setActionLoading(true);
+    setActionMessage(null);
+
+    try {
+      await createProductReview(targetId, { rating, content: review });
+      const submittedProduct = reviewableProducts.find(
+        (product) => String(product.productId) === String(targetId),
+      );
+      const remainingProducts = reviewableProducts.filter(
+        (product) => String(product.productId) !== String(targetId),
+      );
+
+      setReviewableProducts(remainingProducts);
+      setActionMessage({
+        type: "success",
+        text: `Đã gửi đánh giá cho sản phẩm ${submittedProduct?.name || ""}`.trim(),
+      });
+
+      if (!remainingProducts.length) {
+        setReviewOpen(false);
+      }
+    } catch (error) {
+      setActionMessage({
+        type: "error",
+        text: error?.message || "Không thể gửi đánh giá lúc này.",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="mx-auto w-full max-w-[960px] py-16 text-center text-[#0D47A1]">
@@ -533,16 +944,53 @@ export function OrderDetailsPage() {
     );
   }
 
-  if (loadError || !order) {
+  if (!order) {
     return (
       <div className="mx-auto w-full max-w-[960px] py-16 text-center">
-        <h1 className="text-2xl font-bold">{loadError || "Không tìm thấy đơn hàng"}</h1>
+        <h1 className="text-2xl font-bold">Không tìm thấy đơn hàng</h1>
         <Link to="/don-hang-cua-toi" className="mt-4 inline-block text-[#0D47A1]">Quay lại danh sách đơn hàng</Link>
       </div>
     );
   }
 
   const activeStep = STATUS_STEPS.indexOf(order.status);
+  const detailActions = [];
+
+  if (order.status === "awaiting_payment") {
+    detailActions.push({
+      key: "repay",
+      label: "Thanh toán",
+      onClick: handleRepay,
+      variant: "yellow",
+    });
+  } else if (order.status === "processing") {
+    detailActions.push({
+      key: "cancel",
+      label: "Hủy đơn",
+      onClick: handleCancel,
+      variant: "danger",
+    });
+  } else if (order.status === "delivered") {
+    detailActions.push({
+      key: "review",
+      label: "Đánh giá",
+      onClick: handleOpenReview,
+      variant: "yellow",
+    });
+    detailActions.push({
+      key: "reorder",
+      label: "Đặt lại",
+      onClick: handleReorder,
+      variant: "outline",
+    });
+  } else {
+    detailActions.push({
+      key: "reorder",
+      label: "Đặt lại",
+      onClick: handleReorder,
+      variant: "outline",
+    });
+  }
 
   return (
     <div className="mx-auto w-full max-w-[960px] pb-10">
@@ -557,6 +1005,11 @@ export function OrderDetailsPage() {
         </Link>
         <h1 className="text-2xl font-bold text-slate-900">Chi tiết đơn hàng</h1>
       </div>
+      {loadError && (
+        <p className="mb-4 rounded-xl bg-[#E5F6FD] px-4 py-3 text-center text-sm font-medium text-[#0D47A1]">
+          {loadError}
+        </p>
+      )}
       <section className="rounded-[14px] bg-white px-6 py-[30px]">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -571,6 +1024,17 @@ export function OrderDetailsPage() {
           <span>Ngày đặt hàng: <strong className="text-[#1D2939]">{formatOrderDate(order.orderedAt)}</strong></span>
           {order.estimatedDelivery && <span className="text-[#12B76A]">Giao hàng dự kiến: {formatOrderDate(order.estimatedDelivery, false)}</span>}
         </div>
+        {actionMessage ? (
+          <div
+            className={`mt-5 rounded-xl px-4 py-3 text-sm font-semibold ${
+              actionMessage.type === "success"
+                ? "bg-[#d9f4e4] text-[#137333]"
+                : "bg-[#ffdad6] text-[#ba1a1a]"
+            }`}
+          >
+            {actionMessage.text}
+          </div>
+        ) : null}
         {order.status !== "cancelled" && order.status !== "awaiting_payment" && (
           <div className="relative mt-7 h-[92px]">
             <div className="absolute left-[16.666%] right-[16.666%] top-[41px] h-1 rounded-[2px] bg-[#D0D5DD]">
@@ -613,8 +1077,42 @@ export function OrderDetailsPage() {
             <div className="mt-3 flex justify-between border-t pt-3 text-[20px] font-bold text-[#00355F]"><span>Tổng cộng<small className="block text-[12px] font-normal text-black/40">(Đã bao gồm thuế VAT)</small></span><span>{formatCurrency(getOrderTotal(order))}</span></div>
           </div>
         </div>
+        {detailActions.length ? (
+          <div className="mt-2 flex flex-wrap justify-end gap-3 border-t border-[#D0D5DD] pt-6">
+            {detailActions.map((action) =>
+              action.variant === "yellow" ? (
+                <YellowButton
+                  key={action.key}
+                  onClick={action.onClick}
+                  disabled={actionLoading}
+                >
+                  {action.label}
+                </YellowButton>
+              ) : (
+                <OutlineButton
+                  key={action.key}
+                  onClick={action.onClick}
+                  disabled={actionLoading}
+                  className={action.variant === "danger" ? "border-[#C62828] text-[#C62828]" : ""}
+                >
+                  {action.label}
+                </OutlineButton>
+              ),
+            )}
+          </div>
+        ) : null}
       </section>
       {invoiceOpen && <InvoiceModal order={order} onClose={() => setInvoiceOpen(false)} />}
+      {reviewOpen ? (
+        <OrderReviewModal
+          order={order}
+          reviewableProducts={reviewableProducts}
+          isLoading={reviewEligibilityLoading}
+          submitLoading={actionLoading}
+          onClose={() => setReviewOpen(false)}
+          onSubmit={handleReviewSubmit}
+        />
+      ) : null}
     </div>
   );
 }

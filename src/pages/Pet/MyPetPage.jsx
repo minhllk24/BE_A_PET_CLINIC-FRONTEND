@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { getMyPets } from "../../services/petService";
+import { MOCK_PETS } from "../../data/mockPets";
 
 import buddyImg from "../../assets/images/pets/buddy.jpg";
 import lunaImg from "../../assets/images/pets/luna.jpg";
@@ -227,7 +228,9 @@ function PetListPage() {
         if (active) setPets(items);
       })
       .catch((error) => {
-        if (active) setLoadError(error?.message || "Không thể tải hồ sơ thú cưng");
+        if (!active) return;
+        setPets(MOCK_PETS);
+        setLoadError(error?.message || "Không thể tải hồ sơ thú cưng, đang hiển thị dữ liệu mẫu.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -324,10 +327,12 @@ function PetListPage() {
         </p>
       )}
 
+      {loadError && !isLoading && (
+        <p className="mb-4 text-center text-sm text-[#0D47A1]">{loadError}</p>
+      )}
+
       {isLoading ? (
         <div className="py-12 text-center text-slate-500">Đang tải hồ sơ thú cưng...</div>
-      ) : loadError ? (
-        <div className="py-12 text-center text-red-600">{loadError}</div>
       ) : (
         <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredPets.map((pet) => {
@@ -391,7 +396,7 @@ function PetListPage() {
         </div>
       )}
 
-      {!isLoading && !loadError && filteredPets.length === 0 && (
+      {!isLoading && filteredPets.length === 0 && (
         <div className="text-center py-12">
           <p className="text-slate-500">Không tìm thấy thú cưng nào</p>
         </div>

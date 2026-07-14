@@ -24,7 +24,13 @@ import {
   FEATURED_COMMUNITY_POST,
   INITIAL_COMMUNITY_COMMENTS,
 } from "../../data/communityData";
-import { getPostsPage } from "../../services/contentService";
+import {
+  createPostComment,
+  getPostComments,
+  getPostsPage,
+  replyPostComment,
+  togglePostLike,
+} from "../../services/contentService";
 
 const POST_TYPES = {
   "Khoảnh khắc": "bg-[#E3F2FD] text-[#005AB4]",
@@ -47,6 +53,7 @@ function normalizeCommunityPost(post) {
 function normalizeApiCommunityPost(post) {
   return normalizeCommunityPost({
     ...post,
+    backendId: post.backendId || post.id,
     author: post.author,
     avatar: post.authorImage,
     time: post.publishedAt,
@@ -261,20 +268,27 @@ export default function CommunityPage() {
   const [shareNotice, setShareNotice] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const [apiEmptyMessage, setApiEmptyMessage] = useState("");
+  const [commentsLoading, setCommentsLoading] = useState(false);
 
   useEffect(() => {
     let active = true;
     setIsLoading(true);
     setLoadError("");
+    setApiEmptyMessage("");
 
     getPostsPage({ type: "community", limit: 100 })
       .then((payload) => {
-        if (!active || !payload.posts.length) return;
+        if (!active) return;
+        if (!payload.posts.length) {
+          setApiEmptyMessage("API cộng đồng chưa có dữ liệu, đang hiển thị dữ liệu mẫu từ giao diện.");
+          return;
+        }
         setPosts(payload.posts.map(normalizeApiCommunityPost));
       })
       .catch((error) => {
         if (!active) return;
-        setLoadError(error?.message || "Không thể tải bài viết cộng đồng.");
+        setApiEmptyMessage(error?.message || "Không thể tải bài viết cộng đồng, đang hiển thị dữ liệu mẫu từ giao diện.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -293,7 +307,43 @@ export default function CommunityPage() {
     const current = state[id] || { liked: false, saved: false };
     return { ...state, [id]: { ...current, [key]: !current[key] } };
   });
-  const openPost = (id) => setSelectedId(id);
+  const openPost = async (id) => {
+    setSelectedId(id);
+    const selected = allPosts.find((post) => post.id === id);
+    if (!selected?.backendId) return;
+
+    setCommentsLoading(true);
+    try {
+      const payload = await getPostComments(selected.backendId, { limit: 50 });
+      const flattenedComments = payload.comments.flatMap((comment) => [
+        {
+          id: comment.id,
+          author: comment.author,
+          avatar: comment.avatar,
+          content: comment.content,
+          time: comment.time,
+        },
+        ...comment.replies.map((reply) => ({
+          id: reply.id,
+          author: reply.author,
+          avatar: reply.avatar,
+          content: reply.content,
+          replyTo: reply.replyTo,
+          time: reply.time,
+        })),
+      ]);
+
+      setCommentsByPost((state) => ({
+        ...state,
+        [id]: flattenedComments,
+      }));
+    } catch (error) {
+      setShareNotice(error?.message || "Không thể tải bình luận bài viết.");
+      window.setTimeout(() => setShareNotice(""), 2200);
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
   const sharePost = async (post) => {
     const url = `${window.location.origin}/blog/cong-dong#${post.id}`;
     if (navigator.share) await navigator.share({ title: post.title || "Bài viết cộng đồng", url }).catch(() => {});
@@ -302,9 +352,86 @@ export default function CommunityPage() {
     window.setTimeout(() => setShareNotice(""), 1800);
   };
   const addPost = (payload) => setPosts((items) => [{ id: `post-${Date.now()}`, author: "Bạn", initials: "B", time: "Vừa xong", likes: 0, comments: 0, ...payload }, ...items]);
-  const addComment = (postId, content, replyTo) => {
-    setCommentsByPost((state) => ({ ...state, [postId]: [...(state[postId] || []), { id: Date.now(), author: "Bạn", content, replyTo, time: "Vừa xong" }] }));
-    setPosts((items) => items.map((post) => post.id === postId ? { ...post, comments: Number(post.comments || 0) + 1 } : post));
+  const addComment = async (postId, content, replyTo) => {
+    const selected = allPosts.find((post) => post.id === postId);
+    if (!selected) return;
+
+    if (!isAuthenticated || !selected.backendId) {
+      setCommentsByPost((state) => ({ ...state, [postId]: [...(state[postId] || []), { id: Date.now(), author: "Bạn", content, replyTo, time: "Vừa xong" }] }));
+      setPosts((items) => items.map((post) => post.id === postId ? { ...post, comments: Number(post.comments || 0) + 1 } : post));
+      return;
+    }
+
+    try {
+      const parentComment = replyTo
+        ? (commentsByPost[postId] || []).find((comment) => comment.author === replyTo)
+        : null;
+
+      if (replyTo && parentComment?.id) {
+        await replyPostComment(parentComment.id, content);
+      } else {
+        await createPostComment(selected.backendId, content);
+      }
+
+      const payload = await getPostComments(selected.backendId, { limit: 50 });
+      const flattenedComments = payload.comments.flatMap((comment) => [
+        {
+          id: comment.id,
+          author: comment.author,
+          avatar: comment.avatar,
+          content: comment.content,
+          time: comment.time,
+        },
+        ...comment.replies.map((reply) => ({
+          id: reply.id,
+          author: reply.author,
+          avatar: reply.avatar,
+          content: reply.content,
+          replyTo: reply.replyTo,
+          time: reply.time,
+        })),
+      ]);
+
+      setCommentsByPost((state) => ({ ...state, [postId]: flattenedComments }));
+      setPosts((items) =>
+        items.map((post) =>
+          post.id === postId ? { ...post, comments: flattenedComments.length } : post,
+        ),
+      );
+    } catch (error) {
+      setShareNotice(error?.message || "Không thể gửi bình luận.");
+      window.setTimeout(() => setShareNotice(""), 2200);
+    }
+  };
+
+  const handleLikePost = async (post) => {
+    if (!post.backendId || !isAuthenticated) {
+      updatePostState(post.id, "liked");
+      return;
+    }
+
+    const currentlyLiked = getState(post.id).liked;
+
+    try {
+      await togglePostLike(post.backendId);
+      setPostState((state) => ({
+        ...state,
+        [post.id]: {
+          ...(state[post.id] || { saved: false }),
+          liked: !currentlyLiked,
+        },
+      }));
+      setPosts((items) =>
+        items.map((item) =>
+          item.id === post.id
+            ? { ...item, likes: Math.max(0, Number(item.likes || 0) + (currentlyLiked ? -1 : 1)) }
+            : item,
+        ),
+      );
+    } catch (error) {
+      setShareNotice(error?.message || "Không thể thích bài viết lúc này.");
+      window.setTimeout(() => setShareNotice(""), 2200);
+    }
   };
 
   return (
@@ -320,15 +447,16 @@ export default function CommunityPage() {
           <section className="flex flex-col items-center pb-5 pt-2 text-center"><h1 className="flex items-center gap-1 text-[40px] font-bold tracking-[-0.8px]">Kết nối <span className="text-[#0D47A1]">chia sẻ</span><img src={blogImages.communityTitle} alt="" className="h-12 w-12" /></h1><p className="mt-2 text-[16px] leading-6 text-[#414753]">Nơi chia sẻ khoảnh khắc, kinh nghiệm và lan tỏa yêu thương<br />cùng cộng đồng yêu thú cưng!!</p></section>
           <Composer onPost={addPost} />
           {loadError && <p className="w-[1208px] text-[14px] text-[#D32F2F]">{loadError}</p>}
+          {apiEmptyMessage && !loadError && <p className="w-[1208px] text-[14px] text-[#0D47A1]">{apiEmptyMessage}</p>}
           {isLoading && <p className="w-[1208px] text-[16px] text-[#0D47A1]">Đang tải bài viết cộng đồng...</p>}
           <section className="mt-7 grid w-[1208px] grid-cols-2 items-start gap-4">
-            {columns.map((column, columnIndex) => <div key={columnIndex} className="flex flex-col gap-4">{column.map((post) => <CommunityCard key={post.id} post={post} state={getState(post.id)} onOpen={() => openPost(post.id)} onLike={() => updatePostState(post.id, "liked")} onSave={() => updatePostState(post.id, "saved")} onShare={() => sharePost(post)} />)}{columnIndex === 1 && <div className="rounded-[24px] bg-[#0D47A1] p-8 text-center text-white"><h3 className="font-semibold">Gia đình Dr.Pet</h3><p className="mt-2 text-[14px]">Tham gia cộng đồng Zalo để cập nhật tin tức và ưu đãi sớm nhất.</p><button className="mt-5 rounded-full bg-white px-8 py-2 text-[12px] font-bold text-[#0D47A1]">THAM GIA NGAY</button></div>}</div>)}
+            {columns.map((column, columnIndex) => <div key={columnIndex} className="flex flex-col gap-4">{column.map((post) => <CommunityCard key={post.id} post={post} state={getState(post.id)} onOpen={() => openPost(post.id)} onLike={() => handleLikePost(post)} onSave={() => updatePostState(post.id, "saved")} onShare={() => sharePost(post)} />)}{columnIndex === 1 && <div className="rounded-[24px] bg-[#0D47A1] p-8 text-center text-white"><h3 className="font-semibold">Gia đình Dr.Pet</h3><p className="mt-2 text-[14px]">Tham gia cộng đồng Zalo để cập nhật tin tức và ưu đãi sớm nhất.</p><button className="mt-5 rounded-full bg-white px-8 py-2 text-[12px] font-bold text-[#0D47A1]">THAM GIA NGAY</button></div>}</div>)}
           </section>
         </main>
         <Footer variant="white" />
       </CanvasLayout>
       {shareNotice && <div className="fixed bottom-6 left-1/2 z-[110] -translate-x-1/2 rounded-full bg-[#1A1C1C] px-5 py-3 text-sm text-white shadow-xl">{shareNotice}</div>}
-      {selectedPost && <PostModal post={selectedPost} comments={commentsByPost[selectedPost.id] || EMPTY_COMMENTS} state={getState(selectedPost.id)} onClose={() => setSelectedId(null)} onAddComment={(content, replyTo) => addComment(selectedPost.id, content, replyTo)} onLike={() => updatePostState(selectedPost.id, "liked")} onSave={() => updatePostState(selectedPost.id, "saved")} onShare={() => sharePost(selectedPost)} />}
+      {selectedPost && <PostModal post={selectedPost} comments={commentsLoading ? EMPTY_COMMENTS : (commentsByPost[selectedPost.id] || EMPTY_COMMENTS)} state={getState(selectedPost.id)} onClose={() => setSelectedId(null)} onAddComment={(content, replyTo) => addComment(selectedPost.id, content, replyTo)} onLike={() => handleLikePost(selectedPost)} onSave={() => updatePostState(selectedPost.id, "saved")} onShare={() => sharePost(selectedPost)} />}
     </div>
   );
 }

@@ -95,11 +95,13 @@ export default function FirstAidPage() {
   const [allPosts, setAllPosts] = useState(FIRST_AID_POSTS);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const [apiEmptyMessage, setApiEmptyMessage] = useState("");
 
   useEffect(() => {
     let active = true;
     setIsLoading(true);
     setLoadError("");
+    setApiEmptyMessage("");
 
     Promise.all([
       getFirstAidCategories(),
@@ -108,11 +110,16 @@ export default function FirstAidPage() {
       .then(([apiCategories, apiGuides]) => {
         if (!active) return;
         if (apiCategories.length > 1) setCategories(apiCategories);
-        if (apiGuides.guides.length) setAllPosts(apiGuides.guides);
+        if (apiGuides.guides.length) {
+          setAllPosts(apiGuides.guides);
+          return;
+        }
+
+        setApiEmptyMessage("API cẩm nang sơ cứu chưa có dữ liệu, đang hiển thị dữ liệu mẫu từ giao diện.");
       })
       .catch((error) => {
         if (!active) return;
-        setLoadError(error?.message || "Không thể tải cẩm nang sơ cứu.");
+        setApiEmptyMessage(error?.message || "Không thể tải cẩm nang sơ cứu, đang hiển thị dữ liệu mẫu từ giao diện.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -183,14 +190,19 @@ export default function FirstAidPage() {
             </label>
 
             {loadError && <p className="mt-4 text-[14px] text-[#D32F2F]">{loadError}</p>}
+            {apiEmptyMessage && !loadError && <p className="mt-4 text-[14px] text-[#0D47A1]">{apiEmptyMessage}</p>}
 
             {isLoading ? (
               <div className="mt-12 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">
                 Đang tải cẩm nang sơ cứu...
               </div>
-            ) : (
+            ) : visiblePosts.length ? (
               <div className="mt-12 grid grid-cols-12 auto-rows-auto gap-6">
                 {visiblePosts.map((post) => <FirstAidCard key={post.id} post={post} />)}
+              </div>
+            ) : (
+              <div className="mt-12 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#414753]">
+                Không tìm thấy cẩm nang phù hợp.
               </div>
             )}
 

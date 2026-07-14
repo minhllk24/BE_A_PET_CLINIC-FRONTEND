@@ -149,7 +149,7 @@ export default function FirstAidDetailPage() {
       })
       .catch((error) => {
         if (!active) return;
-        setLoadError(error?.message || "Không thể tải hướng dẫn sơ cứu.");
+        setLoadError(error?.message || "Không thể tải hướng dẫn sơ cứu, đang hiển thị dữ liệu mẫu từ giao diện.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -194,7 +194,7 @@ export default function FirstAidDetailPage() {
               </div>
             )}
             {loadError && (
-              <div className="mt-4 rounded-[16px] bg-white px-6 py-3 text-[#D32F2F]">
+              <div className="mt-4 rounded-[16px] bg-white px-6 py-3 text-[#0D47A1]">
                 {loadError}
               </div>
             )}

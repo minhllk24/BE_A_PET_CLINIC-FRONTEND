@@ -202,7 +202,7 @@ export default function RescuePage() {
       })
       .catch((error) => {
         if (!active) return;
-        setLoadError(error?.message || "Không thể tải dữ liệu cứu trợ.");
+        setLoadError(error?.message || "Không thể tải dữ liệu cứu trợ, đang hiển thị dữ liệu mẫu.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -330,7 +330,7 @@ export default function RescuePage() {
                 </div>
               )}
             </div>
-            {loadError && <p className="mt-4 text-[14px] text-[#D32F2F]">{loadError}</p>}
+            {loadError && <p className="mt-4 text-[14px] text-[#0D47A1]">{loadError}</p>}
 
             <div className="mt-8 flex justify-center gap-3 text-[#0D47A1]">
               <button

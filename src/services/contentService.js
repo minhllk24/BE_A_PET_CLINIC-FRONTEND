@@ -95,6 +95,8 @@ export function normalizePost(post = {}) {
     categoryLabel,
     title: post.title || "Bài viết",
     excerpt: post.excerpt || paragraphs[0] || "Thông tin hữu ích giúp bạn chăm sóc thú cưng mỗi ngày.",
+    content: contentText,
+    paragraphs,
     image: post.thumbnail_url || blogImages.postPlaceholder,
     author: post.author?.full_name || "Dr. Pet's House",
     authorImage: post.author?.avatar_url || blogImages.authorMinhAnh,
@@ -109,9 +111,31 @@ export function normalizePost(post = {}) {
     tags: post.hashtags
       ? String(post.hashtags).split(/[,\s]+/).filter(Boolean).map((tag) => (tag.startsWith("#") ? tag : `#${tag}`))
       : [`#${slugify(categoryLabel) || "petcare"}`],
-    commentsCount: post._count?.comments || 0,
+    commentsCount: post._count?.comments || post.commentsCount || 0,
     likesCount: post.likes_count || 0,
     views: post.view_count || 0,
+  };
+}
+
+function normalizePostComment(comment = {}) {
+  const replies = Array.isArray(comment.children)
+    ? comment.children.map((child) => ({
+        id: child.comment_id || child.id,
+        author: child.user?.full_name || "Người dùng",
+        avatar: child.user?.avatar_url || "",
+        content: child.content || "",
+        replyTo: comment.user?.full_name || null,
+        time: formatDate(child.created_at),
+      }))
+    : [];
+
+  return {
+    id: comment.comment_id || comment.id,
+    author: comment.user?.full_name || "Người dùng",
+    avatar: comment.user?.avatar_url || "",
+    content: comment.content || "",
+    time: formatDate(comment.created_at),
+    replies,
   };
 }
 
@@ -173,9 +197,10 @@ export async function getTrendingPosts(limit = 5) {
 export async function getPostsPage(params = {}) {
   const response = await apiClient.get("/posts", { params });
   const payload = assertSuccess(response);
+  const posts = Array.isArray(payload.posts) ? payload.posts : [];
   return {
-    posts: (payload.posts || []).map(normalizePost),
-    totalRows: Number(payload.totalRows || 0),
+    posts: posts.map(normalizePost),
+    totalRows: Number(payload.totalRows ?? posts.length),
     totalPages: Number(payload.totalPages || 1),
   };
 }
@@ -203,4 +228,29 @@ export async function getFirstAidGuidesPage(params = {}) {
 export async function getFirstAidGuideBySlug(slug) {
   const response = await apiClient.get(`/first-aid/guides/${slug}`);
   return normalizeFirstAidGuide(assertSuccess(response));
+}
+
+export async function getPostComments(postId, params = {}) {
+  const response = await apiClient.get(`/posts/${postId}/comments`, { params });
+  const payload = assertSuccess(response);
+  return {
+    comments: Array.isArray(payload?.comments) ? payload.comments.map(normalizePostComment) : [],
+    totalRows: Number(payload?.totalRows || 0),
+    totalPages: Number(payload?.totalPages || 1),
+  };
+}
+
+export async function createPostComment(postId, content) {
+  const response = await apiClient.post(`/posts/${postId}/comments`, { content });
+  return assertSuccess(response);
+}
+
+export async function replyPostComment(commentId, content) {
+  const response = await apiClient.post(`/posts/comments/${commentId}/reply`, { content });
+  return assertSuccess(response);
+}
+
+export async function togglePostLike(postId) {
+  const response = await apiClient.post(`/posts/${postId}/like`);
+  return assertSuccess(response);
 }

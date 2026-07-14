@@ -118,3 +118,27 @@ export async function getOrderDetails(orderId) {
   const response = await apiClient.get(`/orders/${orderId}`);
   return normalizeOrder(assertSuccess(response));
 }
+
+export async function cancelOrder(orderId) {
+  const response = await apiClient.patch(`/orders/${orderId}/cancel`);
+  return assertSuccess(response);
+}
+
+export async function repayOrder(orderId, payload = {}) {
+  const response = await apiClient.post(`/orders/${orderId}/repay`, {
+    payment_method: payload.paymentMethod || payload.payment_method || "online",
+  });
+  return assertSuccess(response);
+}
+
+export async function canReviewOrderProduct(productId) {
+  const response = await apiClient.get(`/reviews/can-review/product/${productId}`);
+  const payload = assertSuccess(response);
+
+  return {
+    allowed: Boolean(payload),
+    message:
+      response?.EM ||
+      (payload ? "Có thể đánh giá sản phẩm." : "Sản phẩm này hiện chưa thể đánh giá."),
+  };
+}

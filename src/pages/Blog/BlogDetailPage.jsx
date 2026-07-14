@@ -204,7 +204,7 @@ export default function BlogDetailPage() {
       })
       .catch((error) => {
         if (!active) return;
-        setLoadError(error?.message || "Không thể tải bài viết.");
+        setLoadError(error?.message || "Không thể tải bài viết, đang hiển thị dữ liệu mẫu từ giao diện.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -240,7 +240,7 @@ export default function BlogDetailPage() {
                 </div>
               )}
               {loadError && (
-                <div className="w-[813px] rounded-[12px] bg-white px-8 py-4 text-[#D32F2F]">
+                <div className="w-[813px] rounded-[12px] bg-white px-8 py-4 text-[#0D47A1]">
                   {loadError}
                 </div>
               )}

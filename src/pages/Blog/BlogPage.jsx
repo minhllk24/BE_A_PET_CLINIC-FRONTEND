@@ -135,6 +135,7 @@ export default function BlogPage() {
   const [allPosts, setAllPosts] = useState(ALL_BLOG_POSTS);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const [apiEmptyMessage, setApiEmptyMessage] = useState("");
 
   useEffect(() => {
     const categoryParam = searchParams.get("category");
@@ -152,6 +153,7 @@ export default function BlogPage() {
     let active = true;
     setIsLoading(true);
     setLoadError("");
+    setApiEmptyMessage("");
 
     Promise.all([
       getBlogCategories(),
@@ -159,16 +161,30 @@ export default function BlogPage() {
       getTrendingPosts(5),
       getPostsPage({ type: "official_blog", limit: 100 }),
     ])
-      .then(([apiCategories, apiFeatured, apiTrending, apiPosts]) => {
+      .then(async ([apiCategories, apiFeatured, apiTrending, apiPosts]) => {
         if (!active) return;
         if (apiCategories.length > 1) setCategories(apiCategories);
         if (apiFeatured) setFeaturedPost(apiFeatured);
         if (apiTrending.length) setTrendingPosts(apiTrending);
-        if (apiPosts.posts.length) setAllPosts(apiPosts.posts);
+        if (apiPosts.posts.length) {
+          setAllPosts(apiPosts.posts);
+          return;
+        }
+
+        const allApiPosts = await getPostsPage({ limit: 100 });
+        if (!active) return;
+
+        const officialPosts = allApiPosts.posts.filter((post) => post.section === "knowledge");
+        if (officialPosts.length) {
+          setAllPosts(officialPosts);
+          return;
+        }
+
+        setApiEmptyMessage("API blog chưa có dữ liệu, đang hiển thị dữ liệu mẫu từ giao diện.");
       })
       .catch((error) => {
         if (!active) return;
-        setLoadError(error?.message || "Không thể tải bài viết mới nhất.");
+        setApiEmptyMessage(error?.message || "Không thể tải bài viết mới nhất, đang hiển thị dữ liệu mẫu từ giao diện.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -296,6 +312,11 @@ export default function BlogPage() {
             {loadError && (
               <p className="-mt-5 w-full text-[14px] leading-5 text-[#D32F2F]">
                 {loadError}
+              </p>
+            )}
+            {apiEmptyMessage && !loadError && (
+              <p className="-mt-5 w-full text-[14px] leading-5 text-[#0D47A1]">
+                {apiEmptyMessage}
               </p>
             )}
             {isLoading ? (

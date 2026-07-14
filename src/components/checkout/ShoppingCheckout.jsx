@@ -19,6 +19,7 @@ import {
   updateUserAddress,
 } from "../../services/userService";
 import { applyVoucher } from "../../services/loyaltyService";
+import { DEFAULT_USER_ADDRESSES } from "../../data/userProfileData";
 
 function formatMoney(value) {
   return formatVnd(value);
@@ -495,7 +496,9 @@ function ShoppingCheckout({ onBack }) {
       })
       .catch((error) => {
         if (!isMounted) return;
-        setAddressError(error?.message || "Không thể tải địa chỉ");
+        setAddresses(DEFAULT_USER_ADDRESSES);
+        setSelectedAddressId(DEFAULT_USER_ADDRESSES[0]?.id ?? null);
+        setAddressError(error?.message || "Không thể tải địa chỉ, đang hiển thị địa chỉ mẫu.");
       })
       .finally(() => {
         if (isMounted) setAddressesLoading(false);

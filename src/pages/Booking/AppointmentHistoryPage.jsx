@@ -14,6 +14,7 @@ import {
   createAppointmentServiceReview,
   getAppointmentHistory,
 } from "../../services/bookingService";
+import { MOCK_APPOINTMENTS } from "../../data/mockAppointments";
 
 const formatMoney = (value) => formatVnd(value);
 
@@ -469,8 +470,8 @@ function AppointmentHistoryPage() {
       })
       .catch((error) => {
         if (!active) return;
-        setAppointments([]);
-        setLoadError(error?.message || "Không thể tải lịch sử đặt lịch.");
+        setAppointments(MOCK_APPOINTMENTS);
+        setLoadError(error?.message || "Không thể tải lịch sử đặt lịch, đang hiển thị dữ liệu mẫu.");
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -710,8 +711,6 @@ function AppointmentHistoryPage() {
       <div className="flex flex-col gap-4">
         {isLoading ? (
           <p className="py-16 text-center text-[#0D47A1]">Đang tải lịch hẹn...</p>
-        ) : loadError ? (
-          <p className="py-16 text-center text-[#D32F2F]">{loadError}</p>
         ) : filteredAppointments.length ? (
           filteredAppointments.map((appointment) => (
             <AppointmentCard
@@ -727,6 +726,9 @@ function AppointmentHistoryPage() {
           <p className="py-16 text-center text-[#667085]">Không tìm thấy lịch hẹn phù hợp.</p>
         )}
       </div>
+      {loadError && !isLoading && (
+        <p className="-mt-2 text-center text-sm text-[#0D47A1]">{loadError}</p>
+      )}
 
       {/* <button
         type="button"

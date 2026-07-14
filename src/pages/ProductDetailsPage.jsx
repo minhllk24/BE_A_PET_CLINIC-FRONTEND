@@ -42,7 +42,7 @@ function buildFallbackProduct(product) {
 }
 
 function findFallbackProduct(productId) {
-  return SHOP_PRODUCTS.find((item) => String(item.id) === String(productId));
+  return SHOP_PRODUCTS.find((item) => String(item.id) === String(productId)) || SHOP_PRODUCTS[0];
 }
 
 function formatPrice(value) {
@@ -156,7 +156,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
           const fallbackProduct = buildFallbackProduct(findFallbackProduct(productId));
           setProduct(fallbackProduct);
           setSimilarProducts(FEATURED_PRODUCTS.filter((item) => String(item.id) !== String(productId)).map(buildFallbackProduct));
-          setLoadError(fallbackProduct ? "" : "Không thể tải thông tin sản phẩm.");
+          setLoadError(fallbackProduct ? "Không thể tải thông tin sản phẩm, đang hiển thị dữ liệu mẫu." : "Không thể tải thông tin sản phẩm.");
         }
       })
       .finally(() => {
@@ -326,7 +326,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
     return <div className="flex min-h-screen items-center justify-center text-[#0D47A1]">Đang tải sản phẩm...</div>;
   }
 
-  if (loadError || !product) {
+  if (!product) {
     return <div className="flex min-h-screen items-center justify-center text-[#D32F2F]">{loadError || "Không tìm thấy sản phẩm."}</div>;
   }
 
@@ -344,6 +344,11 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
             { label: product?.name || (isLoading ? "Đang tải..." : "Chi tiết sản phẩm") },
           ]}
         />
+        {loadError && (
+          <div className="mx-auto mt-2 w-[1200px] rounded-[12px] bg-[#E5F6FD] px-5 py-3 text-sm font-medium text-[#0D47A1]">
+            {loadError}
+          </div>
+        )}
 
         {/* ---- Product detail section ---- */}
         <section className="relative h-[778px] w-[1440px]">
@@ -846,7 +851,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
             </button>
           </div>
         </section>
-        <Footer variant="white" />
+        <Footer variant="blue" />
       </CanvasLayout>
     </div>
   );
