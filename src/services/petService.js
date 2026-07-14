@@ -125,8 +125,9 @@ export function normalizeReminder(reminder = {}) {
 
 export async function getMyPets() {
   const response = await apiClient.get("/my-pets");
-  const pets = assertSuccess(response);
-  return Array.isArray(pets) ? pets.map(normalizePet) : [];
+  const data = assertSuccess(response);
+  const petsArray = Array.isArray(data) ? data : (data && Array.isArray(data.pets) ? data.pets : []);
+  return petsArray.map(normalizePet);
 }
 
 export async function getPetDetails(petId) {

@@ -227,8 +227,9 @@ export async function bookAppointment(payload) {
 
 export async function getAppointmentHistory() {
   const response = await apiClient.get("/appointments/my-history");
-  const appointments = assertSuccess(response);
-  return Array.isArray(appointments) ? appointments.map(normalizeAppointmentHistoryItem) : [];
+  const data = assertSuccess(response);
+  const appointmentsArray = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+  return appointmentsArray.map(normalizeAppointmentHistoryItem);
 }
 
 export async function cancelAppointment(appointmentId) {
