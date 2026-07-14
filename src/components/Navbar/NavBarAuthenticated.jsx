@@ -16,7 +16,7 @@ function NavBarAuthenticated({ avatarSrc, onLogout }) {
 
   return (
     <>
-    <header className="fixed inset-x-0 top-0 z-[70] hidden w-full bg-white lg:block">
+    <header className="fixed inset-x-0 top-0 z-[70] w-full bg-white">
       <div className="mx-auto flex max-w-page items-center gap-2 px-3 py-3 sm:gap-2.5 sm:px-6 lg:px-10">
         <a href="/" className="shrink-0">
           <img
@@ -56,7 +56,7 @@ function NavBarAuthenticated({ avatarSrc, onLogout }) {
         </div>
       </div>
     </header>
-    <div className="hidden h-[88px] shrink-0 lg:block" aria-hidden="true" />
+    <div className="h-[88px] shrink-0" aria-hidden="true" />
     </>
   );
 }
