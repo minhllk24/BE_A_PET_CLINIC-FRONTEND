@@ -5,7 +5,7 @@ import { mobileNavbarImages } from '../../assets/mobileNavbarImages'
 
 const PRODUCT_LINKS = [
   ['Trang chủ', '/'],
-  ['Dịch vụ', '/services/grooming-spa'],
+  ['Dịch vụ', '/service'],
   ['Mua sắm', '/petshop'],
   ['Đặt lịch', '/booking'],
   ['Blog / Cẩm nang', '/blog/kien-thuc'],
@@ -14,15 +14,15 @@ const PRODUCT_LINKS = [
 ]
 
 const SERVICE_LINKS = [
-  ['Khám tổng quát', '/booking'],
-  ['Tiêm phòng', '/booking'],
+  ['Khám tổng quát', '/services/kham-dieu-tri'],
+  ['Tiêm phòng', '/services/kham-dieu-tri'],
   ['Grooming & Spa', '/services/grooming-spa'],
   ['Mua sắm sản phẩm', '/petshop'],
 ]
 
 const SUPPORT_LINKS = [
-  ['Chính sách đặt lịch', '/policies/dat-lich'],
-  ['Chính sách đổi/hủy lịch', '/policies/doi-huy-lich'],
+  ['Chính sách đặt lịch', '/policies/dat-lich-doi-huy-lich'],
+  ['Chính sách đổi/hủy lịch', '/policies/dat-lich-doi-huy-lich'],
   ['Chính sách thanh toán', '/policies/phuong-thuc-thanh-toan'],
   ['Chính sách bán hàng', '/policies/huong-dan-mua-hang'],
   ['Chính sách bảo mật', '/policies/bao-mat'],
@@ -387,7 +387,7 @@ function Footer({ variant = 'auto' }) {
             </ul>
           </FooterColumn>
 
-          <FooterColumn title="Thông tin Trung tâm">
+          <FooterColumn title="Thông tin chung">
             <ul>
               <FooterLink to="/about">Về chúng tôi</FooterLink>
               <FooterLink to="/contact">Liên hệ</FooterLink>
