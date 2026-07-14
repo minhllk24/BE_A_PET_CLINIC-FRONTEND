@@ -26,7 +26,12 @@ function PolicySection({ section }) {
   return (
     <section className="policy-article__section">
       {section.heading ? (
-        <h2 className="policy-article__section-title">{section.heading}</h2>
+        <h2
+          className="policy-article__section-title"
+          style={section.headingColor ? { color: section.headingColor } : undefined}
+        >
+          {section.heading}
+        </h2>
       ) : null}
 
       {section.paragraphs?.map((paragraph, index) => (
@@ -45,7 +50,7 @@ function PolicySection({ section }) {
                 {bullet.map((part, partIndex) => (
                   <span
                     key={`${part.text}-${partIndex}`}
-                    className={part.strong ? "font-bold" : undefined}
+                    className={`${part.strong ? "font-bold" : ""} ${part.italic ? "italic" : ""}`.trim() || undefined}
                   >
                     {part.text}
                   </span>
