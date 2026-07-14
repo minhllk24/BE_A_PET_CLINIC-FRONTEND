@@ -29,6 +29,15 @@ export const medicalAssets = {
   faqTopRight: medicalAsset('faq-top-right.png'),
   faqIcon: medicalAsset('faq-icon.png'),
   faqOrnament: medicalAsset('faq-ornament.svg'),
+  mobileArrowLeft: medicalAsset('mobile-arrow-left.png'),
+  mobileArrowRight: medicalAsset('mobile-arrow-right.png'),
+  mobileImage71: medicalAsset('mobile-image-71.png'),
+  mobileVector75: medicalAsset('mobile-vector-75.svg'),
+  mobileFeedbackBg: medicalAsset('mobile-feedback-bg.png'),
+  mobileFaqCorner: medicalAsset('mobile-faq-corner.png'),
+  mobileShape150: medicalAsset('mobile-shape-150.png'),
+  mobileShape152: medicalAsset('mobile-shape-152.png'),
+  mobileShape153: medicalAsset('mobile-shape-153.png'),
 }
 
 export const medicalServices = [
@@ -110,7 +119,8 @@ export const medicalWhyItems = [
   },
   {
     title: 'Chi phí minh bạch',
-    description: 'Sẵn sàng tiếp nhận và xử lý các ca cấp cứu bất cứ lúc nào',
+    description:
+      'Chi phí công khai, rõ ràng trước khi đặt. Tư vấn tận tâm khi lựa chọn các dịch vụ kèm theo.',
     icon: medicalAsset('why-icon-cost.png'),
     tone: 'blue',
   },
@@ -131,7 +141,7 @@ export const medicalWhyItems = [
   {
     title: 'Hồ sơ bệnh án điện tử',
     description:
-      'Toàn bộ lịch sử tiêm phòng, kết quả xét nghiệm, đơn thuốc của bé được lưu trữ trực tuyến',
+      'Toàn bộ lịch sử tiêm phòng, kết quả xét nghiệm, đơn thuốc của bé đều được lưu trữ trực tuyến. Bạn có thể dễ dàng tra cứu bất cứ lúc nào qua website',
     icon: medicalAsset('why-icon-record.png'),
     tone: 'purple',
   },
