@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bookmark,
   Camera,
@@ -24,6 +24,7 @@ import {
   FEATURED_COMMUNITY_POST,
   INITIAL_COMMUNITY_COMMENTS,
 } from "../../data/communityData";
+import { getPostsPage } from "../../services/contentService";
 
 const POST_TYPES = {
   "Khoảnh khắc": "bg-[#E3F2FD] text-[#005AB4]",
@@ -34,13 +35,28 @@ const POST_TYPES = {
 
 const EMPTY_COMMENTS = [];
 
-function normalizePost(post) {
+function normalizeCommunityPost(post) {
   return {
     ...post,
     content: post.content || post.paragraphs?.join("\n\n") || "",
     likes: post.likes ?? 0,
     comments: post.comments ?? 0,
   };
+}
+
+function normalizeApiCommunityPost(post) {
+  return normalizeCommunityPost({
+    ...post,
+    author: post.author,
+    avatar: post.authorImage,
+    time: post.publishedAt,
+    image: post.image,
+    content: post.description || post.excerpt,
+    type: post.categoryLabel,
+    likes: post.likesCount,
+    comments: post.commentsCount,
+    tags: post.tags,
+  });
 }
 
 function splitBalanced(posts) {
@@ -237,12 +253,37 @@ function PostModal({ post, comments, state, onClose, onAddComment, onLike, onSha
 
 export default function CommunityPage() {
   const { isAuthenticated } = useAuth();
-  const featured = useMemo(() => ({ ...normalizePost(FEATURED_COMMUNITY_POST), featured: true }), []);
-  const [posts, setPosts] = useState(() => COMMUNITY_POSTS.map(normalizePost));
+  const featured = useMemo(() => ({ ...normalizeCommunityPost(FEATURED_COMMUNITY_POST), featured: true }), []);
+  const [posts, setPosts] = useState(() => COMMUNITY_POSTS.map(normalizeCommunityPost));
   const [selectedId, setSelectedId] = useState(null);
   const [commentsByPost, setCommentsByPost] = useState({ [featured.id]: INITIAL_COMMUNITY_COMMENTS });
   const [postState, setPostState] = useState({});
   const [shareNotice, setShareNotice] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    setLoadError("");
+
+    getPostsPage({ type: "community", limit: 100 })
+      .then((payload) => {
+        if (!active || !payload.posts.length) return;
+        setPosts(payload.posts.map(normalizeApiCommunityPost));
+      })
+      .catch((error) => {
+        if (!active) return;
+        setLoadError(error?.message || "Không thể tải bài viết cộng đồng.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const allPosts = useMemo(() => [featured, ...posts], [featured, posts]);
   const selectedPost = allPosts.find((post) => post.id === selectedId);
@@ -278,6 +319,8 @@ export default function CommunityPage() {
           </nav>
           <section className="flex flex-col items-center pb-5 pt-2 text-center"><h1 className="flex items-center gap-1 text-[40px] font-bold tracking-[-0.8px]">Kết nối <span className="text-[#0D47A1]">chia sẻ</span><img src={blogImages.communityTitle} alt="" className="h-12 w-12" /></h1><p className="mt-2 text-[16px] leading-6 text-[#414753]">Nơi chia sẻ khoảnh khắc, kinh nghiệm và lan tỏa yêu thương<br />cùng cộng đồng yêu thú cưng!!</p></section>
           <Composer onPost={addPost} />
+          {loadError && <p className="w-[1208px] text-[14px] text-[#D32F2F]">{loadError}</p>}
+          {isLoading && <p className="w-[1208px] text-[16px] text-[#0D47A1]">Đang tải bài viết cộng đồng...</p>}
           <section className="mt-7 grid w-[1208px] grid-cols-2 items-start gap-4">
             {columns.map((column, columnIndex) => <div key={columnIndex} className="flex flex-col gap-4">{column.map((post) => <CommunityCard key={post.id} post={post} state={getState(post.id)} onOpen={() => openPost(post.id)} onLike={() => updatePostState(post.id, "liked")} onSave={() => updatePostState(post.id, "saved")} onShare={() => sharePost(post)} />)}{columnIndex === 1 && <div className="rounded-[24px] bg-[#0D47A1] p-8 text-center text-white"><h3 className="font-semibold">Gia đình Dr.Pet</h3><p className="mt-2 text-[14px]">Tham gia cộng đồng Zalo để cập nhật tin tức và ưu đãi sớm nhất.</p><button className="mt-5 rounded-full bg-white px-8 py-2 text-[12px] font-bold text-[#0D47A1]">THAM GIA NGAY</button></div>}</div>)}
           </section>

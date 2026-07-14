@@ -359,6 +359,9 @@ function BookingPaymentStep({
       [serviceId]: Math.max(1, (current[serviceId] || 1) + delta),
     }));
   };
+  const handleConfirm = () => {
+    onConfirm?.({ quantities });
+  };
 
   return (
     <>
@@ -378,7 +381,7 @@ function BookingPaymentStep({
         <PaymentPanel
           paymentMode={paymentMode}
           setPaymentMode={setPaymentMode}
-          onConfirm={onConfirm}
+          onConfirm={handleConfirm}
           subtotal={subtotal}
           surchargeTotal={surchargeTotal}
           total={total}

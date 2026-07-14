@@ -7,7 +7,7 @@ import {
 } from "./guestSuccessAssets";
 
 function GuestOrderSuccessOverlay() {
-  const { isGuestSuccessOpen, closeGuestSuccess } = useCart();
+  const { isGuestSuccessOpen, closeGuestSuccess, lastOrderResult } = useCart();
   const { openAuth } = useAuth();
   const navigate = useNavigate();
 
@@ -24,6 +24,7 @@ function GuestOrderSuccessOverlay() {
     closeGuestSuccess();
     openAuth("login");
   };
+  const guestAccount = lastOrderResult?.guest_account || GUEST_ACCOUNT_CREDENTIALS;
 
   return (
     <div
@@ -64,7 +65,7 @@ function GuestOrderSuccessOverlay() {
                 Tên đăng nhập:
               </span>
               <span className="h-[23px] text-[rgba(0,0,0,0.87)]">
-                {GUEST_ACCOUNT_CREDENTIALS.username}
+                {guestAccount.username}
               </span>
             </div>
             <div className="flex w-full items-start gap-[15px]">
@@ -72,7 +73,7 @@ function GuestOrderSuccessOverlay() {
                 Mật khẩu:
               </span>
               <span className="min-w-0 flex-1 text-[rgba(0,0,0,0.87)]">
-                {GUEST_ACCOUNT_CREDENTIALS.password}
+                {guestAccount.password}
               </span>
             </div>
           </div>

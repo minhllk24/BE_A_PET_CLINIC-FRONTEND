@@ -7,9 +7,10 @@ import {
   getOrderSubtotal,
   getOrderTotal,
   ORDER_FILTERS,
-  ORDERS,
   ORDER_STATUS,
 } from "../../data/orderData";
+import { getMyOrders, getOrderDetails } from "../../services/orderService";
+import { addCartItem } from "../../services/cartService";
 
 const STATUS_STEPS = ["processing", "shipping", "delivered"];
 
@@ -84,7 +85,7 @@ function OutlineButton({ children, className = "", ...props }) {
 function ProductSummary({ product, large = false }) {
   return (
     <div className={`flex items-center gap-[10px] ${large ? "min-h-[100px] w-full" : "h-[100px] w-[372px]"}`}>
-      <img src={product.image} alt={product.name} className="h-20 w-20 shrink-0 object-cover" />
+      <img src={product.image || productImages.detailImage} alt={product.name} className="h-20 w-20 shrink-0 object-cover" />
       <div className="flex min-w-0 flex-1 flex-col gap-[8px]">
         <strong className={`${large ? "text-[20px]" : "text-[14px]"} line-clamp-2 text-[#0D47A1]`}>
           {product.name}
@@ -100,7 +101,16 @@ function ProductSummary({ product, large = false }) {
   );
 }
 
-function OrderActions({ order, onNavigate, paymentExpired }) {
+function OrderActions({
+  order,
+  onNavigate,
+  onPaymentUnavailable,
+  onCancelUnavailable,
+  onReviewUnavailable,
+  onReorder,
+  paymentExpired,
+  isActionLoading,
+}) {
   const stopAndRun = (callback) => (event) => {
     event.stopPropagation();
     callback?.();
@@ -108,7 +118,7 @@ function OrderActions({ order, onNavigate, paymentExpired }) {
 
   if (order.status === "awaiting_payment") {
     return (
-      <YellowButton onClick={stopAndRun()} disabled={paymentExpired}>
+      <YellowButton onClick={stopAndRun(onPaymentUnavailable)} disabled={paymentExpired || isActionLoading}>
         Thanh toán
       </YellowButton>
     );
@@ -118,7 +128,11 @@ function OrderActions({ order, onNavigate, paymentExpired }) {
     return (
       <>
         <YellowButton onClick={stopAndRun(onNavigate)}>Theo dõi</YellowButton>
-        <OutlineButton onClick={stopAndRun()} className="border-[#C62828] text-[#C62828]">
+        <OutlineButton
+          onClick={stopAndRun(onCancelUnavailable)}
+          className="border-[#C62828] text-[#C62828]"
+          disabled={isActionLoading}
+        >
           Hủy đơn
         </OutlineButton>
       </>
@@ -132,55 +146,86 @@ function OrderActions({ order, onNavigate, paymentExpired }) {
   if (order.status === "delivered") {
     return (
       <>
-        <YellowButton onClick={stopAndRun()}>Đánh giá</YellowButton>
-        <OutlineButton onClick={stopAndRun()}>Đặt lại</OutlineButton>
+        <YellowButton onClick={stopAndRun(onReviewUnavailable)} disabled={isActionLoading}>
+          Đánh giá
+        </YellowButton>
+        <OutlineButton onClick={stopAndRun(onReorder)} disabled={isActionLoading}>
+          {isActionLoading ? "Đang thêm..." : "Đặt lại"}
+        </OutlineButton>
       </>
     );
   }
 
-  return <OutlineButton onClick={stopAndRun()}>Đặt lại</OutlineButton>;
+  return (
+    <OutlineButton onClick={stopAndRun(onReorder)} disabled={isActionLoading}>
+      {isActionLoading ? "Đang thêm..." : "Đặt lại"}
+    </OutlineButton>
+  );
 }
 
-function OrderCard({ order }) {
+function OrderCard({ order, actionMessage, actionMessageType, onActionMessage, isActionLoading, onReorder }) {
   const navigate = useNavigate();
   const [paymentExpired, setPaymentExpired] = useState(
     order.status === "awaiting_payment" && new Date(order.paymentExpiresAt).getTime() <= Date.now(),
   );
   const status = ORDER_STATUS[order.status];
   const openDetails = () => navigate(`/don-hang-cua-toi/${order.id}`);
+  const showUnavailableMessage = (message) => onActionMessage(message, "info");
 
   return (
-    <article
-      role="link"
-      tabIndex={0}
-      onClick={openDetails}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") openDetails();
-      }}
-      className="flex min-h-[162px] w-full cursor-pointer items-center justify-between rounded-[16px] border border-[#C2C6D4] bg-white px-[21px] py-[11px] transition hover:border-[#1976D2] hover:shadow-md"
-    >
-      <div className="w-[372px]">
-        <div className="flex justify-between text-[14px]">
-          <strong>Mã đơn hàng: {order.id}</strong>
-          <span>{formatOrderDate(order.orderedAt)}</span>
+    <article className="rounded-[16px] border border-[#C2C6D4] bg-white px-[21px] py-[11px] transition hover:border-[#1976D2] hover:shadow-md">
+      <div
+        role="link"
+        tabIndex={0}
+        onClick={openDetails}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") openDetails();
+        }}
+        className="flex min-h-[162px] w-full cursor-pointer items-center justify-between"
+      >
+        <div className="w-[372px]">
+          <div className="flex justify-between text-[14px]">
+            <strong>Mã đơn hàng: {order.id}</strong>
+            <span>{formatOrderDate(order.orderedAt)}</span>
+          </div>
+          <ProductSummary product={order.products[0]} />
+          {order.products.length > 1 && (
+            <span className="text-[12px]">+ {order.products.length - 1} sản phẩm</span>
+          )}
         </div>
-        <ProductSummary product={order.products[0]} />
-        {order.products.length > 1 && (
-          <span className="text-[12px]">+ {order.products.length - 1} sản phẩm</span>
-        )}
+        <div className="flex w-[205px] flex-col items-center gap-[10px]">
+          <strong className="text-[20px] text-[#C62828]">{formatCurrency(getOrderTotal(order))}</strong>
+          <span className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.55px] ${status.badgeClass}`}>
+            {status.label}
+          </span>
+          {order.status === "awaiting_payment" && (
+            <PaymentCountdown expiresAt={order.paymentExpiresAt} onExpire={() => setPaymentExpired(true)} />
+          )}
+        </div>
+        <div className="flex w-[230px] justify-end gap-2">
+          <OrderActions
+            order={order}
+            onNavigate={openDetails}
+            onPaymentUnavailable={() =>
+              showUnavailableMessage("Backend hiện chưa có API thanh toán lại đơn hàng đang chờ thanh toán.")
+            }
+            onCancelUnavailable={() =>
+              showUnavailableMessage("Backend hiện chưa mở API hủy đơn cho khách hàng.")
+            }
+            onReviewUnavailable={() =>
+              showUnavailableMessage("Mục đánh giá từ trang đơn hàng mình sẽ nối tiếp khi chốt luồng review sản phẩm.")
+            }
+            onReorder={() => onReorder(order)}
+            paymentExpired={paymentExpired}
+            isActionLoading={isActionLoading}
+          />
+        </div>
       </div>
-      <div className="flex w-[205px] flex-col items-center gap-[10px]">
-        <strong className="text-[20px] text-[#C62828]">{formatCurrency(getOrderTotal(order))}</strong>
-        <span className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.55px] ${status.badgeClass}`}>
-          {status.label}
-        </span>
-        {order.status === "awaiting_payment" && (
-          <PaymentCountdown expiresAt={order.paymentExpiresAt} onExpire={() => setPaymentExpired(true)} />
-        )}
-      </div>
-      <div className="flex w-[230px] justify-end gap-2">
-        <OrderActions order={order} onNavigate={openDetails} paymentExpired={paymentExpired} />
-      </div>
+      {actionMessage ? (
+        <p className={`mt-3 text-[14px] ${actionMessageType === "error" ? "text-[#D32F2F]" : "text-[#667085]"}`}>
+          {actionMessage}
+        </p>
+      ) : null}
     </article>
   );
 }
@@ -234,14 +279,80 @@ function SearchAndSort({
 }
 
 export function MyOrdersPage() {
+  const [ordersData, setOrdersData] = useState([]);
   const [filter, setFilter] = useState("all");
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [activeOrderId, setActiveOrderId] = useState("");
+  const [actionFeedback, setActionFeedback] = useState({});
+  const navigate = useNavigate();
+
+  const updateActionFeedback = (orderId, message, type = "info") => {
+    setActionFeedback((current) => ({
+      ...current,
+      [orderId]: { message, type },
+    }));
+  };
+
+  const handleReorder = async (order) => {
+    const validItems = order.products.filter((product) => product.productId);
+    if (!validItems.length) {
+      updateActionFeedback(order.id, "Không thể đặt lại vì đơn hàng này không còn dữ liệu sản phẩm hợp lệ.", "error");
+      return;
+    }
+
+    setActiveOrderId(order.id);
+    updateActionFeedback(order.id, "");
+
+    try {
+      await Promise.all(
+        validItems.map((product) =>
+          addCartItem({
+            productId: product.productId,
+            variantId: product.variantId,
+            qty: product.quantity,
+          }),
+        ),
+      );
+
+      updateActionFeedback(order.id, "Đã thêm lại sản phẩm vào giỏ hàng.");
+      navigate("/gio-hang");
+    } catch (error) {
+      updateActionFeedback(order.id, error?.message || "Không thể thêm lại sản phẩm vào giỏ hàng.", "error");
+    } finally {
+      setActiveOrderId("");
+    }
+  };
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    setLoadError("");
+
+    getMyOrders()
+      .then((orders) => {
+        if (active) setOrdersData(orders);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setOrdersData([]);
+        setLoadError(error?.message || "Không thể tải danh sách đơn hàng.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const orders = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLocaleLowerCase("vi");
-    const result = ORDERS.filter((order) => {
+    const result = ordersData.filter((order) => {
       if (filter !== "all" && order.status !== filter) return false;
       if (!normalizedSearch) return true;
       const searchableText = [
@@ -259,7 +370,7 @@ export function MyOrdersPage() {
         ? new Date(a.orderedAt) - new Date(b.orderedAt)
         : new Date(b.orderedAt) - new Date(a.orderedAt),
     );
-  }, [filter, searchQuery, sortOrder]);
+  }, [filter, ordersData, searchQuery, sortOrder]);
 
   return (
     <div className="mx-auto flex w-full max-w-[943px] flex-col gap-6 pb-10">
@@ -272,7 +383,7 @@ export function MyOrdersPage() {
 
       <div className="flex gap-2 overflow-x-auto pb-2 pt-2">
         {ORDER_FILTERS.map(({ value, label }) => {
-          const count = value === "all" ? ORDERS.length : ORDERS.filter((order) => order.status === value).length;
+          const count = value === "all" ? ordersData.length : ordersData.filter((order) => order.status === value).length;
           return (
             <button
               key={value}
@@ -302,8 +413,22 @@ export function MyOrdersPage() {
         </p>
       )}
       <div className="flex flex-col gap-4">
-        {orders.length ? (
-          orders.map((order) => <OrderCard key={order.id} order={order} />)
+        {isLoading ? (
+          <p className="py-16 text-center text-[#0D47A1]">Đang tải đơn hàng...</p>
+        ) : loadError ? (
+          <p className="py-16 text-center text-[#D32F2F]">{loadError}</p>
+        ) : orders.length ? (
+          orders.map((order) => (
+            <OrderCard
+              key={order.id}
+              order={order}
+              actionMessage={actionFeedback[order.id]?.message}
+              actionMessageType={actionFeedback[order.id]?.type}
+              onActionMessage={(message, type) => updateActionFeedback(order.id, message, type)}
+              isActionLoading={activeOrderId === order.id}
+              onReorder={handleReorder}
+            />
+          ))
         ) : (
           <p className="py-16 text-center text-[#667085]">Không tìm thấy đơn hàng phù hợp.</p>
         )}
@@ -373,12 +498,45 @@ function InvoiceModal({ order, onClose }) {
 export function OrderDetailsPage() {
   const { orderId } = useParams();
   const [invoiceOpen, setInvoiceOpen] = useState(false);
-  const order = ORDERS.find((item) => item.id === orderId);
+  const [order, setOrder] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
-  if (!order) {
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    setLoadError("");
+
+    getOrderDetails(orderId)
+      .then((detail) => {
+        if (active) setOrder(detail);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setOrder(null);
+        setLoadError(error?.message || "Không thể tải chi tiết đơn hàng.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [orderId]);
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto w-full max-w-[960px] py-16 text-center text-[#0D47A1]">
+        Đang tải chi tiết đơn hàng...
+      </div>
+    );
+  }
+
+  if (loadError || !order) {
     return (
       <div className="mx-auto w-full max-w-[960px] py-16 text-center">
-        <h1 className="text-2xl font-bold">Không tìm thấy đơn hàng</h1>
+        <h1 className="text-2xl font-bold">{loadError || "Không tìm thấy đơn hàng"}</h1>
         <Link to="/don-hang-cua-toi" className="mt-4 inline-block text-[#0D47A1]">Quay lại danh sách đơn hàng</Link>
       </div>
     );

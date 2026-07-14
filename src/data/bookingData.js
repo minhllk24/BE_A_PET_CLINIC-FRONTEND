@@ -21,17 +21,18 @@ export const BOOKING_PAYMENT_METHODS = [
   { id: "card", label: "Thẻ Tín dụng/Ghi nợ", icon: bookingImages.onlineCreditCardIcon || bookingImages.onlineCardIcon },
 ];
 
-export const BOOKING_TIME_SLOTS = [
-  { value: "08:00 - 09:00", available: true },
-  { value: "09:30 - 10:30", available: true },
-  { value: "11:00 - 12:00", available: false },
-  { value: "13:30 - 14:30", available: true },
-  { value: "15:00 - 16:00", available: true },
-  { value: "16:00 - 17:00", available: true },
-];
+export const BOOKING_SERVICE_TYPE_RULES = {
+  clinic: { slotMinutes: 30, maxAppointmentsPerBranch: 3 },
+  grooming: { slotMinutes: 60, maxAppointmentsPerBranch: 2 },
+};
+
+export const BOOKING_WORKING_HOURS = {
+  start: "08:00",
+  end: "20:00",
+};
 
 export const BOOKING_SERVICE_TYPES = [
-  { id: "clinic", title: "Khám và tiêm phòng", desc: "Khám sức khỏe và tiêm phòng định kỳ", icon: bookingImages.serviceVeterinaryClinicIcon },
-  { id: "grooming", title: "Spa & Grooming", desc: "Tắm, cắt tỉa, làm đẹp cho thú cưng", icon: bookingImages.serviceSpaGroomingIcon },
+  { id: "clinic", title: "Khám & Điều trị", desc: "Khám sức khỏe và điều trị bệnh", icon: bookingImages.serviceVeterinaryClinicIcon },
+  { id: "grooming", title: "Grooming & Spa", desc: "Tắm, cắt tỉa, làm đẹp cho thú cưng", icon: bookingImages.serviceSpaGroomingIcon },
 ];
 

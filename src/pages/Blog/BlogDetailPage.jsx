@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -22,6 +22,7 @@ import {
   TRENDING_BLOG_POSTS,
 } from "../../data/blogData";
 import { FEATURED_PRODUCTS } from "../../data/shopData";
+import { getPostBySlug, getPostsPage } from "../../services/contentService";
 
 function SectionHeading({ children }) {
   return (
@@ -148,6 +149,7 @@ function Article({ post }) {
 
 function RelatedBlogSection({ posts }) {
   const [start, setStart] = useState(0);
+  if (!posts.length) return null;
   const visible = Array.from({ length: 4 }, (_, index) => posts[(start + index) % posts.length]);
 
   return (
@@ -169,7 +171,7 @@ function RelatedBlogSection({ posts }) {
 export default function BlogDetailPage() {
   const { isAuthenticated } = useAuth();
   const { postId } = useParams();
-  const post = useMemo(() => {
+  const fallbackPost = useMemo(() => {
     const selected = [...ALL_BLOG_POSTS, ...TRENDING_BLOG_POSTS, ...QUICK_READ_POSTS].find(
       (item) => item.id === postId,
     );
@@ -177,7 +179,41 @@ export default function BlogDetailPage() {
       ? { ...FEATURED_BLOG_POST, ...selected, author: FEATURED_BLOG_POST.author, tags: FEATURED_BLOG_POST.tags }
       : FEATURED_BLOG_POST;
   }, [postId]);
+  const [post, setPost] = useState(fallbackPost);
+  const [relatedPosts, setRelatedPosts] = useState(ALL_BLOG_POSTS);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
   const section = BLOG_SECTIONS[post.section] || BLOG_SECTIONS.knowledge;
+
+  useEffect(() => {
+    let active = true;
+    setPost(fallbackPost);
+    setIsLoading(true);
+    setLoadError("");
+
+    Promise.all([
+      getPostBySlug(postId),
+      getPostsPage({ type: "official_blog", limit: 12 }),
+    ])
+      .then(([apiPost, apiRelated]) => {
+        if (!active) return;
+        setPost(apiPost);
+        if (apiRelated.posts.length) {
+          setRelatedPosts(apiRelated.posts.filter((item) => item.id !== apiPost.id));
+        }
+      })
+      .catch((error) => {
+        if (!active) return;
+        setLoadError(error?.message || "Không thể tải bài viết.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [fallbackPost, postId]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -197,7 +233,19 @@ export default function BlogDetailPage() {
           />
 
           <div className="flex w-[1200px] items-start gap-12">
-            <Article post={post} />
+            <div className="flex flex-col gap-3">
+              {isLoading && (
+                <div className="w-[813px] rounded-[12px] bg-white px-8 py-4 text-[#0D47A1]">
+                  Đang tải bài viết...
+                </div>
+              )}
+              {loadError && (
+                <div className="w-[813px] rounded-[12px] bg-white px-8 py-4 text-[#D32F2F]">
+                  {loadError}
+                </div>
+              )}
+              <Article post={post} />
+            </div>
             <BlogSidebar selectedCategory={post.category} />
           </div>
 
@@ -210,7 +258,7 @@ export default function BlogDetailPage() {
             </div>
           </section>
 
-          <RelatedBlogSection posts={ALL_BLOG_POSTS} />
+          <RelatedBlogSection posts={relatedPosts.length ? relatedPosts : ALL_BLOG_POSTS} />
         </main>
         <Footer variant="white" />
       </CanvasLayout>

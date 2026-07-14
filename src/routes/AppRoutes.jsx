@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import LayoutManagePet from "../layout/LayoutManagePet";
+import ProtectedRoute from "./ProtectedRoute";
 
 import HomePage from "../pages/HomePage/HomePage";
 import BookingPage from "../pages/Booking/BookingPage";
@@ -45,7 +46,7 @@ const AppRoutes = () => {
       <Route path="/san-pham" element={<ProductPage />} />
       <Route path="/product-details" element={<ProductDetailsPage />} />
       <Route path="/product-details/:productId" element={<ProductDetailsPage />} />
-      <Route path="/product-details/:productId/write-review" element={<WriteReviewPage />} />
+      <Route path="/product-details/:productId/write-review" element={<ProtectedRoute><WriteReviewPage /></ProtectedRoute>} />
       <Route path="/cart" element={<CartOpenHandler />} />
       <Route path="/blog" element={<BlogPage />} />
       <Route path="/bai-viet" element={<BlogPage />} />
@@ -80,7 +81,7 @@ const AppRoutes = () => {
       <Route path="/checkout" element={<CheckoutPage />} />
 
       {/* 2. Các trang thuộc nhóm quản lý thú cưng có layout riêng */}
-      <Route element={<LayoutManagePet />}>
+      <Route element={<ProtectedRoute><LayoutManagePet /></ProtectedRoute>}>
         <Route path="/thong-tin-nguoi-dung" element={<UserProfilePage />} />
         <Route path="/thu-cung-cua-toi" element={<MyPetPage />} />
         <Route path="/thu-cung-cua-toi/them-moi" element={<PetFormPage />} />

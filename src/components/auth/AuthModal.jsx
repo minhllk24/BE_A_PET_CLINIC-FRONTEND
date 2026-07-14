@@ -11,6 +11,14 @@ import {
 } from "lucide-react";
 import { authImages } from "../../assets/authImages";
 import { useAuth } from "../../context/AuthContext";
+import {
+  forgotPassword,
+  login,
+  register,
+  resetPassword,
+  verifyForgotOtp,
+  verifyRegisterOtp,
+} from "../../services/authService";
 
 const EMPTY_FORMS = {
   login: { phone: "", password: "", remember: false },
@@ -44,7 +52,7 @@ const PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
 
 const VALIDATION_SCHEMAS = {
   login: {
-    phone: ["required", "phone"],
+    phone: ["required", "account"],
     password: ["required"],
   },
   register: {
@@ -65,7 +73,7 @@ const VALIDATION_SCHEMAS = {
 
 const VALIDATION_MESSAGES = {
   requiredByField: {
-    phone: "Vui lòng nhập số điện thoại",
+    phone: "Vui lòng nhập số điện thoại hoặc email",
     password: "Vui lòng nhập mật khẩu",
   },
   required: "Vui lòng điền thông tin",
@@ -258,14 +266,40 @@ function SplitSide({ variant }) {
 
 function LoginForm({ form, setForm, changeScreen, completeLogin }) {
   const [validationAttempted, setValidationAttempted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const update = ({ target }) =>
     setForm((current) => ({ ...current, [target.name]: target.type === "checkbox" ? target.checked : target.value }));
   const errors = getFormErrors(form, VALIDATION_SCHEMAS.login);
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const data = await login({
+        loginId: form.phone.trim(),
+        password: form.password,
+        remember: form.remember,
+      });
+      completeLogin(
+        { phone: form.phone.trim() },
+        {
+          remember: form.remember,
+          accessToken: data?.access_token,
+          user: data?.user,
+        },
+      );
+    } catch (error) {
+      setSubmitError(error?.message || "Dang nhap khong thanh cong");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <form noValidate className="flex flex-col gap-5" onSubmit={(event) => submitValidatedForm(event, errors, setValidationAttempted, () => completeLogin({ phone: form.phone }))}>
-      <Field label="Số điện thoại" name="phone" value={form.phone} onChange={update} icon={Phone} required error={validationAttempted ? errors.phone : ""} />
+    <form noValidate className="flex flex-col gap-5" onSubmit={(event) => submitValidatedForm(event, errors, setValidationAttempted, handleSubmit)}>
+      <Field label="Số điện thoại / Email" name="phone" value={form.phone} onChange={update} icon={Phone} required error={validationAttempted ? errors.phone : ""} />
       <Field label="Mật khẩu" name="password" value={form.password} onChange={update} icon={LockKeyhole} type="password" required error={validationAttempted ? errors.password : ""} />
+      {submitError && <p className="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{submitError}</p>}
       <div className="flex items-center justify-between pb-2 text-sm">
         <label className="flex items-center gap-2">
           <input name="remember" type="checkbox" checked={form.remember} onChange={update} className="size-4" />
@@ -275,7 +309,7 @@ function LoginForm({ form, setForm, changeScreen, completeLogin }) {
           Quên mật khẩu?
         </button>
       </div>
-      <PrimaryButton>ĐĂNG NHẬP</PrimaryButton>
+      <PrimaryButton disabled={submitting}>{submitting ? "ĐANG ĐĂNG NHẬP..." : "ĐĂNG NHẬP"}</PrimaryButton>
       <Divider />
       <GoogleButton />
       <p className="text-center text-sm">
@@ -290,21 +324,38 @@ function LoginForm({ form, setForm, changeScreen, completeLogin }) {
 
 function RegisterForm({ form, setForm, changeScreen, updateUserProfile }) {
   const [validationAttempted, setValidationAttempted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const update = ({ target }) => setForm((current) => ({ ...current, [target.name]: target.value }));
   const errors = getFormErrors(form, VALIDATION_SCHEMAS.register);
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      await register({
+        fullName: form.name.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim(),
+        password: form.password,
+      });
+      updateUserProfile({
+        fullName: form.name,
+        phone: form.phone,
+        email: form.email,
+      });
+      changeScreen("registerOtp");
+    } catch (error) {
+      setSubmitError(error?.message || "Dang ky khong thanh cong");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <form
       noValidate
       className="flex flex-col gap-4"
-      onSubmit={(event) => submitValidatedForm(event, errors, setValidationAttempted, () => {
-        updateUserProfile({
-          fullName: form.name,
-          phone: form.phone,
-          email: form.email,
-        });
-        changeScreen("registerOtp");
-      })}
+      onSubmit={(event) => submitValidatedForm(event, errors, setValidationAttempted, handleSubmit)}
     >
       <Field label="Họ và Tên" name="name" value={form.name} onChange={update} required error={validationAttempted ? errors.name : ""} />
       <div className="grid grid-cols-2 gap-[9px] md:gap-4">
@@ -313,7 +364,8 @@ function RegisterForm({ form, setForm, changeScreen, updateUserProfile }) {
       </div>
       <Field label="Mật khẩu" name="password" value={form.password} onChange={update} type="password" required hint="Tối thiểu 8 ký tự, 1 chữ hoa, 1 số" error={validationAttempted ? errors.password : ""} />
       <Field label="Xác nhận mật khẩu" name="confirmPassword" value={form.confirmPassword} onChange={update} type="password" required error={validationAttempted ? errors.confirmPassword : ""} />
-      <PrimaryButton>ĐĂNG KÝ NGAY</PrimaryButton>
+      {submitError && <p className="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{submitError}</p>}
+      <PrimaryButton disabled={submitting}>{submitting ? "ĐANG GỬI OTP..." : "ĐĂNG KÝ NGAY"}</PrimaryButton>
       <Divider />
       <GoogleButton />
       <p className="text-center text-sm">
@@ -326,7 +378,7 @@ function RegisterForm({ form, setForm, changeScreen, updateUserProfile }) {
   );
 }
 
-function OtpForm({ changeScreen, nextScreen, previousScreen }) {
+function OtpForm({ changeScreen, nextScreen, previousScreen, onSubmitOtp, submitError = "", submitting = false }) {
   const [otp, setOtp] = useState(Array(6).fill(""));
   const refs = useRef([]);
   const complete = otp.join("").length === 6;
@@ -338,8 +390,8 @@ function OtpForm({ changeScreen, nextScreen, previousScreen }) {
   };
 
   return (
-    <form className="flex flex-col gap-[23.5px]" onSubmit={(event) => { event.preventDefault(); if (complete) changeScreen(nextScreen); }}>
-      <div className="flex h-14 justify-between gap-0">
+    <form className="flex flex-col gap-[23.5px]" onSubmit={(event) => { event.preventDefault(); if (complete) onSubmitOtp ? onSubmitOtp(otp.join("")) : changeScreen(nextScreen); }}>
+      <div className="flex h-14 justify-between gap-2">
         {otp.map((digit, index) => (
           <input
             key={index}
@@ -353,8 +405,9 @@ function OtpForm({ changeScreen, nextScreen, previousScreen }) {
           />
         ))}
       </div>
-      <PrimaryButton disabled={!complete}>XÁC NHẬN</PrimaryButton>
-      <p className="text-center text-sm text-[#4f5359]">Không nhận được mã? <button type="button" className="text-[#7E8085]">Gửi lại sau 54s</button></p>
+      {submitError && <p className="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{submitError}</p>}
+      <PrimaryButton disabled={!complete || submitting}>{submitting ? "ĐANG XÁC NHẬN..." : "XÁC NHẬN"}</PrimaryButton>
+      <p className="text-center text-sm text-[#4f5359]">Không nhận được mã? <button type="button" className="text-blue-900">Gửi lại mã</button></p>
       <button type="button" onClick={() => changeScreen(previousScreen)} className="flex items-center justify-center gap-2 text-sm text-[#7e8085]">
         <ArrowLeft className="size-4" /> Quay lại
       </button>
@@ -365,6 +418,9 @@ function OtpForm({ changeScreen, nextScreen, previousScreen }) {
 function RecoveryPanel({ screen, forms, setForms, changeScreen }) {
   const [forgotValidationAttempted, setForgotValidationAttempted] = useState(false);
   const [resetValidationAttempted, setResetValidationAttempted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [resetToken, setResetToken] = useState("");
   const update = (key) => ({ target }) =>
     setForms((current) => ({ ...current, [key]: { ...current[key], [target.name]: target.value } }));
 
@@ -373,6 +429,61 @@ function RecoveryPanel({ screen, forms, setForms, changeScreen }) {
   const otpRecipient = screen === "registerOtp"
     ? forms.register.email.trim() || forms.register.phone.trim()
     : forms.forgot.account.trim();
+  const handleForgotSubmit = async () => {
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const account = forms.forgot.account.trim();
+      if (!EMAIL_PATTERN.test(account)) {
+        throw new Error("Backend hien chi ho tro quen mat khau bang email");
+      }
+      await forgotPassword(account);
+      changeScreen("resetOtp");
+    } catch (error) {
+      setSubmitError(error?.message || "Khong the gui OTP");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  const handleOtpSubmit = async (otpCode) => {
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      if (screen === "registerOtp") {
+        await verifyRegisterOtp({
+          loginId: forms.register.email.trim() || forms.register.phone.trim(),
+          otpCode,
+        });
+        changeScreen("success");
+        return;
+      }
+      const data = await verifyForgotOtp({
+        email: forms.forgot.account.trim(),
+        otpCode,
+      });
+      setResetToken(data?.reset_token || "");
+      changeScreen("reset");
+    } catch (error) {
+      setSubmitError(error?.message || "OTP khong hop le");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  const handleResetSubmit = async () => {
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      await resetPassword({
+        resetToken,
+        newPassword: forms.reset.password,
+      });
+      changeScreen("login");
+    } catch (error) {
+      setSubmitError(error?.message || "Khong the doi mat khau");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const content = {
     forgot: ["Quên mật khẩu?", "Nhập SĐT hoặc email đã đăng ký để nhận mã xác nhận"],
@@ -392,9 +503,10 @@ function RecoveryPanel({ screen, forms, setForms, changeScreen }) {
         <h1 className="mb-[-8px] text-[20px] font-extrabold leading-9 tracking-[-0.75px] text-[#060b16] md:mb-0 md:text-[30px]">{content[0]}</h1>
         <p className="mb-[23.5px] text-[12px] leading-[26px] text-[#4f5359] md:mb-6 md:mt-2 md:text-[16px]">{content[1]}</p>
         {screen === "forgot" && (
-          <form noValidate className="flex flex-col gap-[23.5px]" onSubmit={(event) => submitValidatedForm(event, forgotErrors, setForgotValidationAttempted, () => changeScreen("resetOtp"))}>
-            <Field label="Số điện thoại / Email" name="account" value={forms.forgot.account} onChange={update("forgot")} variant="soft" error={forgotValidationAttempted ? forgotErrors.account : ""} />
-            <PrimaryButton>GỬI MÃ XÁC NHẬN</PrimaryButton>
+          <form noValidate className="flex flex-col gap-[23.5px]" onSubmit={(event) => submitValidatedForm(event, forgotErrors, setForgotValidationAttempted, handleForgotSubmit)}>
+            <Field label="Số điện thoại / Email" name="account" value={forms.forgot.account} onChange={update("forgot")} variant="soft" required error={forgotValidationAttempted ? forgotErrors.account : ""} />
+            {submitError && <p className="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{submitError}</p>}
+            <PrimaryButton disabled={submitting}>{submitting ? "ĐANG GỬI..." : "GỬI MÃ XÁC NHẬN"}</PrimaryButton>
             <button type="button" onClick={() => changeScreen("login")} className="flex items-center justify-center gap-2 text-sm text-[#7e8085]">
               <ArrowLeft className="size-4" /> Quay lại đăng nhập
             </button>
@@ -405,18 +517,19 @@ function RecoveryPanel({ screen, forms, setForms, changeScreen }) {
             changeScreen={changeScreen}
             nextScreen={screen === "registerOtp" ? "success" : "reset"}
             previousScreen={screen === "registerOtp" ? "register" : "forgot"}
+            onSubmitOtp={handleOtpSubmit}
+            submitError={submitError}
+            submitting={submitting}
           />
         )}
         {screen === "reset" && (
-          <form noValidate className="flex flex-col gap-[23.5px]" onSubmit={(event) => submitValidatedForm(event, resetErrors, setResetValidationAttempted, () => changeScreen("login"))}>
+          <form noValidate className="flex flex-col gap-[23.5px]" onSubmit={(event) => submitValidatedForm(event, resetErrors, setResetValidationAttempted, handleResetSubmit)}>
             <div className="flex flex-col gap-4">
-              <Field label="Mật khẩu mới" name="password" value={forms.reset.password} onChange={update("reset")} type="password" placeholder="Tối thiểu 8 ký tự" variant="soft" error={resetValidationAttempted ? resetErrors.password : ""} />
-              <Field label="Xác nhận mật khẩu" name="confirmPassword" value={forms.reset.confirmPassword} onChange={update("reset")} type="password" placeholder="Nhập lại mật khẩu mới" variant="soft" error={resetValidationAttempted ? resetErrors.confirmPassword : ""} />
+              <Field label="Mật khẩu mới" name="password" value={forms.reset.password} onChange={update("reset")} type="password" placeholder="Tối thiểu 8 ký tự" variant="soft" required error={resetValidationAttempted ? resetErrors.password : ""} />
+              <Field label="Xác nhận mật khẩu" name="confirmPassword" value={forms.reset.confirmPassword} onChange={update("reset")} type="password" placeholder="Nhập lại mật khẩu mới" variant="soft" required error={resetValidationAttempted ? resetErrors.confirmPassword : ""} />
             </div>
-            <PrimaryButton>GỬI MÃ XÁC NHẬN</PrimaryButton>
-            <button type="button" onClick={() => changeScreen("login")} className="flex items-center justify-center gap-2 text-sm text-[#7e8085]">
-              <ArrowLeft className="size-4" /> Quay lại đăng nhập
-            </button>
+            {submitError && <p className="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{submitError}</p>}
+            <PrimaryButton disabled={submitting}>{submitting ? "ĐANG ĐỔI..." : "ĐỔI MẬT KHẨU"}</PrimaryButton>
           </form>
         )}
       </section>

@@ -9,6 +9,15 @@ import {
   PROFILE_STORAGE_KEYS,
 } from "../../data/userProfileData";
 import { useAuth } from "../../context/AuthContext";
+import {
+  createUserAddress,
+  deleteUserAddress,
+  getUserAddresses,
+  getUserProfile,
+  updateUserAddress,
+  updateUserProfileApi,
+} from "../../services/userService";
+import { changePassword } from "../../services/authService";
 
 const inputClass =
   "input-brand h-12 w-full rounded-lg border-[#c1c6d5] px-3 text-base text-black";
@@ -86,8 +95,104 @@ function AddressCard({ address, onEdit, onDelete, onSetDefault }) {
   );
 }
 
+function ChangePasswordModal({ onClose, onSuccess }) {
+  const [form, setForm] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const updateField = (field, value) => {
+    setForm((current) => ({ ...current, [field]: value }));
+    setError("");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!form.oldPassword || !form.newPassword || !form.confirmPassword) {
+      setError("Vui lòng nhập đầy đủ thông tin.");
+      return;
+    }
+
+    if (form.newPassword !== form.confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await changePassword({
+        oldPassword: form.oldPassword,
+        newPassword: form.newPassword,
+      });
+      onSuccess();
+    } catch (submitError) {
+      setError(submitError?.message || "Không thể đổi mật khẩu.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(6,16,90,0.24)] p-4 backdrop-blur-[2px]">
+      <section className="w-full max-w-[460px] rounded-xl bg-white p-6 shadow-[0_20px_60px_rgba(6,16,90,0.18)]">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <h2 className="text-xl font-bold text-[#003f87]">Đổi mật khẩu</h2>
+          <button type="button" onClick={onClose} className="rounded px-2 py-1 text-xl leading-none hover:bg-slate-100">
+            x
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="grid gap-4">
+          <Field label="Mật khẩu hiện tại">
+            <input
+              type="password"
+              value={form.oldPassword}
+              onChange={(event) => updateField("oldPassword", event.target.value)}
+              className={inputClass}
+              autoComplete="current-password"
+            />
+          </Field>
+          <Field label="Mật khẩu mới">
+            <input
+              type="password"
+              value={form.newPassword}
+              onChange={(event) => updateField("newPassword", event.target.value)}
+              className={inputClass}
+              autoComplete="new-password"
+            />
+          </Field>
+          <Field label="Xác nhận mật khẩu mới">
+            <input
+              type="password"
+              value={form.confirmPassword}
+              onChange={(event) => updateField("confirmPassword", event.target.value)}
+              className={inputClass}
+              autoComplete="new-password"
+            />
+          </Field>
+
+          {error && <p className="rounded-lg bg-[#ffdad6] px-3 py-2 text-sm font-semibold text-[#ba1a1a]">{error}</p>}
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={onClose} className="rounded border border-[#c1c6d5] px-4 py-2 text-sm font-semibold hover:bg-slate-50">
+              Hủy
+            </button>
+            <button type="submit" disabled={isSubmitting} className="btn-yellow h-[38px] px-[22px] py-1 disabled:cursor-not-allowed disabled:opacity-60">
+              {isSubmitting ? "Đang lưu..." : "Lưu"}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
 function UserProfilePage() {
-  const { updateUserProfile } = useAuth();
+  const { logout, updateUserProfile, userProfile } = useAuth();
   const fileInputRef = useRef(null);
   const [profile, setProfile] = useState(() =>
     loadStoredData(PROFILE_STORAGE_KEYS.profile, DEFAULT_USER_PROFILE),
@@ -98,6 +203,10 @@ function UserProfilePage() {
   const [avatar, setAvatar] = useState(defaultAvatar);
   const [message, setMessage] = useState("");
   const [addressModal, setAddressModal] = useState(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const userId = profile.userId || userProfile?.userId;
 
   useEffect(() => {
     if (!message) return undefined;
@@ -105,15 +214,69 @@ function UserProfilePage() {
     return () => window.clearTimeout(timeoutId);
   }, [message]);
 
+  useEffect(() => {
+    if (!userId) return undefined;
+
+    let active = true;
+    setIsLoadingProfile(true);
+
+    Promise.allSettled([getUserProfile(userId), getUserAddresses(userId)])
+      .then(([profileResult, addressesResult]) => {
+        if (!active) return;
+
+        if (profileResult.status === "fulfilled") {
+          const nextProfile = {
+            ...profile,
+            ...profileResult.value,
+            fullName: profileResult.value.fullName || profile.fullName,
+            email: profileResult.value.email || profile.email,
+            phone: profileResult.value.phone || profile.phone,
+          };
+          setProfile(nextProfile);
+          updateUserProfile(nextProfile);
+        }
+
+        if (addressesResult.status === "fulfilled") {
+          setAddresses(addressesResult.value);
+          localStorage.setItem(PROFILE_STORAGE_KEYS.addresses, JSON.stringify(addressesResult.value));
+        }
+
+        if (profileResult.status === "rejected" && addressesResult.status === "rejected") {
+          setMessage("Không thể tải hồ sơ mới nhất, đang dùng dữ liệu dự phòng.");
+        }
+      })
+      .finally(() => {
+        if (active) setIsLoadingProfile(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [userId]);
+
   const updateProfile = (event) => {
     const { name, value } = event.target;
     setProfile((current) => ({ ...current, [name]: value }));
   };
 
-  const saveProfile = (event) => {
+  const saveProfile = async (event) => {
     event.preventDefault();
-    updateUserProfile(profile);
-    setMessage("Đã lưu thông tin người dùng.");
+    setIsSavingProfile(true);
+
+    try {
+      const savedProfile = userId
+        ? await updateUserProfileApi(userId, profile)
+        : profile;
+      const nextProfile = { ...profile, ...savedProfile };
+      setProfile(nextProfile);
+      updateUserProfile(nextProfile);
+      setMessage(userId ? "Đã lưu thông tin người dùng." : "Đã lưu thông tin tạm thời.");
+    } catch (error) {
+      updateUserProfile(profile);
+      setMessage(error?.message || "Không thể lưu lên API, đã giữ dữ liệu tạm thời.");
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const changeAvatar = (event) => {
@@ -127,23 +290,62 @@ function UserProfilePage() {
     localStorage.setItem(PROFILE_STORAGE_KEYS.addresses, JSON.stringify(nextAddresses));
   };
 
-  const saveAddress = (address) => {
-    if (address.id) {
-      saveAddresses(addresses.map((item) => (item.id === address.id ? address : item)));
-    } else {
-      saveAddresses([
-        ...addresses,
-        { ...address, id: `address-${Date.now()}`, isDefault: addresses.length === 0 },
-      ]);
+  const saveAddress = async (address) => {
+    const fallbackAddress = {
+      ...address,
+      id: address.id || `address-${Date.now()}`,
+      isDefault: address.isDefault ?? addresses.length === 0,
+    };
+    let successMessage = address.id ? "Đã cập nhật địa chỉ." : "Đã thêm địa chỉ mới.";
+
+    try {
+      if (address.id && !String(address.id).startsWith("address-")) {
+        const savedAddress = await updateUserAddress(address.id, address);
+        saveAddresses(addresses.map((item) => (item.id === address.id ? savedAddress : item)));
+      } else if (address.id) {
+        saveAddresses(addresses.map((item) => (item.id === address.id ? fallbackAddress : item)));
+      } else if (userId) {
+        const savedAddress = await createUserAddress(userId, fallbackAddress);
+        saveAddresses([...addresses, savedAddress]);
+      } else {
+        saveAddresses([...addresses, fallbackAddress]);
+      }
+    } catch (error) {
+      if (address.id) {
+        saveAddresses(addresses.map((item) => (item.id === address.id ? fallbackAddress : item)));
+      } else {
+        saveAddresses([...addresses, fallbackAddress]);
+      }
+      successMessage = error?.message || "API địa chỉ lỗi, đã lưu dữ liệu tạm thời.";
     }
+
     setAddressModal(null);
-    setMessage(address.id ? "Đã cập nhật địa chỉ." : "Đã thêm địa chỉ mới.");
+    setMessage(successMessage);
   };
 
-  const deleteAddress = (id) => saveAddresses(addresses.filter((address) => address.id !== id));
+  const deleteAddress = async (id) => {
+    try {
+      if (!String(id).startsWith("address-")) await deleteUserAddress(id);
+    } catch (error) {
+      setMessage(error?.message || "Không thể xóa địa chỉ trên API, đã xóa tạm trên giao diện.");
+    }
+    saveAddresses(addresses.filter((address) => address.id !== id));
+  };
 
-  const setDefaultAddress = (id) =>
+  const setDefaultAddress = async (id) => {
+    const targetAddress = addresses.find((address) => address.id === id);
+    if (!targetAddress) return;
+
+    try {
+      if (!String(id).startsWith("address-")) {
+        await updateUserAddress(id, { ...targetAddress, isDefault: true });
+      }
+    } catch (error) {
+      setMessage(error?.message || "Không thể đặt mặc định trên API, đã cập nhật tạm.");
+    }
+
     saveAddresses(addresses.map((address) => ({ ...address, isDefault: address.id === id })));
+  };
 
   return (
     <div className="mx-auto w-full max-w-[1160px] font-sans text-[rgba(0,0,0,0.87)]">
@@ -160,9 +362,21 @@ function UserProfilePage() {
           onSave={saveAddress}
         />
       )}
+      {showChangePassword && (
+        <ChangePasswordModal
+          onClose={() => setShowChangePassword(false)}
+          onSuccess={() => {
+            setShowChangePassword(false);
+            setMessage("Đổi mật khẩu thành công. Vui lòng đăng nhập lại.");
+            window.setTimeout(() => logout(), 600);
+          }}
+        />
+      )}
       <header className="mb-4">
         <h1 className="text-[28px] font-bold leading-10">Thông tin người dùng</h1>
-        <p className="mt-1 text-base">Quản lý thông tin cá nhân và tài khoản của bạn</p>
+        <p className="mt-1 text-base">
+          {isLoadingProfile ? "Đang đồng bộ hồ sơ..." : "Quản lý thông tin cá nhân và tài khoản của bạn"}
+        </p>
       </header>
 
       <form
@@ -193,7 +407,7 @@ function UserProfilePage() {
           <h2 className="text-center text-2xl font-bold">{profile.fullName}</h2>
           <ButtonComponent
             variant="secondary"
-            onClick={() => setMessage("Tính năng đổi mật khẩu sẽ được kết nối với API.")}
+            onClick={() => setShowChangePassword(true)}
             className="h-[38px] bg-[#fff176] px-[22px] text-[15px] uppercase shadow-elevation hover:bg-[#fdd835]"
           >
             Đổi mật khẩu
@@ -244,8 +458,8 @@ function UserProfilePage() {
             </div>
           </div>
           <div className="flex justify-center">
-            <button type="submit" className="btn-yellow h-[38px] px-[22px] py-1">
-              Lưu
+            <button type="submit" disabled={isSavingProfile} className="btn-yellow h-[38px] px-[22px] py-1 disabled:cursor-not-allowed disabled:opacity-60">
+              {isSavingProfile ? "Đang lưu..." : "Lưu"}
             </button>
           </div>
         </section>

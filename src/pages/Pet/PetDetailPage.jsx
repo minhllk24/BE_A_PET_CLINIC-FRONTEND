@@ -2,6 +2,17 @@ import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { MOCK_PETS } from "../../data/mockPets";
 import { INITIAL_PET_EVENTS } from "../../data/petEvents";
+import {
+  createMedicalRecord,
+  createReminder,
+  deleteMedicalRecord,
+  deleteReminder,
+  getHealthDiariesByPet,
+  getMedicalRecordsByPet,
+  getPetDetails,
+  getRemindersByPet,
+  updateMedicalRecord,
+} from "../../services/petService";
 
 import buddyImg from "../../assets/images/pets/buddy.jpg";
 import lunaImg from "../../assets/images/pets/luna.jpg";
@@ -17,6 +28,37 @@ const petImages = {
   Luna: lunaImg,
   Max: maxImg,
   Snow: snowImg,
+};
+
+const readFallbackPets = () => {
+  try {
+    const stored = localStorage.getItem("petsData");
+    const pets = stored ? JSON.parse(stored) : null;
+
+    if (!pets || (pets.length > 0 && pets[0].medicalRecords === undefined)) {
+      localStorage.setItem("petsData", JSON.stringify(MOCK_PETS));
+      return MOCK_PETS;
+    }
+
+    return pets;
+  } catch (error) {
+    return MOCK_PETS;
+  }
+};
+
+const getFallbackPet = (petId) => {
+  const pets = readFallbackPets();
+  return pets.find((item) => item.id === petId || String(item.pet_id) === String(petId)) || pets[0];
+};
+
+const syncFallbackMedicalRecords = (petId, records) => {
+  const pets = readFallbackPets();
+  const updatedPets = pets.map((item) =>
+    item.id === petId || String(item.pet_id) === String(petId)
+      ? { ...item, medicalRecords: records }
+      : item,
+  );
+  localStorage.setItem("petsData", JSON.stringify(updatedPets));
 };
 
 const renderIconSvg = (id, className = "w-5 h-5") => {
@@ -133,41 +175,41 @@ const formatTimeToSACH = (time24h) => {
   } catch (error) { return "--:--"; }
 };
 
+const getEventDateParts = (event) => {
+  if (event?.dateKey) {
+    const date = new Date(event.dateKey);
+    if (!Number.isNaN(date.getTime())) {
+      return {
+        day: date.getDate(),
+        month: date.getMonth(),
+        year: date.getFullYear(),
+      };
+    }
+  }
+
+  return {
+    day: Number(event?.day),
+    month: 9,
+    year: 2023,
+  };
+};
+
+const isEventInDate = (event, day, month, year) => {
+  const eventDate = getEventDateParts(event);
+  return eventDate.day === day && eventDate.month === month && eventDate.year === year;
+};
+
 function PetDetailPage() {
   const params = useParams();
   const currentPetId = params.id || params.petId;
   const navigate = useNavigate();
-  
-  // 1. ĐỌC DỮ LIỆU TỪ LOCALSTORAGE
-  const stored = localStorage.getItem("petsData");
-  let petsList = stored ? JSON.parse(stored) : null;
-  
-  // LOGIC ÉP CẬP NHẬT: Nếu dữ liệu cũ trong máy bị thiếu field, lấy MOCK_PETS để bù vào
-  if (!petsList || (petsList.length > 0 && petsList[0].medicalRecords === undefined)) {
-    petsList = MOCK_PETS;
-    localStorage.setItem("petsData", JSON.stringify(MOCK_PETS));
-  }
-
-  const pet = petsList.find((p) => p.id === currentPetId) || petsList[0];
-  
-  // 2. TẠO HÀM TÍNH NGÀY KHÁM GẦN NHẤT
-  const getLatestDate = (records) => {
-    if (!records || records.length === 0) return "Chưa khám";
-    const validRecords = records.filter(r => r && r.date);
-    if (validRecords.length === 0) return "Chưa khám";
-
-    const sorted = [...validRecords].sort((a, b) => {
-      const [d1, m1, y1] = a.date.split('/');
-      const [d2, m2, y2] = b.date.split('/');
-      return new Date(y2, m2 - 1, d2) - new Date(y1, m1 - 1, d1);
-    });
-    return sorted[0].date;
-  };
+  const [pet, setPet] = useState(() => getFallbackPet(currentPetId));
+  const [petLoadError, setPetLoadError] = useState("");
   
   // 3. KHỞI TẠO STATES
   const [calendarDate, setCalendarDate] = useState(new Date(2023, 9, 9)); 
   const [eventsList, setEventsList] = useState(INITIAL_PET_EVENTS); 
-  const [medicalHistoryList, setMedicalHistoryList] = useState(pet?.medicalRecords || []);
+  const [medicalHistoryList, setMedicalHistoryList] = useState(() => getFallbackPet(currentPetId)?.medicalRecords || []);
 
   const [showGeneralNoteModal, setShowGeneralNoteModal] = useState(false);
   const [showDayModal, setShowDayModal] = useState(false);
@@ -210,11 +252,57 @@ function PetDetailPage() {
   const selectedDay = calendarDate.getDate();
 
   useEffect(() => {
+    let active = true;
+    const fallbackPet = getFallbackPet(currentPetId);
+
+    setPet(fallbackPet);
+    setMedicalHistoryList(fallbackPet?.medicalRecords || []);
+    setPetLoadError("");
+
+    Promise.allSettled([
+      getPetDetails(currentPetId),
+      getMedicalRecordsByPet(currentPetId),
+      getHealthDiariesByPet(currentPetId),
+      getRemindersByPet(currentPetId),
+    ]).then(([petResult, recordsResult, diariesResult, remindersResult]) => {
+      if (!active) return;
+
+      if (petResult.status === "fulfilled") {
+        setPet((current) => ({ ...current, ...petResult.value }));
+      }
+
+      if (recordsResult.status === "fulfilled") {
+        setMedicalHistoryList(recordsResult.value);
+      }
+
+      if (diariesResult.status === "fulfilled" || remindersResult.status === "fulfilled") {
+        const diaryEvents = diariesResult.status === "fulfilled" ? diariesResult.value : [];
+        const reminderEvents = remindersResult.status === "fulfilled" ? remindersResult.value : [];
+        const apiEvents = [...diaryEvents, ...reminderEvents];
+        if (apiEvents.length) setEventsList(apiEvents);
+      }
+
+      if (
+        petResult.status === "rejected" &&
+        recordsResult.status === "rejected" &&
+        diariesResult.status === "rejected" &&
+        remindersResult.status === "rejected"
+      ) {
+        setPetLoadError("Không thể tải hồ sơ mới nhất, đang hiển thị dữ liệu dự phòng.");
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [currentPetId]);
+
+  useEffect(() => {
     if (selectedDateObj && showDayModal) {
       const d = selectedDateObj.getDate();
       const m = selectedDateObj.getMonth();
       const y = selectedDateObj.getFullYear();
-      const eventsInDay = (m === 9 && y === 2023) ? eventsList.filter(ev => ev.day === d) : [];
+      const eventsInDay = eventsList.filter(ev => isEventInDate(ev, d, m, y));
       setDayEventsData(eventsInDay);
       
       if (activeEventDetail) {
@@ -235,10 +323,10 @@ function PetDetailPage() {
     calendarDays.push({ date: null });
   }
   for (let i = 1; i <= daysInMonth; i++) {
-    const dayEvents = month === 9 && year === 2023 ? eventsList.filter(ev => ev.day === i) : [];
+    const dayEvents = eventsList.filter(ev => isEventInDate(ev, i, month, year));
     calendarDays.push({ 
       date: i, 
-      isCurrent: i === selectedDay && month === 9 && year === 2023, 
+      isCurrent: i === selectedDay, 
       events: dayEvents.length > 0 ? dayEvents : null
     });
   }
@@ -264,7 +352,7 @@ function PetDetailPage() {
     setShowGeneralNoteModal(true);
   };
 
-  const handleSaveGeneralNote = (e) => {
+  const handleSaveGeneralNote = async (e) => {
     e.preventDefault();
     if (!noteDate || !noteContent || !selectedIcon || !selectedColor) {
       alert("Vui lòng nhập đầy đủ thông tin!");
@@ -281,7 +369,21 @@ function PetDetailPage() {
       icon: selectedIcon,
       files: existingFiles 
     };
-    setEventsList([...eventsList, newEvent]);
+    try {
+      const savedEvent = await createReminder({
+        petId: currentPetId,
+        remindDate: noteDate,
+        title: noteContent,
+        notes: noteContent,
+        time: formattedTime,
+        icon: selectedIcon,
+        type: selectedColor,
+        reminderType: selectedIcon,
+      });
+      setEventsList((current) => [...current, savedEvent]);
+    } catch (error) {
+      setEventsList((current) => [...current, newEvent]);
+    }
     setShowGeneralNoteModal(false);
   };
 
@@ -289,7 +391,7 @@ function PetDetailPage() {
     if(!day) return;
     const clickedDate = new Date(year, month, day);
     setSelectedDateObj(clickedDate);
-    const eventsInDay = month === 9 && year === 2023 ? eventsList.filter(ev => ev.day === day) : [];
+    const eventsInDay = eventsList.filter(ev => isEventInDate(ev, day, month, year));
     setDayEventsData(eventsInDay);
     setActiveEventDetail(eventsInDay.length > 0 ? eventsInDay[0] : null);
     
@@ -321,7 +423,7 @@ function PetDetailPage() {
     setDayModalMode('edit');
   };
 
-  const handleSaveDayNote = (e) => {
+  const handleSaveDayNote = async (e) => {
     e.preventDefault();
     if (!noteContent || !selectedIcon || !selectedColor) {
       alert("Vui lòng điền nội dung, chọn biểu tượng và màu sắc!");
@@ -356,7 +458,21 @@ function PetDetailPage() {
         icon: selectedIcon,
         files: existingFiles 
       };
-      setEventsList([...eventsList, newEvent]);
+      try {
+        const savedEvent = await createReminder({
+          petId: currentPetId,
+          remindDate: selectedDateObj.toISOString().slice(0, 10),
+          title: noteContent,
+          notes: noteContent,
+          time: formattedTime,
+          icon: selectedIcon,
+          type: selectedColor,
+          reminderType: selectedIcon,
+        });
+        setEventsList((current) => [...current, savedEvent]);
+      } catch (error) {
+        setEventsList((current) => [...current, newEvent]);
+      }
     }
     setDayModalMode('view'); 
   };
@@ -366,7 +482,16 @@ function PetDetailPage() {
     setShowDeleteNoteConfirm(true);
   };
 
-  const handleConfirmDeleteNote = () => {
+  const handleConfirmDeleteNote = async () => {
+    const targetEvent = eventsList.find((event) => event.id === noteToDeleteId);
+    if (targetEvent?.sourceType === "reminder") {
+      try {
+        await deleteReminder(noteToDeleteId);
+      } catch (error) {
+        // API lỗi thì vẫn xóa khỏi fallback local để UI không bị kẹt.
+      }
+    }
+
     setEventsList(prev => prev.filter(ev => ev.id !== noteToDeleteId));
     setShowDeleteNoteConfirm(false);
     setNoteToDeleteId(null);
@@ -402,7 +527,7 @@ function PetDetailPage() {
     setShowAddMedicalModal(true);
   };
 
-  const handleSaveMedicalRecord = (e) => {
+  const handleSaveMedicalRecord = async (e) => {
     e.preventDefault();
     if (!newMedicalName || !newMedicalDate) {
       alert("Vui lòng nhập tên bệnh án và ngày khám!");
@@ -439,36 +564,48 @@ function PetDetailPage() {
       };
       newList = [newRecord, ...medicalHistoryList];
     }
+
+    try {
+      if (medicalModalMode === 'edit' && editingMedicalId) {
+        const savedRecord = await updateMedicalRecord(editingMedicalId, {
+          condition: newMedicalName,
+          visitDate: newMedicalDate,
+          notes: newMedicalNotes,
+        });
+        newList = medicalHistoryList.map((record) =>
+          record.id === editingMedicalId ? { ...record, ...savedRecord } : record,
+        );
+      } else {
+        const savedRecord = await createMedicalRecord({
+          petId: currentPetId,
+          condition: newMedicalName,
+          visitDate: newMedicalDate,
+          notes: newMedicalNotes,
+        });
+        newList = [savedRecord, ...medicalHistoryList];
+      }
+    } catch (error) {
+      // Giữ fallback local để người dùng vẫn thao tác được khi API chưa bật.
+    }
     
     setMedicalHistoryList(newList);
     setShowAddMedicalModal(false);
-    
-    // ĐỒNG BỘ LOCAL STORAGE
-    const updatedPets = petsList.map(p => {
-      if (p.id === currentPetId) {
-        return { ...p, medicalRecords: newList, lastCheckup: getLatestDate(newList) };
-      }
-      return p;
-    });
-    localStorage.setItem("petsData", JSON.stringify(updatedPets));
+    syncFallbackMedicalRecords(currentPetId, newList);
     
     setNewMedicalName(""); setNewMedicalDoctor(""); setNewMedicalDate(""); setNewMedicalNotes("");
   };
 
-  const handleConfirmDeleteMedicalRecord = () => {
+  const handleConfirmDeleteMedicalRecord = async () => {
     const newList = medicalHistoryList.filter(r => r.id !== recordToDelete);
+    try {
+      await deleteMedicalRecord(recordToDelete);
+    } catch (error) {
+      // API lỗi thì vẫn xóa khỏi fallback local để UI không bị kẹt.
+    }
     setMedicalHistoryList(newList);
     setShowDeleteRecordModal(false); 
     setRecordToDelete(null);
-
-    // ĐỒNG BỘ LOCAL STORAGE SAU KHI XÓA
-    const updatedPets = petsList.map(p => {
-      if (p.id === currentPetId) {
-        return { ...p, medicalRecords: newList, lastCheckup: getLatestDate(newList) };
-      }
-      return p;
-    });
-    localStorage.setItem("petsData", JSON.stringify(updatedPets));
+    syncFallbackMedicalRecords(currentPetId, newList);
   };
 
   const handleDownloadFile = (fileName) => {
@@ -516,6 +653,12 @@ function PetDetailPage() {
           </Link>
           <h1 className="text-2xl font-bold text-slate-900">Hồ sơ chi tiết</h1>
         </div>
+
+        {petLoadError && (
+          <div className="mb-4 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+            {petLoadError}
+          </div>
+        )}
 
         <div className="grid gap-5 lg:grid-cols-[380px_1fr] items-start flex-1">
           

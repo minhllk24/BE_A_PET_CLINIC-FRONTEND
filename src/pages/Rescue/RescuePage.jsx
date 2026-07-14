@@ -5,7 +5,15 @@ import Footer from "../../components/Footer/Footer";
 import NavBar from "../../components/Navbar";
 import AdoptionApplicationModal from "../../components/rescue/AdoptionApplicationModal";
 import { rescueImages } from "../../assets/rescueImages";
+import { useAuth } from "../../context/AuthContext";
 import { RESCUE_PARTNERS, RESCUE_PETS } from "../../data/rescueData";
+import {
+  createAdoptionRequest,
+  getAdoptionPets,
+  getMyAdoptionRequests,
+  getRescueStations,
+  normalizeAdoptionRequest,
+} from "../../services/rescueService";
 
 const STATUS_FILTERS = [
   { label: "Tất cả trạng thái", value: "all" },
@@ -131,15 +139,108 @@ function PartnerCard({ partner }) {
   );
 }
 
+function AdoptionRequestCard({ request }) {
+  const badgeClass =
+    request.status === "approved"
+      ? "bg-[#D9F4E4] text-[#137333]"
+      : request.status === "rejected"
+        ? "bg-[#FFDAD6] text-[#BA1A1A]"
+        : "bg-[#FFF9C4] text-[#715B00]";
+
+  const submittedDate = request.submittedAt
+    ? new Date(request.submittedAt).toLocaleDateString("vi-VN")
+    : "";
+
+  return (
+    <article className="flex min-h-[144px] items-center gap-5 rounded-[24px] border border-[#D9E3F6] bg-white px-5 py-5 shadow-[0_10px_30px_rgba(59,130,246,0.08)]">
+      <img
+        src={request.petImage || rescueImages.rescuePlaceholder}
+        alt={request.petName}
+        className="h-24 w-24 shrink-0 rounded-[18px] object-cover"
+      />
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <h3 className="text-[22px] font-bold leading-7 text-[#111827]">{request.petName}</h3>
+          <span className={`rounded-full px-3 py-1 text-[12px] font-bold ${badgeClass}`}>
+            {request.statusLabel}
+          </span>
+        </div>
+        {request.reason && (
+          <p className="line-clamp-2 text-[14px] leading-5 text-[#475569]">{request.reason}</p>
+        )}
+        <p className="text-[13px] leading-5 text-[#64748B]">
+          {submittedDate ? `Gửi đơn ngày ${submittedDate}` : "Đơn nhận nuôi đã được ghi nhận."}
+        </p>
+      </div>
+    </article>
+  );
+}
+
 export default function RescuePage() {
+  const { isAuthenticated } = useAuth();
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedAdoptionPet, setSelectedAdoptionPet] = useState(null);
+  const [rescuePets, setRescuePets] = useState(RESCUE_PETS);
+  const [partners, setPartners] = useState(RESCUE_PARTNERS);
+  const [myRequests, setMyRequests] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [isLoadingMyRequests, setIsLoadingMyRequests] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    setLoadError("");
+
+    Promise.all([getAdoptionPets(), getRescueStations()])
+      .then(([apiPets, apiPartners]) => {
+        if (!active) return;
+        if (apiPets.length) setRescuePets(apiPets);
+        if (apiPartners.length) setPartners(apiPartners);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setLoadError(error?.message || "Không thể tải dữ liệu cứu trợ.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setMyRequests([]);
+      return;
+    }
+
+    let active = true;
+    setIsLoadingMyRequests(true);
+
+    getMyAdoptionRequests()
+      .then((requests) => {
+        if (active) setMyRequests(requests);
+      })
+      .catch(() => {
+        if (active) setMyRequests([]);
+      })
+      .finally(() => {
+        if (active) setIsLoadingMyRequests(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isAuthenticated]);
 
   const filteredPets = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLocaleLowerCase("vi");
-    return RESCUE_PETS.filter((pet) => {
+    return rescuePets.filter((pet) => {
       const matchesStatus = status === "all" || pet.state === status;
       const matchesKeyword =
         !normalizedKeyword ||
@@ -148,7 +249,7 @@ export default function RescuePage() {
         );
       return matchesStatus && matchesKeyword;
     });
-  }, [keyword, status]);
+  }, [keyword, rescuePets, status]);
   const totalPages = Math.max(1, Math.ceil(filteredPets.length / RESCUE_PAGE_SIZE));
   const pets = filteredPets.slice(
     (currentPage - 1) * RESCUE_PAGE_SIZE,
@@ -162,6 +263,21 @@ export default function RescuePage() {
   useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(totalPages);
   }, [currentPage, totalPages]);
+
+  const handleSubmitAdoptionApplication = async (values) => {
+    const createdRequest = await createAdoptionRequest(selectedAdoptionPet?.id, values);
+    if (selectedAdoptionPet) {
+      setMyRequests((current) => [
+        normalizeAdoptionRequest({
+          ...createdRequest,
+          adoption_pet: selectedAdoptionPet,
+          reason: values.adoptionReason || values.futurePlan || "",
+        }),
+        ...current,
+      ]);
+    }
+    return createdRequest;
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -200,10 +316,21 @@ export default function RescuePage() {
             <img src={rescueImages.yellowDoodle} alt="" className="absolute left-[930px] top-[18px] h-[38px] w-[55px]" />
 
             <div className="mt-7 grid w-[1180px] grid-cols-3 gap-x-5 gap-y-8">
-              {pets.map((pet) => (
-                <RescuePetCard key={pet.id} pet={pet} onAdopt={setSelectedAdoptionPet} />
-              ))}
+              {isLoading ? (
+                <div className="col-span-3 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">
+                  Đang tải danh sách nhận nuôi...
+                </div>
+              ) : pets.length ? (
+                pets.map((pet) => (
+                  <RescuePetCard key={pet.id} pet={pet} onAdopt={setSelectedAdoptionPet} />
+                ))
+              ) : (
+                <div className="col-span-3 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#414753]">
+                  Không tìm thấy bạn nhỏ phù hợp.
+                </div>
+              )}
             </div>
+            {loadError && <p className="mt-4 text-[14px] text-[#D32F2F]">{loadError}</p>}
 
             <div className="mt-8 flex justify-center gap-3 text-[#0D47A1]">
               <button
@@ -256,6 +383,32 @@ export default function RescuePage() {
             </p>
           </section>
 
+          {isAuthenticated && (
+            <section className="relative mt-[54px]">
+              <SectionLabel>Theo dõi hồ sơ</SectionLabel>
+              <h2 className="mt-3 text-[40px] font-bold leading-[48px] text-[#111827]">Đơn nhận nuôi của tôi</h2>
+              <p className="mt-3 text-[16px] leading-6 text-[#475569]">
+                Theo dõi nhanh trạng thái những đơn bạn đã gửi tới các bé đang chờ một mái nhà.
+              </p>
+
+              <div className="mt-8 grid w-[1200px] grid-cols-2 gap-6">
+                {isLoadingMyRequests ? (
+                  <div className="col-span-2 flex h-36 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">
+                    Đang tải đơn nhận nuôi...
+                  </div>
+                ) : myRequests.length ? (
+                  myRequests.slice(0, 4).map((request) => (
+                    <AdoptionRequestCard key={request.id} request={request} />
+                  ))
+                ) : (
+                  <div className="col-span-2 flex h-36 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#475569]">
+                    Bạn chưa có đơn nhận nuôi nào.
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
           <section className="relative mt-[70px]">
             <SectionLabel>Kết nối hỗ trợ</SectionLabel>
             <h2 className="mt-3 text-[40px] font-bold leading-[48px] text-[#111827]">Mạng lưới đối tác cứu trợ</h2>
@@ -265,7 +418,7 @@ export default function RescuePage() {
             <img src={rescueImages.yellowDoodle} alt="" className="absolute right-[170px] top-6 h-[74px] w-[124px]" />
 
             <div className="mt-9 grid w-[1200px] grid-cols-3 gap-8">
-              {RESCUE_PARTNERS.map((partner) => (
+              {partners.map((partner) => (
                 <PartnerCard key={partner.id} partner={partner} />
               ))}
             </div>
@@ -277,6 +430,7 @@ export default function RescuePage() {
         open={Boolean(selectedAdoptionPet)}
         pet={selectedAdoptionPet}
         onClose={() => setSelectedAdoptionPet(null)}
+        onSubmitApplication={handleSubmitAdoptionApplication}
       />
     </div>
   );

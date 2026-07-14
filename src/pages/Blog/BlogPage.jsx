@@ -22,11 +22,16 @@ import {
   ALL_BLOG_POSTS,
   TRENDING_BLOG_POSTS,
 } from "../../data/blogData";
+import {
+  getBlogCategories,
+  getFeaturedPost,
+  getPostsPage,
+  getTrendingPosts,
+} from "../../services/contentService";
 
 const PAGE_SIZE = 8;
 
-function FeaturedPost() {
-  const post = FEATURED_BLOG_POST;
+function FeaturedPost({ post = FEATURED_BLOG_POST }) {
   const href = `/blog/${post.id}`;
 
   return (
@@ -65,7 +70,7 @@ function FeaturedPost() {
   );
 }
 
-function TrendingSection() {
+function TrendingSection({ posts = TRENDING_BLOG_POSTS }) {
   const scrollRef = useRef(null);
   const scroll = (direction) => {
     scrollRef.current?.scrollBy({ left: direction * 344, behavior: "smooth" });
@@ -95,7 +100,7 @@ function TrendingSection() {
         </div>
       </div>
       <div ref={scrollRef} className="mt-6 flex gap-6 overflow-x-hidden pb-6">
-        {TRENDING_BLOG_POSTS.map((post) => (
+        {posts.map((post) => (
           <Link key={post.id} to={`/blog/${post.id}`} className="group flex h-[130px] w-[320px] shrink-0 gap-4 rounded-[16px] border border-[#E3F2FD] bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
             <img src={post.image} alt="" className="h-24 w-24 rounded-[12px] object-cover" />
             <div className="flex min-w-0 flex-col justify-center">
@@ -124,10 +129,16 @@ export default function BlogPage() {
   const [search, setSearch] = useState(initialKeyword);
   const [searchQuery, setSearchQuery] = useState(initialKeyword);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [categories, setCategories] = useState(BLOG_CATEGORIES);
+  const [featuredPost, setFeaturedPost] = useState(FEATURED_BLOG_POST);
+  const [trendingPosts, setTrendingPosts] = useState(TRENDING_BLOG_POSTS);
+  const [allPosts, setAllPosts] = useState(ALL_BLOG_POSTS);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     const categoryParam = searchParams.get("category");
-    const nextCategory = BLOG_CATEGORIES.some((item) => item.id === categoryParam)
+    const nextCategory = categories.some((item) => item.id === categoryParam)
       ? categoryParam
       : "all";
     const keyword = searchParams.get("keyword") || "";
@@ -135,7 +146,38 @@ export default function BlogPage() {
     setSearch(keyword);
     setSearchQuery(keyword);
     setVisibleCount(PAGE_SIZE);
-  }, [searchParams]);
+  }, [categories, searchParams]);
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    setLoadError("");
+
+    Promise.all([
+      getBlogCategories(),
+      getFeaturedPost(),
+      getTrendingPosts(5),
+      getPostsPage({ type: "official_blog", limit: 100 }),
+    ])
+      .then(([apiCategories, apiFeatured, apiTrending, apiPosts]) => {
+        if (!active) return;
+        if (apiCategories.length > 1) setCategories(apiCategories);
+        if (apiFeatured) setFeaturedPost(apiFeatured);
+        if (apiTrending.length) setTrendingPosts(apiTrending);
+        if (apiPosts.posts.length) setAllPosts(apiPosts.posts);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setLoadError(error?.message || "Không thể tải bài viết mới nhất.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (location.hash !== "#latest-posts") return;
@@ -146,14 +188,14 @@ export default function BlogPage() {
 
   const filteredPosts = useMemo(() => {
     const keyword = searchQuery.trim().toLocaleLowerCase("vi");
-    return ALL_BLOG_POSTS.filter((post) => {
+    return allPosts.filter((post) => {
       if (category !== "all" && post.category !== category) return false;
       if (!keyword) return true;
       return [post.title, post.excerpt, post.categoryLabel].some((value) =>
         value.toLocaleLowerCase("vi").includes(keyword),
       );
     });
-  }, [category, searchQuery]);
+  }, [allPosts, category, searchQuery]);
   const posts = filteredPosts.slice(0, visibleCount);
   const total = filteredPosts.length;
 
@@ -200,15 +242,15 @@ export default function BlogPage() {
             </div>
           </section>
 
-          <FeaturedPost />
-          <TrendingSection />
+          <FeaturedPost post={featuredPost} />
+          <TrendingSection posts={trendingPosts} />
 
           <section id="latest-posts" className="mt-1 flex w-[1202px] scroll-mt-4 flex-col items-center gap-8 pt-4">
             <div className="flex w-full items-center gap-2">
               <h2 className="shrink-0 text-[24px] font-bold leading-8 text-[#111827]">Bài viết</h2>
               <div className="ml-2 h-1 flex-1 bg-[#FDD835]" />
               <div className="flex gap-3">
-                {BLOG_CATEGORIES.map((item) => (
+                {categories.map((item) => (
                   <button
                     key={item.id}
                     type="button"
@@ -251,7 +293,16 @@ export default function BlogPage() {
                 Kết quả tìm kiếm cho &quot;{searchQuery}&quot;
               </p>
             )}
-            {posts.length ? (
+            {loadError && (
+              <p className="-mt-5 w-full text-[14px] leading-5 text-[#D32F2F]">
+                {loadError}
+              </p>
+            )}
+            {isLoading ? (
+              <div className="flex h-48 w-full items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">
+                Đang tải bài viết...
+              </div>
+            ) : posts.length ? (
               <div className="grid w-full grid-cols-4 gap-x-[16px] gap-y-8">
                 {posts.map((post) => <BlogCard key={post.id} post={post} />)}
               </div>

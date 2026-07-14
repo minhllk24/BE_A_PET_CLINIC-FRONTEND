@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { MOCK_PETS } from "../../data/mockPets";
+import {
+  createPet,
+  deletePet,
+  getMyPets,
+  getPetBreeds,
+  getPetSpecies,
+  updatePet,
+} from "../../services/petService";
 
 import buddyImg from "../../assets/images/pets/buddy.jpg";
 import lunaImg from "../../assets/images/pets/luna.jpg";
@@ -65,6 +72,12 @@ function PetFormPage() {
   const isEdit = Boolean(petId && petId !== "new");
   
   const [allPets, setAllPets] = useState([]);
+  const [speciesOptions, setSpeciesOptions] = useState([]);
+  const [breedOptions, setBreedOptions] = useState([]);
+  const [selectedSpeciesId, setSelectedSpeciesId] = useState("");
+  const [selectedBreedId, setSelectedBreedId] = useState("");
+  const [formError, setFormError] = useState("");
+  const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMedicalModal, setShowMedicalModal] = useState(false);
   
@@ -83,36 +96,63 @@ function PetFormPage() {
   const [newMedicalNotes, setNewMedicalNotes] = useState("");
 
   const [avatarPreview, setAvatarPreview] = useState(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("petsData");
-    let pets = [];
-    if (stored) {
-      pets = JSON.parse(stored);
-      setAllPets(pets);
-    } else {
-      setAllPets(MOCK_PETS);
-      pets = MOCK_PETS;
-    }
-
-    if (isEdit) {
-      const currentPet = pets.find((p) => p.id === petId);
-      if (currentPet) {
-        if (currentPet.avatar) {
-          setAvatarPreview(currentPet.avatar);
-        } else if (currentPet.name && petImages[currentPet.name]) {
-          setAvatarPreview(petImages[currentPet.name]);
-        }
-        
-        if (currentPet.medicalRecords) {
-          setMedicalRecords(currentPet.medicalRecords);
-        }
-      }
-    }
-  }, [petId, isEdit]);
-
   const pet = isEdit ? allPets.find((p) => p.id === petId) : null;
   const currentPetImage = avatarPreview || (pet?.name ? petImages[pet.name] : null);
+
+  useEffect(() => {
+    let active = true;
+
+    Promise.all([getMyPets(), getPetSpecies()])
+      .then(([pets, species]) => {
+        if (!active) return;
+        setAllPets(pets);
+        setSpeciesOptions(species);
+
+        if (isEdit) {
+          const currentPet = pets.find((p) => p.id === petId);
+          if (currentPet) {
+            setSelectedSpeciesId(String(currentPet.speciesId || ""));
+            setSelectedBreedId(String(currentPet.breedId || ""));
+            if (currentPet.avatar) {
+              setAvatarPreview(currentPet.avatar);
+            } else if (currentPet.name && petImages[currentPet.name]) {
+              setAvatarPreview(petImages[currentPet.name]);
+            }
+
+            if (currentPet.medicalRecords) {
+              setMedicalRecords(currentPet.medicalRecords);
+            }
+          }
+        }
+      })
+      .catch((error) => {
+        if (active) setFormError(error?.message || "Không thể tải hồ sơ thú cưng");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [petId, isEdit]);
+
+  useEffect(() => {
+    let active = true;
+    if (!selectedSpeciesId) {
+      setBreedOptions([]);
+      return undefined;
+    }
+
+    getPetBreeds(selectedSpeciesId)
+      .then((breeds) => {
+        if (active) setBreedOptions(breeds);
+      })
+      .catch(() => {
+        if (active) setBreedOptions([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selectedSpeciesId]);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -125,44 +165,53 @@ function PetFormPage() {
     }
   };
 
-  const handleConfirmDelete = () => {
-    const updatedPets = allPets.filter((p) => p.id !== petId);
-    localStorage.setItem("petsData", JSON.stringify(updatedPets));
-    setShowDeleteModal(false);
-    navigate("/thu-cung-cua-toi");
+  const handleConfirmDelete = async () => {
+    try {
+      setSaving(true);
+      setFormError("");
+      await deletePet(petId);
+      setShowDeleteModal(false);
+      navigate("/thu-cung-cua-toi");
+    } catch (error) {
+      setFormError(error?.message || "Không thể xóa hồ sơ");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target); 
 
-    const genderValue = formData.get("gender") === "Đực" ? "♂" : "♀";
+    const genderValue = formData.get("gender");
     const weightInput = formData.get("weight");
 
     const petData = {
-      id: isEdit ? petId : `pet_${Date.now()}`,
       name: formData.get("name"),
-      species: formData.get("species"),
-      breed: formData.get("breed"),
+      speciesId: formData.get("speciesId"),
+      breedId: formData.get("breedId"),
       age: formData.get("age") || "Chưa rõ", 
       gender: genderValue,
-      weight: weightInput ? `${weightInput} kg` : "",
+      weightKg: weightInput || null,
       medicalNotes: formData.get("medicalNotes") || "", 
       healthStatus: formData.get("healthStatus"), 
       avatar: avatarPreview, 
-      medicalRecords: medicalRecords, 
-      lastCheckup: getLatestDate(medicalRecords), 
     };
 
-    let updatedPets;
-    if (isEdit) {
-      updatedPets = allPets.map((p) => (p.id === petId ? { ...p, ...petData } : p));
-    } else {
-      updatedPets = [petData, ...allPets];
+    try {
+      setSaving(true);
+      setFormError("");
+      if (isEdit) {
+        await updatePet(petId, petData);
+      } else {
+        await createPet(petData);
+      }
+      navigate("/thu-cung-cua-toi");
+    } catch (error) {
+      setFormError(error?.message || "Không thể lưu hồ sơ");
+    } finally {
+      setSaving(false);
     }
-
-    localStorage.setItem("petsData", JSON.stringify(updatedPets));
-    navigate("/thu-cung-cua-toi");
   };
 
   const handleOpenCreateMedical = () => {
@@ -266,6 +315,11 @@ function PetFormPage() {
       </div>
 
       <form key={pet ? pet.id : "new-pet-form"} className="space-y-6" onSubmit={handleSubmit}>
+        {formError && (
+          <div className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {formError}
+          </div>
+        )}
         
         <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-800 mb-6">
@@ -302,16 +356,39 @@ function PetFormPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Loài <span className="text-red-500">*</span></label>
-                <select required name="species" defaultValue={pet?.species || ""} className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white">
+                <select
+                  required
+                  name="speciesId"
+                  value={selectedSpeciesId}
+                  onChange={(event) => {
+                    setSelectedSpeciesId(event.target.value);
+                    setSelectedBreedId("");
+                  }}
+                  className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
+                >
                   <option value="" disabled hidden>-- Chọn loài --</option>
-                  <option value="Mèo">Mèo</option>
-                  <option value="Chó">Chó</option>
-                  <option value="Khác">Khác</option>
+                  {speciesOptions.map((species) => (
+                    <option key={species.species_id} value={species.species_id}>
+                      {species.species_name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Giống <span className="text-red-500">*</span></label>
-                <input required type="text" name="breed" defaultValue={pet?.breed || ""} placeholder="VD: Poodle, Mèo Anh lông ngắn..." className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                <select
+                  name="breedId"
+                  value={selectedBreedId}
+                  onChange={(event) => setSelectedBreedId(event.target.value)}
+                  className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
+                >
+                  <option value="">-- Chọn giống --</option>
+                  {breedOptions.map((breed) => (
+                    <option key={breed.breed_id} value={breed.breed_id}>
+                      {breed.breed_name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
@@ -389,11 +466,11 @@ function PetFormPage() {
               <label className="block text-sm font-medium text-slate-700 mb-3">Giới tính <span className="text-red-500">*</span></label>
               <div className="flex items-center gap-6 pt-1">
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input type="radio" name="gender" value="Đực" defaultChecked={!pet || pet?.gender === 'Đực' || pet?.gender === '♂'} className="w-4 h-4 text-slate-800 border-slate-300 focus:ring-slate-800" />
+                  <input type="radio" name="gender" value="male" defaultChecked={!pet || pet?.gender === 'Đực' || pet?.gender === '♂' || pet?.gender === 'male'} className="w-4 h-4 text-slate-800 border-slate-300 focus:ring-slate-800" />
                   Đực
                 </label>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input type="radio" name="gender" value="Cái" defaultChecked={pet?.gender === 'Cái' || pet?.gender === '♀'} className="w-4 h-4 text-slate-800 border-slate-300 focus:ring-slate-800" />
+                  <input type="radio" name="gender" value="female" defaultChecked={pet?.gender === 'Cái' || pet?.gender === '♀' || pet?.gender === 'female'} className="w-4 h-4 text-slate-800 border-slate-300 focus:ring-slate-800" />
                   Cái
                 </label>
               </div>
@@ -402,7 +479,7 @@ function PetFormPage() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Cân nặng <span className="text-red-500">*</span></label>
               <div className="relative">
-                <input required type="number" step="0.1" name="weight" defaultValue={pet?.weight?.replace(' kg', '') || ""} placeholder="0" className="w-full border border-slate-300 rounded-lg pl-4 pr-10 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+                <input required type="number" step="0.1" name="weight" defaultValue={pet?.weightKg || pet?.weight?.replace(' kg', '') || ""} placeholder="0" className="w-full border border-slate-300 rounded-lg pl-4 pr-10 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
                 <span className="absolute right-3 top-2.5 text-slate-400 text-sm">kg</span>
               </div>
             </div>
@@ -450,9 +527,9 @@ function PetFormPage() {
             <Link to="/thu-cung-cua-toi" className="text-sm font-medium text-slate-600 hover:text-slate-900 px-4 py-2 transition">
               Hủy
             </Link>
-            <button type="submit" className="bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 px-6 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition shadow-sm">
+            <button type="submit" disabled={saving} className="bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 px-6 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition shadow-sm disabled:cursor-not-allowed disabled:opacity-60">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-              Lưu hồ sơ
+              {saving ? "Đang lưu..." : "Lưu hồ sơ"}
             </button>
           </div>
         </div>

@@ -10,6 +10,7 @@ import {
   LIVING_CONDITION_QUESTIONS,
 } from "../../data/adoptionFormData";
 import { DEFAULT_USER_ADDRESSES, PROFILE_STORAGE_KEYS } from "../../data/userProfileData";
+import { getUserAddresses } from "../../services/userService";
 
 const buttonShadow =
   "shadow-[0px_1px_5px_0px_rgba(0,0,0,0.12),0px_2px_2px_0px_rgba(0,0,0,0.14),0px_3px_1px_-2px_rgba(0,0,0,0.2)]";
@@ -424,7 +425,7 @@ function SuccessView({ onClose }) {
   );
 }
 
-export default function AdoptionApplicationModal({ open, pet, onClose }) {
+export default function AdoptionApplicationModal({ open, pet, onClose, onSubmitApplication }) {
   const { isAuthenticated, userProfile } = useAuth();
   const [stepIndex, setStepIndex] = useState(0);
   const [values, setValues] = useState(initialFormValues);
@@ -432,9 +433,13 @@ export default function AdoptionApplicationModal({ open, pet, onClose }) {
   const [addressMode, setAddressMode] = useState(NEW_ADDRESS_VALUE);
   const [validationAttemptedByStep, setValidationAttemptedByStep] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const userId = userProfile?.userId;
 
   useEffect(() => {
     if (!open) return;
+    let active = true;
     const nextAddresses = isAuthenticated ? loadUserAddresses() : [];
     const defaultAddress =
       nextAddresses.find((address) => address.isDefault) ?? nextAddresses[0];
@@ -445,11 +450,32 @@ export default function AdoptionApplicationModal({ open, pet, onClose }) {
     setValues(getPrefilledValues({ isAuthenticated, userProfile, addresses: nextAddresses }));
     setValidationAttemptedByStep({});
     setSubmitted(false);
+    setIsSubmitting(false);
+    setSubmitError("");
     document.body.style.overflow = "hidden";
+
+    if (isAuthenticated && userId) {
+      getUserAddresses(userId)
+        .then((apiAddresses) => {
+          if (!active || !apiAddresses.length) return;
+          const apiDefaultAddress =
+            apiAddresses.find((address) => address.isDefault) ?? apiAddresses[0];
+
+          setAddresses(apiAddresses);
+          setAddressMode(apiAddresses.length > 1 && apiDefaultAddress?.id ? apiDefaultAddress.id : NEW_ADDRESS_VALUE);
+          setValues(getPrefilledValues({ isAuthenticated, userProfile, addresses: apiAddresses }));
+          localStorage.setItem(PROFILE_STORAGE_KEYS.addresses, JSON.stringify(apiAddresses));
+        })
+        .catch(() => {
+          // Local addresses are already loaded as a fallback.
+        });
+    }
+
     return () => {
+      active = false;
       document.body.style.overflow = "";
     };
-  }, [open, isAuthenticated, userProfile]);
+  }, [open, isAuthenticated, userProfile, userId]);
 
   const currentStep = ADOPTION_STEPS[stepIndex];
   const isLastStep = stepIndex === ADOPTION_STEPS.length - 1;
@@ -465,7 +491,7 @@ export default function AdoptionApplicationModal({ open, pet, onClose }) {
     setValues((current) => ({ ...current, [name]: value }));
   };
 
-  const handleNext = (event) => {
+  const handleNext = async (event) => {
     event.preventDefault();
     const formElement = event.currentTarget;
     const missingFields = getMissingFields(values, currentStep.id);
@@ -478,7 +504,18 @@ export default function AdoptionApplicationModal({ open, pet, onClose }) {
     }
 
     if (isLastStep) {
-      setSubmitted(true);
+      setSubmitError("");
+      setIsSubmitting(true);
+      try {
+        if (onSubmitApplication) {
+          await onSubmitApplication(values);
+        }
+        setSubmitted(true);
+      } catch (error) {
+        setSubmitError(error?.message || "Không thể gửi đơn nhận nuôi.");
+      } finally {
+        setIsSubmitting(false);
+      }
       return;
     }
     setValidationAttemptedByStep((current) => ({ ...current, [currentStep.id]: false }));
@@ -544,6 +581,11 @@ export default function AdoptionApplicationModal({ open, pet, onClose }) {
                   <h2 className="text-center text-[28px] font-semibold leading-8 text-[rgba(0,0,0,0.87)]">
                     {formTitle}
                   </h2>
+                  {submitError && (
+                    <p className="-mt-6 rounded-[8px] bg-[#FFDAD6] px-4 py-3 text-center text-[14px] font-semibold text-[#93000A]">
+                      {submitError}
+                    </p>
+                  )}
                   <div className="w-full max-w-[568px]">{renderStep()}</div>
                 </div>
               </div>
@@ -555,7 +597,9 @@ export default function AdoptionApplicationModal({ open, pet, onClose }) {
                   >
                     {stepIndex === 0 ? "Hủy" : "Quay lại"}
                   </ModalButton>
-                  <ModalButton type="submit">{isLastStep ? "Gửi đơn" : "Tiếp tục"}</ModalButton>
+                  <ModalButton type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Đang gửi..." : isLastStep ? "Gửi đơn" : "Tiếp tục"}
+                  </ModalButton>
                 </div>
               </div>
             </div>

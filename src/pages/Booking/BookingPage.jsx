@@ -4,17 +4,22 @@ import Footer from "../../components/Footer/Footer";
 import BookingPaymentStep from "../../components/booking/BookingPaymentStep";
 import BookingSuccessModal from "../../components/booking/BookingSuccessModal";
 import { ChevronDown, MapPin } from "lucide-react";
-import { MOCK_PETS } from "../../data/mockPets";
 import {
   BOOKING_SERVICES,
   BOOKING_SERVICE_TYPES,
-  BOOKING_TIME_SLOTS,
 } from "../../data/bookingData";
 import { bookingImages } from "../../assets/bookingImages";
 import { formatVnd } from "../../utils/currency";
 
 import buddyImg from "../../assets/images/pets/buddy.jpg";
 import { useAuth } from "../../context/AuthContext";
+import {
+  bookAppointment,
+  getAppointmentSlots,
+  getBranches,
+  getServices,
+} from "../../services/bookingService";
+import { getMyPets, getPetSpecies } from "../../services/petService";
 
 const {
   serviceListIcon,
@@ -43,6 +48,7 @@ const BRANCH_OPTIONS = [
 ];
 
 const formatMoney = (value) => formatVnd(value);
+const DEFAULT_SERVICE_TYPE_ID = "clinic";
 
 const createEmptyPetInfo = () => ({
   id: `other-${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -62,18 +68,50 @@ const profileToPetInfo = (pet) => ({
   species: pet.species || "",
   breed: pet.breed || "",
   age: pet.age || "",
-  weight: pet.weight || "",
-  gender: pet.gender === "♂" ? "male" : pet.gender === "♀" ? "female" : "",
+  weight: pet.weightKg || String(pet.weight || "").replace(/[^\d.,]/g, ""),
+  gender:
+    pet.gender === "male" || pet.gender === "female"
+      ? pet.gender
+      : pet.gender === "♂"
+        ? "male"
+        : pet.gender === "♀"
+          ? "female"
+          : "",
   status:
-    pet.healthStatus === "Bình thường"
+    pet.healthStatus === "normal" || pet.healthStatus === "Bình thường"
       ? "normal"
-      : pet.healthStatus === "Đang điều trị"
+      : pet.healthStatus === "treating" || pet.healthStatus === "Đang điều trị"
         ? "treating"
         : pet.healthStatus
           ? "chronic"
           : "",
   notes: pet.medicalNotes || "",
 });
+
+const findSpeciesId = (speciesOptions, speciesName) => {
+  const normalizedName = String(speciesName || "").trim().toLowerCase();
+  if (!normalizedName) return undefined;
+
+  const aliasMap = {
+    chó: ["cho", "chó", "dog", "canine"],
+    mèo: ["meo", "mèo", "cat", "feline"],
+  };
+  const aliases = aliasMap[normalizedName] || [normalizedName];
+
+  const matchedSpecies = speciesOptions.find((species) => {
+    const backendName = String(species.species_name || species.name || "").trim().toLowerCase();
+    return aliases.some((alias) => backendName === alias || backendName.includes(alias));
+  });
+
+  return matchedSpecies?.species_id || matchedSpecies?.id;
+};
+
+const toBackendHealthStatus = (status) => {
+  if (status === "normal") return "healthy";
+  if (status === "treating") return "treating";
+  if (status === "need_recheck") return "need_recheck";
+  return "unknown";
+};
 
 const isPetInfoComplete = (petInfo) =>
   petInfo.name.trim() &&
@@ -108,8 +146,8 @@ const isSlotInPast = (slotValue, selectedDate) => {
   return getSlotStartMinutes(slotValue) < nowMinutes;
 };
 
-const isSlotBookable = (slotValue, selectedDate) => {
-  const slot = BOOKING_TIME_SLOTS.find((item) => item.value === slotValue);
+const isSlotBookable = (slotValue, selectedDate, timeSlots) => {
+  const slot = timeSlots.find((item) => item.value === slotValue);
 
   return Boolean(slot?.available && selectedDate && !isBeforeToday(selectedDate) && !isSlotInPast(slotValue, selectedDate));
 };
@@ -267,7 +305,7 @@ function BookingCalendar({ selectedDate, onSelect, invalid = false }) {
   );
 }
 
-function TimeSlots({ selectedDate, selectedSlot, onSelect, invalid = false }) {
+function TimeSlots({ selectedDate, selectedSlot, onSelect, timeSlots, invalid = false }) {
   return (
     <Card
       className={`flex h-full min-h-0 flex-col p-6 ${invalid ? "ring-2 ring-red-500" : ""}`}
@@ -279,7 +317,7 @@ function TimeSlots({ selectedDate, selectedSlot, onSelect, invalid = false }) {
         <span>◷</span> Khung giờ trống
       </h3>
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-        {BOOKING_TIME_SLOTS.map((slot) => {
+        {timeSlots.map((slot) => {
           const disabled = !slot.available || !selectedDate || isBeforeToday(selectedDate) || isSlotInPast(slot.value, selectedDate);
           const active = selectedSlot === slot.value;
           return (
@@ -297,7 +335,15 @@ function TimeSlots({ selectedDate, selectedSlot, onSelect, invalid = false }) {
               }`}
             >
               <span>{slot.value}</span>
-              {disabled && <span className="text-[10px] uppercase text-red-600">{slot.available ? "Không khả dụng" : "Hết chỗ"}</span>}
+              {disabled ? (
+                <span className="text-[10px] uppercase text-red-600">
+                  {slot.bookedCount >= slot.maxAppointments ? "Hết chỗ" : "Không khả dụng"}
+                </span>
+              ) : (
+                <span className="text-[10px] uppercase opacity-80">
+                  Còn {slot.maxAppointments - slot.bookedCount}/{slot.maxAppointments}
+                </span>
+              )}
               {active && <span>✓</span>}
             </button>
           );
@@ -307,7 +353,7 @@ function TimeSlots({ selectedDate, selectedSlot, onSelect, invalid = false }) {
   );
 }
 
-function BranchSelectionCard({ selectedBranch, onSelect, invalid = false }) {
+function BranchSelectionCard({ selectedBranch, onSelect, branches, invalid = false }) {
   return (
     <Card
       className={`h-full p-6 ${invalid ? "ring-2 ring-red-500" : ""}`}
@@ -329,8 +375,8 @@ function BranchSelectionCard({ selectedBranch, onSelect, invalid = false }) {
             }`}
           >
             <option value="" disabled>Chọn chi nhánh</option>
-            {BRANCH_OPTIONS.map((branch) => (
-              <option key={branch} value={branch}>{branch}</option>
+            {branches.map((branch) => (
+              <option key={branch.id || branch} value={branch.id || branch}>{branch.label || branch}</option>
             ))}
           </select>
           <ChevronDown
@@ -354,16 +400,20 @@ function ServiceSelection({
   setSelectedSlot,
   ownerInfo,
   setOwnerInfo,
+  branches,
+  services,
+  timeSlots,
+  slotsLoading,
   onNext,
 }) {
   const [validationAttempted, setValidationAttempted] = useState(false);
   const visibleServices = useMemo(
-    () => BOOKING_SERVICES.filter((service) => !selectedServiceType || service.serviceTypeId === selectedServiceType),
-    [selectedServiceType],
+    () => services.filter((service) => !selectedServiceType || service.serviceTypeId === selectedServiceType),
+    [selectedServiceType, services],
   );
   const total = useMemo(
-    () => BOOKING_SERVICES.filter((item) => selectedServices.includes(item.id)).reduce((sum, item) => sum + item.price, 0),
-    [selectedServices],
+    () => services.filter((item) => selectedServices.includes(item.id)).reduce((sum, item) => sum + item.price, 0),
+    [selectedServices, services],
   );
 
   const toggleService = (id) => {
@@ -374,18 +424,22 @@ function ServiceSelection({
 
   const selectBranch = (branch) => {
     setOwnerInfo((current) => ({ ...current, branch }));
+    setSelectedSlot(null);
   };
 
   const selectDate = (date) => {
     setSelectedDate(date);
-    setSelectedSlot((current) => (current && isSlotBookable(current, date) ? current : null));
+    setSelectedSlot((current) => {
+      return current && isSlotBookable(current, date, timeSlots) ? current : null;
+    });
   };
 
   const selectServiceType = (serviceTypeId) => {
     setSelectedServiceType(serviceTypeId);
+    setSelectedSlot(null);
     setSelectedServices((current) => {
       const allowedServiceIds = new Set(
-        BOOKING_SERVICES.filter((service) => service.serviceTypeId === serviceTypeId).map((service) => service.id),
+        services.filter((service) => service.serviceTypeId === serviceTypeId).map((service) => service.id),
       );
 
       return current.filter((serviceId) => allowedServiceIds.has(serviceId));
@@ -393,7 +447,7 @@ function ServiceSelection({
   };
 
   const dateBookable = selectedDate && !isBeforeToday(selectedDate);
-  const slotBookable = selectedSlot && isSlotBookable(selectedSlot, selectedDate);
+  const slotBookable = selectedSlot && isSlotBookable(selectedSlot, selectedDate, timeSlots);
 
   const handleNext = () => {
     if (selectedServiceType && selectedServices.length > 0 && ownerInfo.branch && dateBookable && slotBookable) {
@@ -448,6 +502,7 @@ function ServiceSelection({
         <BranchSelectionCard
           selectedBranch={ownerInfo.branch}
           onSelect={selectBranch}
+          branches={branches}
           invalid={validationAttempted && !ownerInfo.branch}
         />
 
@@ -495,6 +550,11 @@ function ServiceSelection({
                 </div>
               );
             })}
+            {visibleServices.length === 0 && (
+              <p className="rounded-2xl bg-slate-50 p-5 text-sm font-medium text-slate-500">
+                Chưa có dịch vụ phù hợp.
+              </p>
+            )}
           </div>
           <div className="mt-5 flex items-center justify-between rounded-xl bg-slate-100 p-5 shadow">
             <span className="text-sm font-bold text-slate-900 md:text-base">Tổng tiền tạm tính</span>
@@ -507,7 +567,14 @@ function ServiceSelection({
 
         <aside className="grid gap-6 lg:h-[744px] lg:grid-rows-[auto_minmax(0,1fr)]">
           <BookingCalendar selectedDate={selectedDate} onSelect={selectDate} invalid={validationAttempted && !dateBookable} />
-          <TimeSlots selectedDate={selectedDate} selectedSlot={selectedSlot} onSelect={setSelectedSlot} invalid={validationAttempted && !slotBookable} />
+          <TimeSlots
+              selectedDate={selectedDate}
+              selectedSlot={selectedSlot}
+              onSelect={setSelectedSlot}
+              timeSlots={timeSlots}
+              invalid={validationAttempted && !slotBookable}
+            />
+            {slotsLoading && <p className="mt-2 text-sm font-medium text-blue-900">Đang tải khung giờ...</p>}
         </aside>
       </div>
       <FlowButtons onNext={handleNext} />
@@ -562,6 +629,9 @@ function InfoForm({
   setPetInfos,
   ownerInfo,
   setOwnerInfo,
+  pets,
+  petsLoading,
+  petsError,
   onBack,
   onNext,
 }) {
@@ -683,6 +753,9 @@ function InfoForm({
       <FlowButtons onBack={onBack} onNext={handleNext} />
       {showPetPicker && (
         <PetSelectionModal
+          pets={pets}
+          loading={petsLoading}
+          error={petsError}
           selectedPets={selectedPets}
           onClose={() => setShowPetPicker(false)}
           onConfirm={(pets) => {
@@ -829,12 +902,7 @@ function Field({
   );
 }
 
-function PetSelectionModal({ selectedPets, onConfirm, onClose }) {
-  const pets = [
-    MOCK_PETS.find((pet) => pet.name === "Max") || MOCK_PETS[0],
-    MOCK_PETS.find((pet) => pet.name === "Luna") || MOCK_PETS[1],
-    MOCK_PETS.find((pet) => pet.name === "Snow") || MOCK_PETS[2],
-  ].filter(Boolean);
+function PetSelectionModal({ pets, loading, error, selectedPets, onConfirm, onClose }) {
   const [draftPets, setDraftPets] = useState(selectedPets);
 
   const togglePet = (pet) => {
@@ -858,7 +926,22 @@ function PetSelectionModal({ selectedPets, onConfirm, onClose }) {
           </button>
         </div>
         <div className="space-y-4 p-6">
-          {pets.map((pet) => (
+          {loading && (
+            <p className="rounded-2xl bg-slate-50 p-4 text-sm font-medium text-slate-600">
+              Đang tải hồ sơ thú cưng...
+            </p>
+          )}
+          {!loading && error && (
+            <p className="rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-700">
+              {error}
+            </p>
+          )}
+          {!loading && !error && pets.length === 0 && (
+            <p className="rounded-2xl bg-slate-50 p-4 text-sm font-medium text-slate-600">
+              Bạn chưa có hồ sơ thú cưng nào.
+            </p>
+          )}
+          {!loading && pets.map((pet) => (
             <button
               key={pet.id}
               type="button"
@@ -927,10 +1010,22 @@ function FlowButtons({ onBack, onNext }) {
 function BookingPage() {
   const { isAuthenticated, requireAuth, userProfile } = useAuth();
   const [step, setStep] = useState(1);
-  const [selectedServiceType, setSelectedServiceType] = useState(null);
+  const [selectedServiceType, setSelectedServiceType] = useState(DEFAULT_SERVICE_TYPE_ID);
   const [selectedServices, setSelectedServices] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [branches, setBranches] = useState(() =>
+    BRANCH_OPTIONS.map((branch) => ({ id: branch, label: branch })),
+  );
+  const [services, setServices] = useState(BOOKING_SERVICES);
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [bookingError, setBookingError] = useState("");
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [pets, setPets] = useState([]);
+  const [petsLoading, setPetsLoading] = useState(false);
+  const [petsError, setPetsError] = useState("");
+  const [speciesOptions, setSpeciesOptions] = useState([]);
   const [selectedPets, setSelectedPets] = useState([]);
   const [petInfos, setPetInfos] = useState(() => [createEmptyPetInfo()]);
   const [ownerInfo, setOwnerInfo] = useState({
@@ -953,8 +1048,159 @@ function BookingPage() {
     }));
   }, [isAuthenticated, userProfile]);
 
-  const handleConfirm = () => {
-    setSuccess(true);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setPets([]);
+      setSelectedPets([]);
+      setPetInfos([createEmptyPetInfo()]);
+      return undefined;
+    }
+
+    let active = true;
+    setPetsLoading(true);
+    setPetsError("");
+
+    Promise.allSettled([getMyPets(), getPetSpecies()])
+      .then(([petsResult, speciesResult]) => {
+        if (!active) return;
+        if (petsResult.status === "fulfilled") {
+          const items = petsResult.value;
+          setPets(items);
+          setSelectedPets((current) =>
+            current.filter((selectedPet) => items.some((pet) => pet.id === selectedPet.id)),
+          );
+        } else {
+          setPetsError(petsResult.reason?.message || "Không thể tải hồ sơ thú cưng");
+        }
+        if (speciesResult.status === "fulfilled") {
+          setSpeciesOptions(speciesResult.value);
+        }
+      })
+      .finally(() => {
+        if (active) setPetsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([getBranches(), getServices()])
+      .then(([branchData, serviceData]) => {
+        if (!active) return;
+        if (branchData.length) {
+          setBranches(branchData);
+          setOwnerInfo((current) => ({
+            ...current,
+            branch: branchData.some((branch) => branch.id === current.branch) ? current.branch : branchData[0].id,
+          }));
+        }
+        if (serviceData.length) {
+          setServices(serviceData);
+        }
+      })
+      .catch((error) => {
+        console.warn("Booking APIs unavailable, falling back to static booking data.", error);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selectedDate || !ownerInfo.branch) {
+      setTimeSlots([]);
+      setSelectedSlot(null);
+      return;
+    }
+
+    let active = true;
+    setSlotsLoading(true);
+    getAppointmentSlots({
+      date: getDateKey(selectedDate),
+      branchId: ownerInfo.branch,
+      serviceType: selectedServiceType,
+    })
+      .then((slots) => {
+        if (!active) return;
+        setTimeSlots(slots);
+        setSelectedSlot((current) =>
+          current && slots.some((slot) => slot.value === current && slot.available) ? current : null,
+        );
+      })
+      .catch((error) => {
+        console.warn("Appointment slots API unavailable.", error);
+        if (active) {
+          setTimeSlots([]);
+          setSelectedSlot(null);
+        }
+      })
+      .finally(() => {
+        if (active) setSlotsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [ownerInfo.branch, selectedDate, selectedServiceType]);
+
+  const handleConfirm = async ({ quantities } = {}) => {
+    const selectedSlotRecord = timeSlots.find((slot) => slot.value === selectedSlot);
+    if (!selectedSlotRecord) {
+      setBookingError("Vui lòng chọn lại khung giờ.");
+      return;
+    }
+
+    const firstPetInfo = petInfos[0] || {};
+    const servicePayload = services
+      .filter((service) => selectedServices.includes(service.id))
+      .map((service) => ({
+        service_id: service.serviceId || service.id,
+        quantity: quantities?.[service.id] || 1,
+      }));
+
+    setBookingSubmitting(true);
+    setBookingError("");
+    try {
+      const selectedPetId = selectedPets[0]?.pet_id || selectedPets[0]?.id;
+      const validPetId = /^\d+$/.test(String(selectedPetId || "")) ? selectedPetId : undefined;
+      const petData = !validPetId && firstPetInfo.name
+        ? {
+            pet_name: firstPetInfo.name,
+            species_id: findSpeciesId(speciesOptions, firstPetInfo.species),
+            weight_kg: firstPetInfo.weight || undefined,
+            age: firstPetInfo.age || undefined,
+            gender: firstPetInfo.gender || "unknown",
+            health_status: toBackendHealthStatus(firstPetInfo.status),
+            medical_note: firstPetInfo.notes || undefined,
+          }
+        : undefined;
+
+      if (!validPetId && !petData?.species_id) {
+        setBookingError("Không tìm thấy mã loài thú cưng từ backend. Vui lòng chọn lại loài.");
+        setBookingSubmitting(false);
+        return;
+      }
+
+      await bookAppointment({
+        slot_id: selectedSlotRecord.id,
+        pet_id: validPetId,
+        pet_data: petData,
+        service_ids: servicePayload,
+        customer_name_snapshot: ownerInfo.name,
+        customer_phone_snapshot: ownerInfo.phone,
+        condition_description: [firstPetInfo.name, firstPetInfo.status].filter(Boolean).join(" - ") || undefined,
+        note: firstPetInfo.notes || undefined,
+        payment_method: paymentMode === "store" ? "store" : "online",
+      });
+      setSuccess(true);
+    } catch (error) {
+      setBookingError(error?.message || "Không thể đặt lịch.");
+    } finally {
+      setBookingSubmitting(false);
+    }
   };
 
   return (
@@ -975,6 +1221,10 @@ function BookingPage() {
               setSelectedSlot={setSelectedSlot}
               ownerInfo={ownerInfo}
               setOwnerInfo={setOwnerInfo}
+              branches={branches}
+              services={services}
+              timeSlots={timeSlots}
+              slotsLoading={slotsLoading}
               onNext={() => requireAuth(() => setStep(2))}
             />
           )}
@@ -986,6 +1236,9 @@ function BookingPage() {
               setPetInfos={setPetInfos}
               ownerInfo={ownerInfo}
               setOwnerInfo={setOwnerInfo}
+              pets={pets}
+              petsLoading={petsLoading}
+              petsError={petsError}
               onBack={() => setStep(1)}
               onNext={() => setStep(3)}
             />
@@ -999,12 +1252,22 @@ function BookingPage() {
               petInfo={petInfos[0]}
               petInfos={petInfos}
               ownerInfo={ownerInfo}
-              selectedServices={BOOKING_SERVICES.filter((service) => selectedServices.includes(service.id))}
+              selectedServices={services.filter((service) => selectedServices.includes(service.id))}
               paymentMode={paymentMode}
               setPaymentMode={setPaymentMode}
               onBack={() => setStep(2)}
               onConfirm={handleConfirm}
             />
+          )}
+          {bookingError && (
+            <p className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+              {bookingError}
+            </p>
+          )}
+          {bookingSubmitting && (
+            <p className="mt-4 rounded-lg bg-blue-50 px-4 py-3 text-sm font-medium text-blue-900">
+              Đang gửi yêu cầu đặt lịch...
+            </p>
           )}
         </div>
         <Footer />

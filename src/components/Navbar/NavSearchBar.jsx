@@ -1,7 +1,8 @@
 import { navbarImages } from "../../assets/navbarImages";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getSearchSuggestions } from "../../data/searchResultsData";
+import { getSearchSuggestions as getMockSearchSuggestions } from "../../data/searchResultsData";
+import { getSearchSuggestionsApi } from "../../services/searchService";
 import SearchSuggestionDropdown from "./SearchSuggestionDropdown";
 
 const SEARCH_DEBOUNCE_MS = 280;
@@ -58,14 +59,22 @@ function NavSearchBar({ className = "" }) {
     setActiveIndex(-1);
 
     const timer = window.setTimeout(() => {
-      try {
-        setSearchSuggestions(getSearchSuggestions(trimmedTerm));
-      } catch (error) {
-        setSearchSuggestions(EMPTY_SUGGESTIONS);
-        setSuggestionError("Không thể tải gợi ý tìm kiếm");
-      } finally {
-        setIsLoadingSuggestions(false);
-      }
+      getSearchSuggestionsApi(trimmedTerm)
+        .then((apiSuggestions) => {
+          const fallback = getMockSearchSuggestions(trimmedTerm);
+          setSearchSuggestions({
+            ...apiSuggestions,
+            products: fallback.products,
+            total: apiSuggestions.total || fallback.total,
+          });
+        })
+        .catch(() => {
+          setSearchSuggestions(getMockSearchSuggestions(trimmedTerm));
+          setSuggestionError("");
+        })
+        .finally(() => {
+          setIsLoadingSuggestions(false);
+        });
     }, SEARCH_DEBOUNCE_MS);
 
     return () => window.clearTimeout(timer);

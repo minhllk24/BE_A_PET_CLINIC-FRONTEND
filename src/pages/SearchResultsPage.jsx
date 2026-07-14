@@ -1,5 +1,5 @@
 import { Filter, Heart, MessageCircle, Share2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import BlogCard from "../components/blog/BlogCard";
 import Footer from "../components/Footer/Footer";
@@ -7,13 +7,65 @@ import NavBar from "../components/Navbar";
 import ShoppingProductCard from "../components/product/ShoppingProductCard";
 import {
   SEARCH_DEMAND_TYPES,
+  SEARCH_EMPTY_STATE,
+  SEARCH_FILTER_GROUPS,
   SEARCH_SORT_OPTIONS,
   mockSearchApi,
 } from "../data/searchResultsData";
+import { searchAll } from "../services/searchService";
 import { formatVnd } from "../utils/currency";
 
 const TYPE_IDS = SEARCH_DEMAND_TYPES.map((item) => item.id);
 const SORT_OPTIONS = Object.values(SEARCH_SORT_OPTIONS);
+
+const EMPTY_SEARCH_RESPONSE = {
+  query: "",
+  type: "all",
+  sort: "relevant",
+  total: 0,
+  counts: { service: 0, shopping: 0, firstAid: 0, knowledge: 0, community: 0 },
+  facets: SEARCH_FILTER_GROUPS,
+  results: {
+    services: [],
+    otherServices: [],
+    products: [],
+    suggestedProducts: [],
+    firstAid: [],
+    knowledge: [],
+    community: [],
+  },
+  emptyState: SEARCH_EMPTY_STATE,
+};
+
+function buildFacets(facetCounts = {}) {
+  return SEARCH_FILTER_GROUPS.map((group) => {
+    if (group.id === "productCategories") {
+      const counts = facetCounts.productCategories || {};
+      const total = Object.values(counts).reduce((sum, count) => sum + Number(count || 0), 0);
+      return {
+        ...group,
+        options: group.options.map((option, index) => ({
+          ...option,
+          count: option.id === "all-categories" ? total : Number(counts[String(index)] || counts[String(index + 1)] || 0),
+        })),
+      };
+    }
+
+    if (group.id === "serviceGroups") {
+      const counts = facetCounts.serviceCategories || {};
+      const total = Object.values(counts).reduce((sum, count) => sum + Number(count || 0), 0);
+      return {
+        ...group,
+        options: group.options.map((option, index) => ({
+          ...option,
+          count: option.id === "all-services" ? total : Number(counts[String(index)] || counts[String(index + 1)] || 0),
+        })),
+      };
+    }
+
+    return group;
+  });
+}
 
 function formatServicePrice(value) {
   return `Từ ${formatVnd(value)}`;
@@ -413,10 +465,44 @@ export default function SearchResultsPage() {
     ? urlSort
     : "relevant";
   const [selectedFilters, setSelectedFilters] = useState({});
-  const searchResponse = useMemo(
-    () => mockSearchApi({ query, type: activeType, sort: activeSort }),
-    [query, activeType, activeSort],
-  );
+  const [searchResponse, setSearchResponse] = useState(EMPTY_SEARCH_RESPONSE);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    setLoadError("");
+
+    searchAll({ query, type: activeType, sort: activeSort })
+      .then((data) => {
+        if (!active) return;
+        setSearchResponse({
+          ...EMPTY_SEARCH_RESPONSE,
+          ...data,
+          facets: buildFacets(data.facetCounts),
+          emptyState: SEARCH_EMPTY_STATE,
+        });
+      })
+      .catch(() => {
+        if (!active) return;
+        const fallback = mockSearchApi({ query, type: activeType, sort: activeSort });
+        setSearchResponse({
+          ...EMPTY_SEARCH_RESPONSE,
+          ...fallback,
+          emptyState: SEARCH_EMPTY_STATE,
+        });
+        setLoadError("");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activeSort, activeType, query]);
+
   const hasResults = searchResponse.total > 0;
 
   const updateParams = (patch) => {
@@ -492,7 +578,15 @@ export default function SearchResultsPage() {
               onSortChange={handleSortChange}
               isEmpty={!hasResults}
             />
-            {hasResults ? (
+            {isLoading ? (
+              <div className="py-20 text-center text-[18px] font-semibold text-[#0D47A1]">
+                Đang tải kết quả tìm kiếm...
+              </div>
+            ) : loadError ? (
+              <div className="py-20 text-center text-[18px] font-semibold text-[#D32F2F]">
+                {loadError}
+              </div>
+            ) : hasResults ? (
               <SearchResultsContent activeType={activeType} results={searchResponse.results} />
             ) : (
               <EmptyResultsContent emptyState={searchResponse.emptyState} onRetry={handleRetrySearch} />

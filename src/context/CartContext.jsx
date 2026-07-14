@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -11,6 +12,12 @@ import CheckoutOverlay from "../components/checkout/CheckoutOverlay";
 import GuestOrderSuccessOverlay from "../components/checkout/GuestOrderSuccessOverlay";
 import OrderSuccessOverlay from "../components/checkout/OrderSuccessOverlay";
 import { useAuth } from "./AuthContext";
+import {
+  addCartItem,
+  deleteCartItem,
+  getCart,
+  updateCartItem,
+} from "../services/cartService";
 
 const CartContext = createContext(null);
 
@@ -23,23 +30,68 @@ export function CartProvider({ children }) {
   const [isBankTransferOpen, setIsBankTransferOpen] = useState(false);
   const [paymentMode, setPaymentMode] = useState("cod");
   const [onlineMethod, setOnlineMethod] = useState("bank");
+  const [lastOrderResult, setLastOrderResult] = useState(null);
+  const [cartSyncError, setCartSyncError] = useState("");
+  const [cartLoading, setCartLoading] = useState(false);
 
   /* ---- Cart items state ---- */
   const [cartItems, setCartItems] = useState([]);
 
+  const reloadCart = useCallback(async () => {
+    if (!isAuthenticated) return;
+    setCartLoading(true);
+    setCartSyncError("");
+    try {
+      const cart = await getCart();
+      setCartItems(cart.items);
+    } catch (error) {
+      setCartSyncError(error?.message || "Không thể tải giỏ hàng");
+    } finally {
+      setCartLoading(false);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setCartSyncError("");
+      setCartLoading(false);
+      return;
+    }
+
+    reloadCart();
+  }, [isAuthenticated, reloadCart]);
+
   const toggleCartItem = useCallback((id) => {
+    const currentItem = cartItems.find((item) => item.id === id);
     setCartItems((items) =>
       items.map((item) =>
         item.id === id ? { ...item, selected: !item.selected } : item,
       ),
     );
-  }, []);
+    if (isAuthenticated && currentItem?.cartItemId) {
+      updateCartItem(currentItem.cartItemId, { isSelected: !currentItem.selected })
+        .catch((error) => {
+          setCartSyncError(error?.message || "Không thể cập nhật giỏ hàng");
+          reloadCart();
+        });
+    }
+  }, [cartItems, isAuthenticated, reloadCart]);
 
   const removeCartItem = useCallback((id) => {
+    const currentItem = cartItems.find((item) => item.id === id);
     setCartItems((items) => items.filter((item) => item.id !== id));
-  }, []);
+    if (isAuthenticated && currentItem?.cartItemId) {
+      deleteCartItem(currentItem.cartItemId)
+        .catch((error) => {
+          setCartSyncError(error?.message || "Không thể xóa sản phẩm");
+          reloadCart();
+        });
+    }
+  }, [cartItems, isAuthenticated, reloadCart]);
 
   const updateCartQty = useCallback((id, delta) => {
+    const currentItem = cartItems.find((item) => item.id === id);
+    const nextQuantity = Math.max(1, (currentItem?.qty || 1) + delta);
     setCartItems((items) =>
       items.map((item) =>
         item.id === id
@@ -47,19 +99,35 @@ export function CartProvider({ children }) {
           : item,
       ),
     );
-  }, []);
+    if (isAuthenticated && currentItem?.cartItemId) {
+      updateCartItem(currentItem.cartItemId, { quantity: nextQuantity })
+        .catch((error) => {
+          setCartSyncError(error?.message || "Không thể cập nhật số lượng");
+          reloadCart();
+        });
+    }
+  }, [cartItems, isAuthenticated, reloadCart]);
 
   const addToCart = useCallback((product) => {
+    const localId = product.id || `${product.productId}:${product.variantId || "default"}:${product.size || "default"}`;
     setCartItems((items) => {
-      const existing = items.find((i) => i.id === product.id);
+      const existing = items.find((i) => i.id === localId);
       if (existing) {
         return items.map((i) =>
-          i.id === product.id ? { ...i, qty: i.qty + (product.qty || 1) } : i
+          i.id === localId ? { ...i, qty: i.qty + (product.qty || 1) } : i
         );
       }
-      return [...items, { ...product, qty: product.qty || 1, selected: true }];
+      return [...items, { ...product, id: localId, qty: product.qty || 1, selected: true }];
     });
-  }, []);
+    if (isAuthenticated) {
+      addCartItem(product)
+        .then(() => reloadCart())
+        .catch((error) => {
+          setCartSyncError(error?.message || "Không thể thêm vào giỏ hàng");
+          reloadCart();
+        });
+    }
+  }, [isAuthenticated, reloadCart]);
 
   const openCart = useCallback(() => {
     setIsCheckoutOpen(false);
@@ -91,7 +159,10 @@ export function CartProvider({ children }) {
     setIsCartOpen(true);
   }, []);
 
-  const showOrderSuccess = useCallback(() => {
+  const showOrderSuccess = useCallback((orderResult = null) => {
+    if (orderResult) {
+      setLastOrderResult(orderResult);
+    }
     setIsCartOpen(false);
     setIsCheckoutOpen(false);
     setIsBankTransferOpen(false);
@@ -104,19 +175,22 @@ export function CartProvider({ children }) {
     }
   }, [isAuthenticated]);
 
-  const confirmOrder = useCallback(() => {
+  const confirmOrder = useCallback((orderResult = null) => {
+    if (orderResult) {
+      setLastOrderResult(orderResult);
+    }
     if (paymentMode === "online" && onlineMethod === "bank") {
       setIsBankTransferOpen(true);
       return;
     }
-    showOrderSuccess();
+    showOrderSuccess(orderResult);
   }, [paymentMode, onlineMethod, showOrderSuccess]);
 
   const closeBankTransfer = useCallback(() => setIsBankTransferOpen(false), []);
 
   const completeBankTransfer = useCallback(() => {
-    showOrderSuccess();
-  }, [showOrderSuccess]);
+    showOrderSuccess(lastOrderResult);
+  }, [lastOrderResult, showOrderSuccess]);
 
   const closeOrderSuccess = useCallback(() => setIsOrderSuccessOpen(false), []);
 
@@ -134,6 +208,10 @@ export function CartProvider({ children }) {
       setPaymentMode,
       onlineMethod,
       setOnlineMethod,
+      lastOrderResult,
+      cartLoading,
+      cartSyncError,
+      reloadCart,
       openCart,
       closeCart,
       toggleCart,
@@ -159,6 +237,10 @@ export function CartProvider({ children }) {
       isBankTransferOpen,
       paymentMode,
       onlineMethod,
+      lastOrderResult,
+      cartLoading,
+      cartSyncError,
+      reloadCart,
       openCart,
       closeCart,
       toggleCart,

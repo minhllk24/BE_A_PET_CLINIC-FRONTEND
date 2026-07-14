@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Lightbulb,
@@ -13,6 +13,7 @@ import Footer from "../../components/Footer/Footer";
 import NavBar from "../../components/Navbar";
 import { useAuth } from "../../context/AuthContext";
 import { FIRST_AID_CATEGORIES, FIRST_AID_POSTS } from "../../data/firstAidData";
+import { getFirstAidCategories, getFirstAidGuidesPage } from "../../services/contentService";
 
 const PAGE_SIZE = 5;
 
@@ -90,16 +91,53 @@ export default function FirstAidPage() {
   );
   const [search, setSearch] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [categories, setCategories] = useState(FIRST_AID_CATEGORIES);
+  const [allPosts, setAllPosts] = useState(FIRST_AID_POSTS);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    setLoadError("");
+
+    Promise.all([
+      getFirstAidCategories(),
+      getFirstAidGuidesPage({ limit: 100 }),
+    ])
+      .then(([apiCategories, apiGuides]) => {
+        if (!active) return;
+        if (apiCategories.length > 1) setCategories(apiCategories);
+        if (apiGuides.guides.length) setAllPosts(apiGuides.guides);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setLoadError(error?.message || "Không thể tải cẩm nang sơ cứu.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    setCategory(categories.some((item) => item.id === categoryParam) ? categoryParam : "all");
+    setVisibleCount(PAGE_SIZE);
+  }, [categories, searchParams]);
 
   const filteredPosts = useMemo(() => {
     const keyword = search.trim().toLocaleLowerCase("vi");
-    return FIRST_AID_POSTS.filter((post) => {
+    return allPosts.filter((post) => {
       if (category !== "all" && post.category !== category) return false;
       return !keyword || [post.title, post.description, post.categoryLabel].some((value) =>
         value.toLocaleLowerCase("vi").includes(keyword),
       );
     });
-  }, [category, search]);
+  }, [allPosts, category, search]);
 
   const visiblePosts = filteredPosts.slice(0, visibleCount);
   const chooseCategory = (id) => {
@@ -124,7 +162,7 @@ export default function FirstAidPage() {
                 <p className="mt-2 text-[16px] leading-6 text-[#4B5563]">Tra cứu các triệu chứng và quy trình sơ cứu cơ bản để bảo vệ boss của bạn</p>
               </div>
               <div className="flex gap-3">
-                {FIRST_AID_CATEGORIES.map((item) => (
+                {categories.map((item) => (
                   <button
                     key={item.id}
                     type="button"
@@ -144,9 +182,17 @@ export default function FirstAidPage() {
               <Search className="h-6 w-6 text-[#0D47A1]" />
             </label>
 
-            <div className="mt-12 grid grid-cols-12 auto-rows-auto gap-6">
-              {visiblePosts.map((post) => <FirstAidCard key={post.id} post={post} />)}
-            </div>
+            {loadError && <p className="mt-4 text-[14px] text-[#D32F2F]">{loadError}</p>}
+
+            {isLoading ? (
+              <div className="mt-12 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">
+                Đang tải cẩm nang sơ cứu...
+              </div>
+            ) : (
+              <div className="mt-12 grid grid-cols-12 auto-rows-auto gap-6">
+                {visiblePosts.map((post) => <FirstAidCard key={post.id} post={post} />)}
+              </div>
+            )}
 
             <SupportCards />
 

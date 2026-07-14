@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../../components/Footer/Footer'
 import GroomingFeedbackSection from '../../components/groomingSpa/GroomingFeedbackSection'
@@ -7,6 +8,7 @@ import ScaledCanvasLayout from '../../components/layout/ScaledCanvasLayout'
 import NavBar from '../../components/Navbar'
 import PetCareFaqSection from '../../components/shared/PetCareFaqSection'
 import { useAuth } from '../../context/AuthContext'
+import { getServices } from '../../services/bookingService'
 import {
   medicalAssets,
   medicalDoctorPages,
@@ -15,6 +17,40 @@ import {
   medicalStats,
   medicalWhyItems,
 } from '../../data/medicalTreatmentData'
+
+function formatServicePrice(value) {
+  const price = Number(value)
+  if (!Number.isFinite(price) || price <= 0) return 'Liên hệ'
+  return `Từ ${price.toLocaleString('vi-VN')} đ`
+}
+
+function getMedicalServiceFallback(service = {}) {
+  const serviceName = `${service.name || ''} ${service.desc || ''}`.toLocaleLowerCase('vi')
+
+  return (
+    medicalServices.find((item) =>
+      serviceName.includes(item.title.toLocaleLowerCase('vi')),
+    ) ||
+    medicalServices.find((item) => /khám|điều trị/.test(serviceName) && item.title === 'Khám & Điều trị') ||
+    medicalServices.find((item) => /xét nghiệm/.test(serviceName) && item.title === 'Xét nghiệm') ||
+    medicalServices.find((item) => /siêu âm|x-quang/.test(serviceName) && item.title === 'Siêu âm') ||
+    medicalServices.find((item) => /tiêm|vaccine|phòng/.test(serviceName) && item.title === 'Tiêm phòng') ||
+    medicalServices.find((item) => /phẫu thuật|triệt sản/.test(serviceName) && item.title === 'Phẫu thuật') ||
+    medicalServices.find((item) => /cấp cứu/.test(serviceName) && item.title === 'Cấp cứu 24/7') ||
+    medicalServices[0]
+  )
+}
+
+function normalizeMedicalServiceCard(service) {
+  const fallback = getMedicalServiceFallback(service)
+
+  return {
+    title: service.name || fallback.title,
+    price: formatServicePrice(service.price),
+    description: service.desc || fallback.description,
+    image: fallback.image,
+  }
+}
 
 function MedicalHero() {
   return (
@@ -54,7 +90,7 @@ function MedicalHero() {
   )
 }
 
-function MedicalServices() {
+function MedicalServices({ services }) {
   return (
     <section className="medical-services">
       <div className="medical-section-title medical-services__title">
@@ -69,7 +105,7 @@ function MedicalServices() {
         <img src={medicalAssets.servicesDecor} alt="" />
       </div>
       <div className="medical-services__grid">
-        {medicalServices.map((service, index) => (
+        {services.map((service, index) => (
           <article className="medical-service-card" key={service.title}>
             <div
               className="medical-service-card__media"
@@ -342,10 +378,35 @@ function MedicalFaq() {
 }
 
 function MedicalCanvas({ onOpenPricing }) {
+  const [services, setServices] = useState(medicalServices)
+
+  useEffect(() => {
+    let active = true
+
+    getServices()
+      .then((apiServices) => {
+        if (!active || !apiServices.length) return
+        const medicalApiServices = apiServices
+          .filter((service) => service.serviceTypeId === 'clinic')
+          .map(normalizeMedicalServiceCard)
+
+        if (medicalApiServices.length) {
+          setServices(medicalApiServices)
+        }
+      })
+      .catch(() => {
+        setServices(medicalServices)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
   return (
     <>
       <MedicalHero />
-      <MedicalServices />
+      <MedicalServices services={services} />
       <MedicalCta onOpenPricing={onOpenPricing} />
       <MedicalStats />
       <MedicalWhy />

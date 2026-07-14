@@ -9,7 +9,8 @@ import ShoppingProductCard from "../components/product/ShoppingProductCard";
 import FeedbackSection from "../components/shop/FeedbackSection";
 import ShopHeroSection from "../components/shop/ShopHeroSection";
 import { useAuth } from "../context/AuthContext";
-import { FEATURED_PRODUCTS, PRODUCT_CATEGORIES, SHOP_PROMOTION_PAGES } from "../data/shopData";
+import { FEATURED_PRODUCTS, PRODUCT_CATEGORIES, SHOP_PRODUCTS, SHOP_PROMOTION_PAGES } from "../data/shopData";
+import { getActiveFlashSaleProducts, getBestSellingProducts } from "../services/productService";
 
 const SECTION_TITLE_TYPOGRAPHY = {
   fontFamily: '"Baloo Tamma 2", "Baloo 2", cursive',
@@ -28,9 +29,57 @@ function ShopCanvas() {
   const CARD_GAP = 20;
   const VISIBLE_COUNT = 6;
   const [flashOffset, setFlashOffset] = useState(0);
+  const [flashProducts, setFlashProducts] = useState([]);
+  const [bestSellerProducts, setBestSellerProducts] = useState([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [productError, setProductError] = useState("");
+  const discountedBestSellers = bestSellerProducts.filter((product) => product.discountPercent);
+  const flashDisplayProducts = flashProducts.length
+    ? flashProducts
+    : (discountedBestSellers.length ? discountedBestSellers : bestSellerProducts).slice(0, 12);
 
   const canGoPrev = flashOffset > 0;
-  const canGoNext = flashOffset < FEATURED_PRODUCTS.length - VISIBLE_COUNT;
+  const canGoNext = flashOffset < Math.max(flashDisplayProducts.length - VISIBLE_COUNT, 0);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadSectionProducts() {
+      try {
+        setIsLoadingProducts(true);
+        setProductError("");
+        const [activeFlashSaleProducts, bestSellingProducts] = await Promise.all([
+          getActiveFlashSaleProducts(12),
+          getBestSellingProducts(12),
+        ]);
+
+        if (isMounted) {
+          setFlashProducts(Array.isArray(activeFlashSaleProducts) ? activeFlashSaleProducts : []);
+          setBestSellerProducts(Array.isArray(bestSellingProducts) ? bestSellingProducts : []);
+        }
+      } catch {
+        if (isMounted) {
+          setProductError("");
+          setFlashProducts(FEATURED_PRODUCTS.filter((product) => product.discountPercent).slice(0, 12));
+          setBestSellerProducts(SHOP_PRODUCTS.slice(0, 12));
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingProducts(false);
+        }
+      }
+    }
+
+    loadSectionProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    setFlashOffset(0);
+  }, [flashDisplayProducts.length]);
 
   const goPrevFlash = () => {
     if (!canGoPrev) return;
@@ -163,25 +212,35 @@ function ShopCanvas() {
               className="overflow-hidden pt-3 pb-3"
               style={{ width: CARD_WIDTH * VISIBLE_COUNT + CARD_GAP * (VISIBLE_COUNT - 1) }}
             >
-              <div
-                className="flex gap-5 transition-transform duration-300 ease-in-out"
-                style={{ transform: `translateX(-${flashOffset * (CARD_WIDTH + CARD_GAP)}px)` }}
-              >
-                {FEATURED_PRODUCTS.map((p, idx) => (
-                  <div
-                    key={p.id}
-                    className="shrink-0"
-                    style={{ width: CARD_WIDTH }}
-                  >
-                    <ShoppingProductCard
-                      id={p.id}
-                      product={p}
-                      variant={idx < 2 ? "tag" : "default"}
-                      href="/product-details"
-                    />
-                  </div>
-                ))}
-              </div>
+              {isLoadingProducts ? (
+                <div className="flex h-[230px] items-center justify-center font-['Roboto'] text-[16px] font-medium text-[#01579B]">
+                  Đang tải sản phẩm...
+                </div>
+              ) : flashDisplayProducts.length ? (
+                <div
+                  className="flex gap-5 transition-transform duration-300 ease-in-out"
+                  style={{ transform: `translateX(-${flashOffset * (CARD_WIDTH + CARD_GAP)}px)` }}
+                >
+                  {flashDisplayProducts.map((p, idx) => (
+                    <div
+                      key={p.id}
+                      className="shrink-0"
+                      style={{ width: CARD_WIDTH }}
+                    >
+                      <ShoppingProductCard
+                        id={p.id}
+                        product={p}
+                        variant={idx < 2 || p.discountPercent ? "tag" : "default"}
+                        href="/product-details"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-[230px] items-center justify-center text-center font-['Roboto'] text-[16px] font-medium text-[#01579B]">
+                  {productError || "Chưa có sản phẩm flash sale."}
+                </div>
+              )}
             </div>
             <button
               type="button"
@@ -208,14 +267,24 @@ function ShopCanvas() {
           <img src={shopImages.bestSellerSpark} alt="" className="absolute left-[717px] top-[-12px] h-[42px] w-[43px]" />
         </div>
         <div className="mx-auto mt-5 grid w-[1200px] grid-cols-6 justify-items-center gap-x-5 gap-y-[10px]">
-          {FEATURED_PRODUCTS.map((p) => (
-            <ShoppingProductCard
-              key={`best-${p.id}`}
-              id={p.id}
-              product={p}
-              href="/product-details"
-            />
-          ))}
+          {isLoadingProducts ? (
+            <div className="col-span-6 flex h-[260px] items-center justify-center font-['Roboto'] text-[16px] font-medium text-[#01579B]">
+              Đang tải sản phẩm...
+            </div>
+          ) : bestSellerProducts.length ? (
+            bestSellerProducts.map((p) => (
+              <ShoppingProductCard
+                key={`best-${p.id}`}
+                id={p.id}
+                product={p}
+                href="/product-details"
+              />
+            ))
+          ) : (
+            <div className="col-span-6 flex h-[260px] items-center justify-center text-center font-['Roboto'] text-[16px] font-medium text-[#01579B]">
+              {productError || "Chưa có sản phẩm bán chạy."}
+            </div>
+          )}
         </div>
         <div className="mt-5 pt-5 flex justify-center">
           <button
