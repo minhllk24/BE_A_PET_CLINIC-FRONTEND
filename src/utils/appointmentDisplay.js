@@ -30,7 +30,7 @@ const STATUS_STYLES = {
 };
 
 const ONLINE_PAYMENT_METHODS = new Set(["momo", "zalopay", "vnpay", "bank", "atm", "card", "online"]);
-const CLINIC_PAYMENT_METHODS = new Set(["cash", "pay_at_clinic"]);
+const CLINIC_PAYMENT_METHODS = new Set(["cash", "pay_at_clinic", "store"]);
 
 export const APPOINTMENT_FILTERS = [
   { value: "all", label: "Tất cả" },

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { appointmentImages } from "../../assets/appointmentImages";
 import WriteReviewForm from "../../components/product/WriteReviewForm";
-import { MOCK_APPOINTMENTS } from "../../data/mockAppointments";
 import {
   APPOINTMENT_FILTERS,
   getAppointmentActions,
@@ -9,6 +8,13 @@ import {
   getAppointmentTimelineSteps,
 } from "../../utils/appointmentDisplay";
 import { formatVnd } from "../../utils/currency";
+import {
+  cancelAppointment,
+  checkoutAppointment,
+  createAppointmentServiceReview,
+  getAppointmentHistory,
+} from "../../services/bookingService";
+import { MOCK_APPOINTMENTS } from "../../data/mockAppointments";
 
 const formatMoney = (value) => formatVnd(value);
 
@@ -22,9 +28,14 @@ const paymentMethodLabels = {
   atm: "Thẻ ATM",
   card: "Thanh toán trực tuyến",
   online: "Thanh toán trực tuyến",
+  store: "Thanh toán tại phòng khám",
 };
 
 const getAppointmentDate = (appointment) => {
+  if (appointment.rawDate) {
+    const date = new Date(appointment.rawDate);
+    if (!Number.isNaN(date.getTime())) return date;
+  }
   const [day, month, year] = appointment.service.dateText.split("/").map(Number);
   const [hour, minute] = appointment.service.timeRange.split(" - ")[0].split(":").map(Number);
   return new Date(year, month - 1, day, hour, minute);
@@ -90,7 +101,7 @@ function ActionButton({ action, onClick, disabled = false }) {
   );
 }
 
-function AppointmentCard({ appointment, active, onSelect, onAction }) {
+function AppointmentCard({ appointment, active, onSelect, onAction, actionLoading }) {
   const status = getAppointmentDisplayStatus(appointment);
   const actions = getAppointmentActions(appointment);
   const remainingSeconds = usePaymentCountdown(appointment.paymentExpiresAt);
@@ -105,7 +116,7 @@ function AppointmentCard({ appointment, active, onSelect, onAction }) {
     >
       <div className="flex min-w-0 items-start gap-4">
         <img
-          src={appointment.pet.image}
+          src={appointment.pet.image || appointmentImages.pets.lulu}
           alt={appointment.pet.name}
           className={`h-16 w-16 shrink-0 rounded-xl object-cover ${status.value === "cancelled" ? "grayscale" : ""}`}
         />
@@ -145,7 +156,7 @@ function AppointmentCard({ appointment, active, onSelect, onAction }) {
               key={action.key}
               action={action}
               onClick={(key) => onAction(key, appointment)}
-              disabled={action.key === "pay" && paymentExpired}
+              disabled={actionLoading || (action.key === "pay" && paymentExpired)}
             />
           ))}
         </div>
@@ -198,7 +209,7 @@ function Timeline({ appointment }) {
   );
 }
 
-function DetailPanel({ appointment, onClose, onAction }) {
+function DetailPanel({ appointment, onClose, onAction, actionLoading }) {
   const status = getAppointmentDisplayStatus(appointment);
   const actions = getAppointmentActions(appointment);
   const remainingSeconds = usePaymentCountdown(appointment.paymentExpiresAt);
@@ -255,7 +266,7 @@ function DetailPanel({ appointment, onClose, onAction }) {
           </div>
           <div className="flex gap-4">
             <img
-              src={appointment.pet.image}
+              src={appointment.pet.image || appointmentImages.pets.lulu}
               alt={appointment.pet.name}
               className="h-[105px] w-[106px] rounded-lg object-cover"
             />
@@ -354,7 +365,7 @@ function DetailPanel({ appointment, onClose, onAction }) {
               key={action.key}
               action={action}
               onClick={(key) => onAction(key, appointment)}
-              disabled={action.key === "pay" && paymentExpired}
+              disabled={actionLoading || (action.key === "pay" && paymentExpired)}
             />
           ))}
         </div>
@@ -436,13 +447,40 @@ function SearchAndSort({
 }
 
 function AppointmentHistoryPage() {
-  const [appointments, setAppointments] = useState(MOCK_APPOINTMENTS);
+  const [appointments, setAppointments] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
   const [selectedId, setSelectedId] = useState(null);
   const [reviewAppointmentId, setReviewAppointmentId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [actionMessage, setActionMessage] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    setLoadError("");
+
+    getAppointmentHistory()
+      .then((items) => {
+        if (active) setAppointments(items);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setAppointments(MOCK_APPOINTMENTS);
+        setLoadError(error?.message || "Không thể tải lịch sử đặt lịch, đang hiển thị dữ liệu mẫu.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const selectedAppointment = appointments.find((item) => item.id === selectedId);
   const reviewAppointment = appointments.find((item) => item.id === reviewAppointmentId);
@@ -488,14 +526,88 @@ function AppointmentHistoryPage() {
     );
   }, [activeFilter, appointments, searchQuery, sortOrder]);
 
-  const handleAction = (actionKey, appointment) => {
+  const handleAction = async (actionKey, appointment) => {
     if (actionKey === "review" && appointment.canReview && !appointment.reviewed) {
       setReviewAppointmentId(appointment.id);
       return;
     }
 
+    if (actionKey === "cancel") {
+      const confirmed = window.confirm("Bạn chắc chắn muốn hủy lịch hẹn này?");
+      if (!confirmed) return;
+
+      setActionLoadingId(appointment.id);
+      setActionMessage(null);
+
+      try {
+        await cancelAppointment(appointment.id);
+        setAppointments((current) =>
+          current.map((item) =>
+            item.id === appointment.id
+              ? {
+                  ...item,
+                  status: "cancelled",
+                  canCancel: false,
+                  canReschedule: false,
+                  canRebook: true,
+                }
+              : item,
+          ),
+        );
+        setActionMessage({ type: "success", text: "Đã hủy lịch hẹn thành công." });
+      } catch (error) {
+        setActionMessage({
+          type: "error",
+          text: error?.message || "Không thể hủy lịch hẹn lúc này. Vui lòng thử lại sau.",
+        });
+      } finally {
+        setActionLoadingId(null);
+      }
+      return;
+    }
+
     if (actionKey === "pay") {
-      console.log("Open payment flow", appointment.id);
+      const confirmed = window.confirm(
+        "Xác nhận thanh toán lịch hẹn tại phòng khám? Hệ thống sẽ giữ lịch và ghi nhận trạng thái chờ thanh toán tại quầy.",
+      );
+      if (!confirmed) return;
+
+      setActionLoadingId(appointment.id);
+      setActionMessage(null);
+
+      try {
+        await checkoutAppointment(appointment.id, { paymentMethod: "store" });
+        setAppointments((current) =>
+          current.map((item) =>
+            item.id === appointment.id
+              ? {
+                  ...item,
+                  status: "confirmed",
+                  paymentMethod: "store",
+                  paymentStatus: "waiting_store_payment",
+                  canCancel: true,
+                  canReschedule: true,
+                }
+              : item,
+          ),
+        );
+        setActionMessage({
+          type: "success",
+          text: "Đã xác nhận lịch hẹn. Bạn có thể thanh toán tại phòng khám khi đến sử dụng dịch vụ.",
+        });
+      } catch (error) {
+        setActionMessage({
+          type: "error",
+          text: error?.message || "Không thể xác nhận thanh toán lịch hẹn lúc này.",
+        });
+      } finally {
+        setActionLoadingId(null);
+      }
+      return;
+    }
+
+    if (actionKey === "reschedule") {
+      setActionMessage({ type: "error", text: "Backend chưa có endpoint đổi lịch, tạm thời hãy đặt lịch mới nếu cần đổi giờ." });
       return;
     }
 
@@ -504,18 +616,41 @@ function AppointmentHistoryPage() {
       return;
     }
 
-    console.log("Appointment action", actionKey, appointment.id);
+    setActionMessage({ type: "error", text: "Chức năng này chưa có API phù hợp để xử lý." });
   };
 
-  const handleReviewSubmit = () => {
-    setAppointments((current) =>
-      current.map((appointment) =>
-        appointment.id === reviewAppointmentId
-          ? { ...appointment, reviewed: true, canReview: false }
-          : appointment,
-      ),
-    );
-    setReviewAppointmentId(null);
+  const handleReviewSubmit = async ({ targetId, rating, review }) => {
+    if (!targetId || !rating) {
+      setActionMessage({ type: "error", text: "Vui lòng chọn số sao trước khi gửi đánh giá." });
+      return;
+    }
+
+    setActionLoadingId(reviewAppointmentId);
+    setActionMessage(null);
+
+    try {
+      await createAppointmentServiceReview({
+        serviceId: targetId,
+        rating,
+        comment: review,
+      });
+      setAppointments((current) =>
+        current.map((appointment) =>
+          appointment.id === reviewAppointmentId
+            ? { ...appointment, reviewed: true, canReview: false }
+            : appointment,
+        ),
+      );
+      setReviewAppointmentId(null);
+      setActionMessage({ type: "success", text: "Đã gửi đánh giá dịch vụ thành công." });
+    } catch (error) {
+      setActionMessage({
+        type: "error",
+        text: error?.message || "Không thể gửi đánh giá lúc này.",
+      });
+    } finally {
+      setActionLoadingId(null);
+    }
   };
 
   return (
@@ -561,8 +696,22 @@ function AppointmentHistoryPage() {
         </p>
       )}
 
+      {actionMessage && (
+        <div
+          className={`rounded-xl px-4 py-3 text-sm font-semibold ${
+            actionMessage.type === "success"
+              ? "bg-[#d9f4e4] text-[#137333]"
+              : "bg-[#ffdad6] text-[#ba1a1a]"
+          }`}
+        >
+          {actionMessage.text}
+        </div>
+      )}
+
       <div className="flex flex-col gap-4">
-        {filteredAppointments.length ? (
+        {isLoading ? (
+          <p className="py-16 text-center text-[#0D47A1]">Đang tải lịch hẹn...</p>
+        ) : filteredAppointments.length ? (
           filteredAppointments.map((appointment) => (
             <AppointmentCard
               key={appointment.id}
@@ -570,12 +719,16 @@ function AppointmentHistoryPage() {
               active={selectedId === appointment.id}
               onSelect={(item) => setSelectedId(item.id)}
               onAction={handleAction}
+              actionLoading={actionLoadingId === appointment.id}
             />
           ))
         ) : (
           <p className="py-16 text-center text-[#667085]">Không tìm thấy lịch hẹn phù hợp.</p>
         )}
       </div>
+      {loadError && !isLoading && (
+        <p className="-mt-2 text-center text-sm text-[#0D47A1]">{loadError}</p>
+      )}
 
       {/* <button
         type="button"
@@ -598,6 +751,7 @@ function AppointmentHistoryPage() {
           appointment={selectedAppointment}
           onClose={() => setSelectedId(null)}
           onAction={handleAction}
+          actionLoading={actionLoadingId === selectedAppointment.id}
         />
       )}
 

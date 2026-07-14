@@ -18,9 +18,32 @@ import {
   getProductReviews,
   getSimilarProducts,
   likeProductReview,
+  normalizeProduct,
+  normalizeArray,
 } from "../services/productService";
+import { FEATURED_PRODUCTS, SHOP_PRODUCTS } from "../data/shopData";
 
 const REVIEW_PAGE_SIZE = 2;
+const EMPTY_REVIEWS_DATA = { items: [], totalPages: 1, totalItems: 0, averageRating: 0, ratingBreakdown: {} };
+
+function buildFallbackProduct(product) {
+  if (!product) return null;
+  return normalizeProduct({
+    ...product,
+    description: product.description || "Thông tin sản phẩm đang được cập nhật. Bạn vẫn có thể tham khảo giá và thêm sản phẩm vào giỏ hàng.",
+    shortDescription: product.shortDescription || "Sản phẩm chăm sóc thú cưng từ Dr. Pet's House.",
+    images: product.image ? [product.image] : [],
+    variants: product.variants || [{ id: "default", name: "Mặc định", price: product.price, sizes: [] }],
+    shipping: {
+      freeShippingThreshold: 300000,
+      deliveryEstimate: "2-4 ngày",
+    },
+  });
+}
+
+function findFallbackProduct(productId) {
+  return SHOP_PRODUCTS.find((item) => String(item.id) === String(productId)) || SHOP_PRODUCTS[0];
+}
 
 function formatPrice(value) {
   return formatVnd(value);
@@ -34,6 +57,18 @@ function formatReviewTime(createdAt) {
   );
 }
 
+function normalizeReviewsData(response) {
+  const metadataSource = response?.data && !Array.isArray(response.data) ? response.data : response;
+
+  return {
+    items: normalizeArray(response),
+    totalPages: metadataSource?.totalPages ?? metadataSource?.pagination?.totalPages ?? 1,
+    totalItems: metadataSource?.totalItems ?? metadataSource?.total ?? normalizeArray(response).length,
+    averageRating: metadataSource?.averageRating ?? 0,
+    ratingBreakdown: metadataSource?.ratingBreakdown ?? {},
+  };
+}
+
 export default function ProductDetailsPage({ showWriteReview = false }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -41,7 +76,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
   const { addToCart, openCart } = useCart();
   const descriptionRef = useRef(null);
   const [product, setProduct] = useState(null);
-  const [reviewsData, setReviewsData] = useState({ items: [], totalPages: 1, totalItems: 0, averageRating: 0, ratingBreakdown: {} });
+  const [reviewsData, setReviewsData] = useState(EMPTY_REVIEWS_DATA);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -66,6 +101,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
   /* ---- Review pagination ---- */
   const [reviewPage, setReviewPage] = useState(1);
   const totalReviewPages = reviewsData.totalPages || 1;
+  const reviewItems = Array.isArray(reviewsData.items) ? reviewsData.items : [];
 
   /* ---- Review likes ---- */
   const [likedReviews, setLikedReviews] = useState({});
@@ -105,18 +141,23 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
     setIsLoading(true);
     setLoadError("");
 
-    Promise.all([
-      getProductDetails(productId),
-      getSimilarProducts(productId),
-    ])
-      .then(([detail, similar]) => {
+    getProductDetails(productId)
+      .then((detail) => {
+        if (!active) return;
         setProduct(detail);
-        setSimilarProducts(similar?.items ?? similar ?? []);
         const firstSize = detail?.variants?.[0]?.sizes?.[0] ?? "";
         setDropdownValue(firstSize);
+        getSimilarProducts(productId).then((similar) => {
+          if (active) setSimilarProducts(normalizeArray(similar));
+        });
       })
       .catch(() => {
-        if (active) setLoadError("Không thể tải thông tin sản phẩm.");
+        if (active) {
+          const fallbackProduct = buildFallbackProduct(findFallbackProduct(productId));
+          setProduct(fallbackProduct);
+          setSimilarProducts(FEATURED_PRODUCTS.filter((item) => String(item.id) !== String(productId)).map(buildFallbackProduct));
+          setLoadError(fallbackProduct ? "Không thể tải thông tin sản phẩm, đang hiển thị dữ liệu mẫu." : "Không thể tải thông tin sản phẩm.");
+        }
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -132,10 +173,10 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
     let active = true;
     getProductReviews(productId, reviewPage, REVIEW_PAGE_SIZE)
       .then((data) => {
-        if (active) setReviewsData(data);
+        if (active) setReviewsData(normalizeReviewsData(data));
       })
       .catch(() => {
-        if (active) setReviewsData((current) => ({ ...current, items: [] }));
+        if (active) setReviewsData(EMPTY_REVIEWS_DATA);
       });
     return () => {
       active = false;
@@ -208,11 +249,13 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
   const [cartAdded, setCartAdded] = useState(false);
   const handleAddToCart = () => {
     const variant = product?.variants?.[selectedTypeIdx];
+    const itemPrice = variant?.price ?? product.price;
     addToCart({
       id: `${product.id}:${variant?.id ?? "default"}:${dropdownValue || "default"}`,
       productId: product.id,
+      variantId: variant?.id ?? null,
       name: product.name,
-      price: product.price,
+      price: itemPrice,
       image: selectedImage,
       type: variant?.name,
       size: dropdownValue,
@@ -239,8 +282,9 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
   const SIM_CARD_GAP = 20;
   const SIM_VISIBLE_COUNT = 6;
   const [simOffset, setSimOffset] = useState(0);
+  const safeSimilarProducts = Array.isArray(similarProducts) ? similarProducts : [];
   const canGoSimPrev = simOffset > 0;
-  const canGoSimNext = simOffset < similarProducts.length - SIM_VISIBLE_COUNT;
+  const canGoSimNext = simOffset < safeSimilarProducts.length - SIM_VISIBLE_COUNT;
 
   const handleSimPrev = () => {
     if (!canGoSimPrev) return;
@@ -275,14 +319,14 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
     await createProductReview(productId, { rating, content: review });
     const updated = await getProductReviews(productId, 1, REVIEW_PAGE_SIZE);
     setReviewPage(1);
-    setReviewsData(updated);
+    setReviewsData(normalizeReviewsData(updated));
   };
 
   if (isLoading) {
     return <div className="flex min-h-screen items-center justify-center text-[#0D47A1]">Đang tải sản phẩm...</div>;
   }
 
-  if (loadError || !product) {
+  if (!product) {
     return <div className="flex min-h-screen items-center justify-center text-[#D32F2F]">{loadError || "Không tìm thấy sản phẩm."}</div>;
   }
 
@@ -300,11 +344,16 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
             { label: product?.name || (isLoading ? "Đang tải..." : "Chi tiết sản phẩm") },
           ]}
         />
+        {loadError && (
+          <div className="mx-auto mt-2 w-[1200px] rounded-[12px] bg-[#E5F6FD] px-5 py-3 text-sm font-medium text-[#0D47A1]">
+            {loadError}
+          </div>
+        )}
 
         {/* ---- Product detail section ---- */}
         <section className="relative h-[778px] w-[1440px]">
           {/* Breadcrumb */}
-          <nav className="absolute left-[120px] top-[32px] flex items-center gap-[4px] text-[16px]" aria-label="Breadcrumb">
+          {/* <nav className="absolute left-[120px] top-[32px] flex items-center gap-[4px] text-[16px]" aria-label="Breadcrumb">
             <Link
               to="/"
               className="text-[#0D47A1] underline-offset-2 hover:underline focus-ring-brand transition-all duration-micro"
@@ -313,7 +362,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
             </Link>
             <img src={productImages.chevronRight} alt="" className="h-5 w-5 pointer-events-none opacity-50" aria-hidden="true" />
             <span className="text-[rgba(0,0,0,0.87)] cursor-default">{product.name}</span>
-          </nav>
+          </nav> */}
 
           {/* Product layout */}
           <div className="absolute left-[120px] top-[76px] flex h-[622px] w-[1200px] items-start overflow-visible">
@@ -645,7 +694,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                 </div>
 
                 {/* Review items */}
-                {reviewsData.items.map((review) => (
+                {reviewItems.map((review) => (
                   <div
                     key={review.id}
                     className="group w-full rounded-[14px] border border-[#90CAF9] bg-white px-4 py-[15px] transition-shadow duration-micro hover:shadow-[0_2px_12px_rgba(144,202,249,0.4)]"
@@ -775,7 +824,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                 className="flex gap-5 transition-transform duration-300 ease-in-out"
                 style={{ transform: `translateX(-${simOffset * (SIM_CARD_WIDTH + SIM_CARD_GAP)}px)` }}
               >
-                {similarProducts.map((product) => (
+                {safeSimilarProducts.map((product) => (
                   <div
                   key={product.id}
                     className="shrink-0"
@@ -802,7 +851,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
             </button>
           </div>
         </section>
-        <Footer variant="white" />
+        <Footer variant="blue" />
       </CanvasLayout>
     </div>
   );

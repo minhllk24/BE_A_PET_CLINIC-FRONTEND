@@ -1,10 +1,46 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FEATURED_PRODUCTS, PRODUCT_CATEGORIES } from "../../data/shopData";
 import ProductCard from "../product/ProductCard";
 import SectionTitle from "./SectionTitle";
 import YellowButton from "./YellowButton";
+import { getBestSellingProducts } from "../../services/productService";
 
 function ProductSection() {
+  const [products, setProducts] = useState([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProducts() {
+      try {
+        setIsLoadingProducts(true);
+        setLoadError("");
+        const data = await getBestSellingProducts(12);
+        if (isMounted) {
+          setProducts(Array.isArray(data) ? data : []);
+        }
+      } catch {
+        if (isMounted) {
+          setLoadError("");
+          setProducts(FEATURED_PRODUCTS);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingProducts(false);
+        }
+      }
+    }
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section
       id="mua-sắm"
@@ -51,15 +87,29 @@ function ProductSection() {
           ))}
           </div>
 
-        <div className="grid w-full max-w-[1200px] grid-cols-2 justify-items-center gap-x-5 gap-y-6 sm:grid-cols-3 lg:grid-cols-6">
-          {FEATURED_PRODUCTS.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              variant={product.discountPercent ? "tag" : "default"}
-            />
-          ))}
-        </div>
+        {isLoadingProducts ? (
+          <div className="flex min-h-[392px] w-full max-w-[1200px] items-center justify-center text-base font-medium text-[#01579B]">
+            Đang tải sản phẩm...
+          </div>
+        ) : loadError ? (
+          <div className="flex min-h-[392px] w-full max-w-[1200px] items-center justify-center text-center text-base font-medium text-red-600">
+            {loadError}
+          </div>
+        ) : products.length ? (
+          <div className="grid w-full max-w-[1200px] grid-cols-2 justify-items-center gap-x-5 gap-y-6 sm:grid-cols-3 lg:grid-cols-6">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                variant={product.discountPercent ? "tag" : "default"}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex min-h-[392px] w-full max-w-[1200px] items-center justify-center text-base font-medium text-[#01579B]">
+            Chưa có sản phẩm để hiển thị.
+          </div>
+        )}
 
         <YellowButton
           to="/san-pham"

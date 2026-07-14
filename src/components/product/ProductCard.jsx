@@ -113,7 +113,7 @@ function ProductCard({
 
   const inner = (
     <>
-      <div className="relative h-[110px] w-full shrink-0 overflow-hidden rounded-[19px]">
+      <div className="relative h-[110px] w-full shrink-0 overflow-hidden rounded-[19px] border border-[rgba(25,118,210,0.5)]">
         <img
           src={productImage}
           alt={productName}

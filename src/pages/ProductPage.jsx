@@ -7,10 +7,11 @@ import NavBar from "../components/Navbar";
 import ShoppingProductCard from "../components/product/ShoppingProductCard";
 import { productImages } from "../assets/productImages";
 import { useAuth } from "../context/AuthContext";
+import { getProductCategories, getProductsPage } from "../services/productService";
 import {
   PRODUCT_CATEGORIES as CATEGORIES,
   PRODUCT_PRICE_RANGES as PRICE_RANGES,
-  SHOP_PRODUCTS as ALL_PRODUCTS,
+  SHOP_PRODUCTS,
 } from "../data/shopData";
 
 const PAGE_SIZE = 20;
@@ -20,6 +21,68 @@ function isPriceInRange(price, range) {
   if (range.max === Infinity) return price >= range.min;
   return price >= range.min && price < range.max;
 }
+
+const normalizeText = (value) => String(value || "").trim().toLocaleLowerCase("vi");
+
+const getCategoryProductCount = (category) => {
+  const ownCount = Number(category?._count?.products ?? category?.products_count ?? category?.count ?? 0);
+  const childrenCount = Array.isArray(category?.children)
+    ? category.children.reduce((total, child) => total + getCategoryProductCount(child), 0)
+    : 0;
+  return ownCount + childrenCount;
+};
+
+const buildCategoryOptions = (apiCategories = []) => {
+  const apiCategoryMap = new Map(
+    apiCategories.map((category) => [normalizeText(category.category_name || category.label || category.name), category]),
+  );
+
+  return [
+    {
+      id: "all-categories",
+      label: "Tất cả danh mục",
+      count: apiCategories.length
+        ? apiCategories.reduce((total, category) => total + getCategoryProductCount(category), 0)
+        : CATEGORIES.reduce((total, category) => total + Number(category.count || 0), 0),
+      index: null,
+      categoryId: null,
+    },
+    ...CATEGORIES.map((category, index) => {
+      const apiCategory = apiCategoryMap.get(normalizeText(category.label));
+      return {
+        id: category.slug,
+        label: category.label,
+        count: apiCategory ? getCategoryProductCount(apiCategory) : Number(category.count || 0),
+        index,
+        categoryId: apiCategory?.product_category_id ?? apiCategory?.category_id ?? apiCategory?.id ?? index + 1,
+      };
+    }),
+  ];
+};
+
+const toBackendSort = (sortOrder) => {
+  if (sortOrder === "asc") return "price_asc";
+  if (sortOrder === "desc") return "price_desc";
+  return "newest";
+};
+
+const getFallbackProducts = ({ searchQuery, selectedCategories, selectedPrices, sortOrder }) => {
+  const keyword = normalizeText(searchQuery);
+
+  const filtered = SHOP_PRODUCTS.filter((product) => {
+    if (selectedCategories.length > 0 && !selectedCategories.includes(product.categoryIdx)) return false;
+    if (selectedPrices.length > 0) {
+      const matchesSelectedPrice = selectedPrices.some((priceIndex) => isPriceInRange(product.price, PRICE_RANGES[priceIndex]));
+      if (!matchesSelectedPrice) return false;
+    }
+    if (!keyword) return true;
+    return normalizeText(product.name).includes(keyword);
+  });
+
+  if (sortOrder === "asc") return [...filtered].sort((a, b) => a.price - b.price);
+  if (sortOrder === "desc") return [...filtered].sort((a, b) => b.price - a.price);
+  return filtered;
+};
 
 function FilterHeading({ children }) {
   return (
@@ -200,10 +263,12 @@ function ProductGrid({ products }) {
 }
 
 function LoadMore({ shown, total, hasMore, isLoading, onLoadMore }) {
+  const fromLabel = total > 0 ? 1 : 0;
+
   return (
     <div className="mx-auto mt-[32px] flex h-[202px] w-[498px] flex-col items-center gap-[26px] py-[24px]">
       <p className="text-[16px] leading-[27px] text-[#414141]">
-        Hiển thị 1–{shown} trong {total} sản phẩm
+        Hiển thị {fromLabel}–{shown} trong {total} sản phẩm
       </p>
       <div className="relative h-px w-full bg-[#90CAF9]">
         <span
@@ -229,13 +294,94 @@ function LoadMore({ shown, total, hasMore, isLoading, onLoadMore }) {
 export default function ProductPage() {
   const { isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
+  const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedPrices, setSelectedPrices] = useState([]);
-  const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
+  const [apiCategories, setApiCategories] = useState([]);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    getProductCategories()
+      .then((items) => {
+        if (active) setApiCategories(Array.isArray(items) ? items : []);
+      })
+      .catch(() => {
+        if (active) setApiCategories([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const categoryOptions = useMemo(() => buildCategoryOptions(apiCategories), [apiCategories]);
+
+  const selectedCategoryId = useMemo(() => {
+    const selectedCategory = selectedCategories[0];
+    if (selectedCategory === undefined) return undefined;
+    return categoryOptions.find((category) => category.index === selectedCategory)?.categoryId;
+  }, [categoryOptions, selectedCategories]);
+
+  const loadProducts = useCallback(async (page = 1, append = false) => {
+    const range = selectedPrices.length > 0 ? PRICE_RANGES[selectedPrices[0]] : null;
+    const params = {
+      page,
+      limit: PAGE_SIZE,
+      category_id: selectedCategoryId || undefined,
+      filter: searchQuery.trim() || undefined,
+      sort: toBackendSort(sortOrder),
+      minPrice: range?.min,
+      maxPrice: Number.isFinite(range?.max) ? range.max : undefined,
+    };
+
+    if (append) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingProducts(true);
+    }
+    setLoadError("");
+
+    try {
+      const result = await getProductsPage(params);
+      setProducts((current) => (append ? [...current, ...result.products] : result.products));
+      setTotalProducts(result.totalRows);
+      setTotalPages(result.totalPages || 1);
+      setCurrentPage(page);
+    } catch {
+      const fallbackProducts = getFallbackProducts({ searchQuery, selectedCategories, selectedPrices, sortOrder });
+      const fallbackPage = fallbackProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+      if (!append) setProducts(fallbackPage);
+      else setProducts((current) => [...current, ...fallbackPage]);
+      setTotalProducts(fallbackProducts.length);
+      setTotalPages(Math.max(1, Math.ceil(fallbackProducts.length / PAGE_SIZE)));
+      setCurrentPage(page);
+      setLoadError("");
+    } finally {
+      setIsLoading(false);
+      setIsLoadingProducts(false);
+    }
+  }, [searchQuery, selectedCategories, selectedCategoryId, selectedPrices, sortOrder]);
+
+  useEffect(() => {
+    let active = true;
+    loadProducts(1, false).finally(() => {
+      if (!active) return;
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [loadProducts]);
 
   useEffect(() => {
     const categorySlug = searchParams.get("category");
@@ -244,59 +390,10 @@ export default function ProductPage() {
     setSelectedCategories(categoryIndex >= 0 ? [categoryIndex] : []);
     setSearch(keyword ?? "");
     setSearchQuery(keyword ?? "");
-    setDisplayCount(PAGE_SIZE);
   }, [searchParams]);
-
-  const filteredProducts = useMemo(() => {
-    const normalizedSearch = searchQuery.trim().toLocaleLowerCase("vi");
-    const products = ALL_PRODUCTS.filter((product) => {
-      if (selectedCategories.length > 0 && !selectedCategories.includes(product.categoryIdx)) return false;
-      if (selectedPrices.length > 0) {
-        const matchesSelectedPrice = selectedPrices.some((priceIndex) => {
-          const range = PRICE_RANGES[priceIndex];
-          return isPriceInRange(product.price, range);
-        });
-        if (!matchesSelectedPrice) return false;
-      }
-      return !normalizedSearch || product.name.toLocaleLowerCase("vi").includes(normalizedSearch);
-    });
-
-    if (sortOrder === "asc") return [...products].sort((a, b) => a.price - b.price);
-    if (sortOrder === "desc") return [...products].sort((a, b) => b.price - a.price);
-    return products;
-  }, [searchQuery, selectedCategories, selectedPrices, sortOrder]);
-
-  const categoryOptions = useMemo(() => {
-    const categoryCounts = ALL_PRODUCTS.reduce((counts, product) => {
-      const category = CATEGORIES[product.categoryIdx];
-      if (!category) return counts;
-      return {
-        ...counts,
-        [category.slug]: (counts[category.slug] || 0) + 1,
-      };
-    }, {});
-
-    return [
-      {
-        id: "all-categories",
-        label: "Tất cả danh mục",
-        count: ALL_PRODUCTS.length,
-        index: null,
-      },
-      ...CATEGORIES.map((category, index) => ({
-        id: category.slug,
-        label: category.label,
-        count: categoryCounts[category.slug] || 0,
-        index,
-      })),
-    ];
-  }, []);
-
-  const displayedProducts = filteredProducts.slice(0, displayCount);
 
   const resetDisplayCount = useCallback((setter, value) => {
     setter(value);
-    setDisplayCount(PAGE_SIZE);
   }, []);
 
   const toggleCategory = useCallback((categoryIndex) => {
@@ -306,7 +403,6 @@ export default function ProductPage() {
         ? current.filter((index) => index !== categoryIndex)
         : [...current, categoryIndex];
     });
-    setDisplayCount(PAGE_SIZE);
   }, []);
 
   const togglePrice = useCallback((priceIndex) => {
@@ -315,28 +411,22 @@ export default function ProductPage() {
         ? current.filter((index) => index !== priceIndex)
         : [...current, priceIndex],
     );
-    setDisplayCount(PAGE_SIZE);
   }, []);
 
   const clearSearch = useCallback(() => {
     setSearch("");
     setSearchQuery("");
-    setDisplayCount(PAGE_SIZE);
   }, []);
 
   const clearFilters = useCallback(() => {
     setSelectedCategories([]);
     setSelectedPrices([]);
-    setDisplayCount(PAGE_SIZE);
   }, []);
 
   const loadMore = useCallback(() => {
-    setIsLoading(true);
-    window.setTimeout(() => {
-      setDisplayCount((count) => count + PAGE_SIZE);
-      setIsLoading(false);
-    }, 500);
-  }, []);
+    if (isLoading || currentPage >= totalPages) return;
+    loadProducts(currentPage + 1, true);
+  }, [currentPage, isLoading, loadProducts, totalPages]);
 
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
@@ -380,15 +470,27 @@ export default function ProductPage() {
                 </p>
               )}
               <div className="mt-[32px]">
-                <ProductGrid products={displayedProducts} />
+                {isLoadingProducts ? (
+                  <div className="flex h-[532px] items-center justify-center text-[18px] text-[#0D47A1]">
+                    Đang tải sản phẩm...
+                  </div>
+                ) : loadError ? (
+                  <div className="flex h-[532px] items-center justify-center text-center text-[18px] text-[#D32F2F]">
+                    {loadError}
+                  </div>
+                ) : (
+                  <ProductGrid products={products} />
+                )}
               </div>
-              <LoadMore
-                shown={displayedProducts.length}
-                total={filteredProducts.length}
-                hasMore={displayedProducts.length < filteredProducts.length}
-                isLoading={isLoading}
-                onLoadMore={loadMore}
-              />
+              {!isLoadingProducts && !loadError && (
+                <LoadMore
+                  shown={products.length}
+                  total={totalProducts}
+                  hasMore={currentPage < totalPages}
+                  isLoading={isLoading}
+                  onLoadMore={loadMore}
+                />
+              )}
             </section>
           </div>
         </main>

@@ -7,6 +7,7 @@ import {
   SERVICE_PRICE_FILTERS,
   SERVICE_PRICE_TABLES,
 } from '../../data/groomingData'
+import { getServicePricingMatrix } from '../../services/servicePricingService'
 
 const columnToneClasses = {
   primary: 'border-[#0D47A1] text-[#0D47A1]',
@@ -62,6 +63,8 @@ function ServiceIcon({ name, color }) {
 function ServicePricingModal({ open, onClose, defaultFilter = 'all' }) {
   const [selectedFilter, setSelectedFilter] = useState(defaultFilter)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [pricingTables, setPricingTables] = useState(SERVICE_PRICE_TABLES)
+  const [pricingColumns, setPricingColumns] = useState({})
 
   useEffect(() => {
     if (open) {
@@ -70,6 +73,35 @@ function ServicePricingModal({ open, onClose, defaultFilter = 'all' }) {
     }
   }, [defaultFilter, open])
 
+  useEffect(() => {
+    if (!open) return
+    let active = true
+
+    getServicePricingMatrix()
+      .then((matrix) => {
+        if (!active || !matrix || !Object.keys(matrix).length) return
+        setPricingTables((current) => ({
+          ...current,
+          medical: matrix.medical?.rows?.length ? matrix.medical.rows : current.medical,
+          grooming: matrix.grooming?.rows?.length ? matrix.grooming.rows : current.grooming,
+          combo: matrix.combo?.rows?.length ? matrix.combo.rows : current.combo,
+        }))
+        setPricingColumns({
+          medical: matrix.medical?.columns || [],
+          grooming: matrix.grooming?.columns || [],
+          combo: matrix.combo?.columns || [],
+        })
+      })
+      .catch(() => {
+        setPricingTables(SERVICE_PRICE_TABLES)
+        setPricingColumns({})
+      })
+
+    return () => {
+      active = false
+    }
+  }, [open])
+
   const selectedLabel = SERVICE_PRICE_FILTERS.find(
     (filter) => filter.value === selectedFilter,
   )?.label
@@ -77,14 +109,37 @@ function ServicePricingModal({ open, onClose, defaultFilter = 'all' }) {
   const rows = useMemo(() => {
     if (selectedFilter === 'all') {
       return [
-        ...SERVICE_PRICE_TABLES.medical,
-        ...SERVICE_PRICE_TABLES.grooming,
-        ...SERVICE_PRICE_TABLES.combo,
+        ...pricingTables.medical,
+        ...pricingTables.grooming,
+        ...pricingTables.combo,
       ]
     }
 
-    return SERVICE_PRICE_TABLES[selectedFilter] || []
-  }, [selectedFilter])
+    return pricingTables[selectedFilter] || []
+  }, [pricingTables, selectedFilter])
+
+  const activeColumns = useMemo(() => {
+    if (selectedFilter !== 'all' && pricingColumns[selectedFilter]?.length) {
+      return pricingColumns[selectedFilter]
+    }
+    return GROOMING_PRICE_COLUMNS
+  }, [pricingColumns, selectedFilter])
+
+  const displayColumns = useMemo(() => {
+    const columns = activeColumns.slice(0, 9)
+    while (columns.length < 9) {
+      columns.push(GROOMING_PRICE_COLUMNS[columns.length])
+    }
+    return columns
+  }, [activeColumns])
+
+  const displayRows = useMemo(() => {
+    return rows.map((row) => {
+      const prices = row.prices.slice(0, 9)
+      while (prices.length < 9) prices.push('Liên hệ')
+      return { ...row, prices }
+    })
+  }, [rows])
 
   if (!open || typeof document === 'undefined') return null
 
@@ -171,7 +226,7 @@ function ServicePricingModal({ open, onClose, defaultFilter = 'all' }) {
           </div>
 
           <PriceCellGroup>
-            {GROOMING_PRICE_COLUMNS.slice(0, 3).map((column) => (
+            {displayColumns.slice(0, 3).map((column) => (
               <div
                 key={column.label}
                 className={`flex h-[40px] w-[80px] items-center justify-center rounded-[16px] border p-px ${columnToneClasses[column.tone]}`}
@@ -184,7 +239,7 @@ function ServicePricingModal({ open, onClose, defaultFilter = 'all' }) {
           </PriceCellGroup>
 
           <PriceCellGroup>
-            {GROOMING_PRICE_COLUMNS.slice(3, 6).map((column) => (
+            {displayColumns.slice(3, 6).map((column) => (
               <div
                 key={column.label}
                 className={`flex h-[40px] w-[80px] items-center justify-center rounded-[16px] border p-px ${columnToneClasses[column.tone]}`}
@@ -197,7 +252,7 @@ function ServicePricingModal({ open, onClose, defaultFilter = 'all' }) {
           </PriceCellGroup>
 
           <PriceCellGroup>
-            {GROOMING_PRICE_COLUMNS.slice(6).map((column) => (
+            {displayColumns.slice(6).map((column) => (
               <div
                 key={column.label}
                 className={`flex h-[40px] w-[80px] items-center justify-center rounded-[16px] border p-px ${columnToneClasses[column.tone]}`}
@@ -212,7 +267,7 @@ function ServicePricingModal({ open, onClose, defaultFilter = 'all' }) {
 
         <div className="mt-2 w-[1130px] min-h-0 flex-1 overflow-y-auto pr-[23px]">
           <div className="flex w-[1107px] flex-col items-start gap-[15px]">
-            {rows.map((row) => (
+            {displayRows.map((row) => (
               <div key={row.title} className="flex w-[1107px] shrink-0 flex-col items-start px-4">
                 <div
                   className="flex w-[1091px] items-start gap-[18px] rounded-[16px] p-4 backdrop-blur-[2px]"
@@ -235,7 +290,7 @@ function ServicePricingModal({ open, onClose, defaultFilter = 'all' }) {
                         <PricePill
                           key={`${row.title}-${price}-${index}`}
                           value={price}
-                          tone={GROOMING_PRICE_COLUMNS[index].tone}
+                          tone={displayColumns[index].tone}
                         />
                       ))}
                     </PriceCellGroup>
@@ -244,7 +299,7 @@ function ServicePricingModal({ open, onClose, defaultFilter = 'all' }) {
                         <PricePill
                           key={`${row.title}-${price}-${index + 3}`}
                           value={price}
-                          tone={GROOMING_PRICE_COLUMNS[index + 3].tone}
+                          tone={displayColumns[index + 3].tone}
                         />
                       ))}
                     </PriceCellGroup>
@@ -253,7 +308,7 @@ function ServicePricingModal({ open, onClose, defaultFilter = 'all' }) {
                         <PricePill
                           key={`${row.title}-${price}-${index + 6}`}
                           value={price}
-                          tone={GROOMING_PRICE_COLUMNS[index + 6].tone}
+                          tone={displayColumns[index + 6].tone}
                         />
                       ))}
                     </PriceCellGroup>

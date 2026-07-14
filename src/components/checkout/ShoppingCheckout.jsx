@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import {
@@ -12,6 +12,14 @@ import {
 } from "./GuestCheckoutSections";
 import AddressFormModal from "../address/AddressFormModal";
 import { formatVnd, getNumericPrice } from "../../utils/currency";
+import { checkoutOrder, guestCheckoutOrder } from "../../services/orderService";
+import {
+  createUserAddress,
+  getUserAddresses,
+  updateUserAddress,
+} from "../../services/userService";
+import { applyVoucher } from "../../services/loyaltyService";
+import { DEFAULT_USER_ADDRESSES } from "../../data/userProfileData";
 
 function formatMoney(value) {
   return formatVnd(value);
@@ -130,21 +138,59 @@ function OnlinePaymentMethods() {
   );
 }
 
-function CouponAndSummary({ isGuest, items }) {
-  const { confirmOrder } = useCart();
+function CouponAndSummary({ isGuest, items, onSubmitOrder }) {
   const [couponCode, setCouponCode] = useState("");
   const [couponError, setCouponError] = useState("");
+  const [couponSuccess, setCouponSuccess] = useState("");
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const subtotal = items.reduce(
     (total, item) => total + getNumericPrice(item.price) * item.qty,
     0,
   );
+  const total = Math.max(0, subtotal - discountAmount);
 
-  const handleApplyCoupon = () => {
+  const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
       setCouponError("Vui lòng nhập mã giảm giá");
       return;
     }
-    setCouponError("Mã không tồn tại");
+    if (isGuest) {
+      setCouponError("Vui lòng đăng nhập để kiểm tra mã giảm giá");
+      return;
+    }
+
+    setApplyingCoupon(true);
+    setCouponError("");
+    setCouponSuccess("");
+    try {
+      const result = await applyVoucher({
+        code: couponCode.trim(),
+        orderValue: subtotal,
+      });
+      const discount = Number(result?.discountAmount || 0);
+      setDiscountAmount(discount);
+      setCouponSuccess(`Đã áp dụng giảm ${formatMoney(discount)}`);
+    } catch (error) {
+      setDiscountAmount(0);
+      setCouponError(error?.message || "Mã không tồn tại");
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const handleConfirm = async () => {
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      await onSubmitOrder(couponCode.trim());
+    } catch (error) {
+      setSubmitError(error?.message || "Khong the dat hang");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -162,6 +208,8 @@ function CouponAndSummary({ isGuest, items }) {
                 onChange={(e) => {
                   setCouponCode(e.target.value.toUpperCase());
                   setCouponError("");
+                  setCouponSuccess("");
+                  setDiscountAmount(0);
                 }}
                 placeholder="Nhập mã"
                 className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
@@ -172,13 +220,19 @@ function CouponAndSummary({ isGuest, items }) {
                 {couponError}
               </p>
             )}
+            {couponSuccess && (
+              <p className="w-full px-4 pt-1 text-xs font-medium text-green-700">
+                {couponSuccess}
+              </p>
+            )}
           </div>
           <button
             type="button"
             onClick={handleApplyCoupon}
-            className="flex h-10 w-[104px] items-center justify-center rounded bg-secondary text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition-all duration-micro hover:bg-[#ffe454] active:scale-[0.98]"
+            disabled={applyingCoupon || subtotal <= 0}
+            className="flex h-10 w-[104px] items-center justify-center rounded bg-secondary text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition-all duration-micro hover:bg-[#ffe454] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Áp dụng
+            {applyingCoupon ? "..." : "Áp dụng"}
           </button>
         </div>
       </div>
@@ -190,7 +244,7 @@ function CouponAndSummary({ isGuest, items }) {
             label: isGuest ? "Phí dịch vụ" : "Phí vận chuyển",
             value: "0đ",
           },
-          { label: "Giảm giá", value: "0đ" },
+          { label: "Giảm giá", value: `-${formatMoney(discountAmount)}` },
         ].map((row) => (
           <div
             key={row.label}
@@ -210,18 +264,19 @@ function CouponAndSummary({ isGuest, items }) {
             </p>
           </div>
           <span className="text-2xl font-black leading-7 text-blue-900">
-            {formatMoney(subtotal)}
+            {formatMoney(total)}
           </span>
       </div>
 
       <button
         type="button"
-        onClick={confirmOrder}
-        disabled={items.length === 0}
+        onClick={handleConfirm}
+        disabled={items.length === 0 || submitting}
         className="relative h-12 w-full rounded bg-secondary text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition-all duration-micro hover:bg-[#ffe454] active:scale-[0.99] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isGuest ? "Xác nhận đặt lịch" : "Xác nhận đơn hàng"}
+        {submitting ? "ĐANG XỬ LÝ..." : isGuest ? "Xác nhận đặt hàng" : "Xác nhận đơn hàng"}
       </button>
+      {submitError && <p className="text-center text-sm font-medium text-red-600">{submitError}</p>}
 
       <p className="text-center text-xs leading-[15px] text-slate-500">
         Bằng cách nhấn xác nhận, bạn đồng ý với{" "}
@@ -233,13 +288,9 @@ function CouponAndSummary({ isGuest, items }) {
   );
 }
 
-const INITIAL_ADDRESSES = [
-  { id: 1, name: "Nguyễn Văn A", phone: "090 123 4567", email: "nguyenvana@example.com", country: "Việt Nam", address: "123 Đường Lê Lợi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh", city: "TP. Hồ Chí Minh", isDefault: true },
-  { id: 2, name: "Nguyễn Văn A", phone: "090 123 4567", email: "", country: "Việt Nam", address: "456 Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh", city: "TP. Hồ Chí Minh", isDefault: false },
-  { id: 3, name: "Nguyễn Văn A", phone: "090 123 4567", email: "", country: "Việt Nam", address: "789 Đường Võ Văn Tần, Phường 6, Quận 3, TP. Hồ Chí Minh", city: "TP. Hồ Chí Minh", isDefault: false },
-];
+function AuthenticatedAddressCard({ onChange, address, loading, error }) {
+  const displayAddress = address?.displayAddress || address?.address;
 
-function AuthenticatedAddressCard({ onChange, address }) {
   return (
     <section className="flex flex-col gap-4 rounded-2xl bg-white p-8 shadow-[0_4px_13px_rgba(144,202,249,0.85)]">
       <div className="flex items-center justify-between">
@@ -263,30 +314,51 @@ function AuthenticatedAddressCard({ onChange, address }) {
         </button>
       </div>
       <div className="flex flex-col gap-2 rounded-2xl bg-[#f2f4f6] p-5">
-        <p className="text-base font-bold leading-6 text-slate-900">
-          {address.name} | {address.phone}
-        </p>
-        <p className="text-sm font-medium leading-5 text-slate-700">
-          {address.address}
-        </p>
-        {address.isDefault && (
+        {loading ? (
+          <p className="text-sm font-medium leading-5 text-slate-700">
+            Đang tải địa chỉ...
+          </p>
+        ) : address ? (
+          <>
+            <p className="text-base font-bold leading-6 text-slate-900">
+              {address.name} | {address.phone}
+            </p>
+            <p className="text-sm font-medium leading-5 text-slate-700">
+              {displayAddress}
+            </p>
+          </>
+        ) : (
+          <p className="text-sm font-medium leading-5 text-slate-700">
+            Chưa có địa chỉ nhận hàng. Vui lòng thêm địa chỉ trước khi đặt hàng.
+          </p>
+        )}
+        {address?.isDefault && (
           <span className="inline-flex w-fit rounded-2xl bg-[#d5e4f3] px-3 py-1 text-xs font-bold text-blue-900">
             Mặc định
           </span>
         )}
+        {error && <p className="text-sm font-medium text-red-600">{error}</p>}
       </div>
     </section>
   );
 }
 
 function AddressList({ addresses, onEdit, onSelect }) {
+  if (addresses.length === 0) {
+    return (
+      <p className="rounded-[4px] bg-[rgba(25,118,210,0.04)] p-[10px] text-[14px] leading-5 text-[#42474F]">
+        Chưa có địa chỉ nào.
+      </p>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-[16px]">
       {addresses.map((address) => (
         <div key={address.id} className="flex w-full items-start gap-[5px] rounded-[4px] bg-[rgba(25,118,210,0.04)] p-[10px]">
           <button type="button" onClick={() => onSelect(address)} className="flex min-w-0 flex-1 flex-col gap-[5px] text-left">
             <span className="text-[16px] leading-[24px] tracking-[0.15px] text-[#191C1E]">{address.name} | {address.phone}</span>
-            <span className="text-[14px] leading-[20px] tracking-[0.17px] text-[#42474F]">{address.address}</span>
+            <span className="text-[14px] leading-[20px] tracking-[0.17px] text-[#42474F]">{address.displayAddress || address.address}</span>
             {address.isDefault && <span className="w-fit rounded-[2px] bg-[#D2E4FF] px-2 py-1 text-[12px] leading-[20px] tracking-[0.4px] text-[#001C37]">Mặc định</span>}
           </button>
           <button type="button" onClick={() => onEdit(address)} className="shrink-0 px-1 text-[12px] leading-[20px] tracking-[0.4px] text-[#00355F] hover:underline">Thay đổi</button>
@@ -299,6 +371,7 @@ function AddressList({ addresses, onEdit, onSelect }) {
 function AddressChangeModal({ addresses, onClose, onSave, onSelect }) {
   const [mode, setMode] = useState("list");
   const [editingAddress, setEditingAddress] = useState(null);
+  const [saveError, setSaveError] = useState("");
 
   const openForm = (address) => {
     setEditingAddress(address ?? null);
@@ -311,9 +384,14 @@ function AddressChangeModal({ addresses, onClose, onSave, onSelect }) {
         mode={mode}
         address={editingAddress}
         onClose={() => setMode("list")}
-        onSave={(address) => {
-          onSave(address);
-          setMode("list");
+        onSave={async (address) => {
+          try {
+            setSaveError("");
+            await onSave(address);
+            setMode("list");
+          } catch (error) {
+            setSaveError(error?.message || "Không thể lưu địa chỉ");
+          }
         }}
       />
     );
@@ -329,6 +407,7 @@ function AddressChangeModal({ addresses, onClose, onSave, onSelect }) {
             <button type="button" onClick={onClose} aria-label="Đóng" className="flex h-[30px] w-[30px] items-center justify-center rounded-full text-[24px] font-light leading-none text-[#727780] hover:bg-slate-100 hover:text-[#00355F]">×</button>
           </div>
           <AddressList addresses={addresses} onEdit={openForm} onSelect={onSelect} />
+          {saveError && <p className="text-[14px] text-red-600">{saveError}</p>}
         </section>
 
         <button type="button" onClick={() => openForm(null)} className="h-[42px] rounded-[4px] bg-[#FFF176] px-[22px] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] text-[rgba(0,0,0,0.87)] shadow-elevation hover:bg-[#FDD835]">+ Thêm mới</button>
@@ -337,7 +416,7 @@ function AddressChangeModal({ addresses, onClose, onSave, onSelect }) {
   );
 }
 
-function OrderDetailsCard({ items }) {
+function OrderDetailsCard({ items, note, onNoteChange }) {
   return (
     <section className="flex flex-col gap-6 rounded-2xl bg-white p-8 shadow-[0_4px_13px_rgba(144,202,249,0.85)]">
       <div className="flex flex-col gap-2">
@@ -366,6 +445,8 @@ function OrderDetailsCard({ items }) {
         </p>
         <input
           type="text"
+          value={note}
+          onChange={(event) => onNoteChange(event.target.value)}
           className="h-11 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none focus:border-blue-900"
           aria-label="Ghi chú đơn hàng"
         />
@@ -375,24 +456,100 @@ function OrderDetailsCard({ items }) {
 }
 
 function ShoppingCheckout({ onBack }) {
-  const { isAuthenticated } = useAuth();
-  const { cartItems, paymentMode } = useCart();
+  const { isAuthenticated, userProfile } = useAuth();
+  const { cartItems, paymentMode, confirmOrder } = useCart();
   const isGuest = !isAuthenticated;
   const orderItems = cartItems.filter((item) => item.selected);
+  const [note, setNote] = useState("");
+  const [guestForm, setGuestForm] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+    country: "Việt Nam",
+    address: "",
+    city: "",
+  });
   const [showAddressModal, setShowAddressModal] = useState(false);
-  const [addresses, setAddresses] = useState(INITIAL_ADDRESSES);
-  const [selectedAddressId, setSelectedAddressId] = useState(1);
-  const selectedAddress = addresses.find((address) => address.id === selectedAddressId) || addresses[0];
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [addressesLoading, setAddressesLoading] = useState(false);
+  const [addressError, setAddressError] = useState("");
+  const selectedAddress = addresses.find((address) => address.id === selectedAddressId) || addresses[0] || null;
 
-  const saveAddress = (address) => {
+  useEffect(() => {
+    if (isGuest || !userProfile?.userId) {
+      setAddresses([]);
+      setSelectedAddressId(null);
+      return undefined;
+    }
+
+    let isMounted = true;
+    setAddressesLoading(true);
+    setAddressError("");
+
+    getUserAddresses(userProfile.userId)
+      .then((items) => {
+        if (!isMounted) return;
+        setAddresses(items);
+        const defaultAddress = items.find((address) => address.isDefault) || items[0] || null;
+        setSelectedAddressId(defaultAddress?.id ?? null);
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        setAddresses(DEFAULT_USER_ADDRESSES);
+        setSelectedAddressId(DEFAULT_USER_ADDRESSES[0]?.id ?? null);
+        setAddressError(error?.message || "Không thể tải địa chỉ, đang hiển thị địa chỉ mẫu.");
+      })
+      .finally(() => {
+        if (isMounted) setAddressesLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isGuest, userProfile?.userId]);
+
+  const submitOrder = async (voucherCode) => {
+    if (!isGuest && !selectedAddress?.id) {
+      throw new Error("Vui lòng chọn hoặc thêm địa chỉ nhận hàng");
+    }
+
+    const result = isGuest
+      ? await guestCheckoutOrder({
+          guest: guestForm,
+          paymentMethod: paymentMode,
+          voucherCode,
+          note,
+          items: orderItems,
+        })
+      : await checkoutOrder({
+          addressId: selectedAddress.addressId || selectedAddress.id,
+          paymentMethod: paymentMode,
+          voucherCode,
+          note,
+          items: orderItems,
+        });
+    confirmOrder(result);
+  };
+
+  const saveAddress = async (address) => {
+    if (!userProfile?.userId) {
+      throw new Error("Không tìm thấy thông tin người dùng");
+    }
+
     if (address.id) {
+      const updatedAddress = await updateUserAddress(address.addressId || address.id, address);
       setAddresses((current) =>
-        current.map((item) => (item.id === address.id ? { ...item, ...address } : item)),
+        current.map((item) => (item.id === updatedAddress.id ? updatedAddress : item)),
       );
-      setSelectedAddressId(address.id);
+      setSelectedAddressId(updatedAddress.id);
       return;
     }
-    const newAddress = { ...address, id: Date.now(), isDefault: false };
+
+    const newAddress = await createUserAddress(userProfile.userId, {
+      ...address,
+      isDefault: addresses.length === 0,
+    });
     setAddresses((current) => [...current, newAddress]);
     setSelectedAddressId(newAddress.id);
   };
@@ -428,10 +585,15 @@ function ShoppingCheckout({ onBack }) {
           <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
             <div className="flex w-full flex-col gap-7">
               {isGuest && <GuestLoginBanner />}
-              {isGuest ? <GuestShippingForm /> : (
-                <AuthenticatedAddressCard address={selectedAddress} onChange={() => setShowAddressModal(true)} />
+              {isGuest ? <GuestShippingForm value={guestForm} onChange={setGuestForm} /> : (
+                <AuthenticatedAddressCard
+                  address={selectedAddress}
+                  error={addressError}
+                  loading={addressesLoading}
+                  onChange={() => setShowAddressModal(true)}
+                />
               )}
-              <OrderDetailsCard items={orderItems} />
+              <OrderDetailsCard items={orderItems} note={note} onNoteChange={setNote} />
             </div>
 
             <aside className="w-full">
@@ -443,7 +605,7 @@ function ShoppingCheckout({ onBack }) {
                 <div className="flex flex-col gap-5">
                   <PaymentModeToggle />
                   {paymentMode === "online" && <OnlinePaymentMethods />}
-                  <CouponAndSummary isGuest={isGuest} items={orderItems} />
+                  <CouponAndSummary isGuest={isGuest} items={orderItems} onSubmitOrder={submitOrder} />
                 </div>
               </div>
             </aside>

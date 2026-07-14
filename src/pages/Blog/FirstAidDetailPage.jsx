@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   CheckCircle2,
@@ -18,6 +18,7 @@ import {
   FIRST_AID_POSTS,
   getFirstAidDetail,
 } from "../../data/firstAidData";
+import { getFirstAidGuideBySlug, getFirstAidGuidesPage } from "../../services/contentService";
 
 function EmergencySupport() {
   return (
@@ -90,9 +91,10 @@ function VideoSection({ video }) {
   );
 }
 
-function RelatedSection({ currentId }) {
-  const posts = useMemo(() => FIRST_AID_POSTS.filter((post) => post.id !== currentId), [currentId]);
+function RelatedSection({ currentId, posts: sourcePosts = FIRST_AID_POSTS }) {
+  const posts = useMemo(() => sourcePosts.filter((post) => post.id !== currentId), [currentId, sourcePosts]);
   const [start, setStart] = useState(0);
+  if (!posts.length) return null;
   const visiblePosts = Array.from({ length: 3 }, (_, index) => posts[(start + index) % posts.length]);
   const move = (amount) => setStart((value) => (value + amount + posts.length) % posts.length);
 
@@ -122,7 +124,41 @@ function RelatedSection({ currentId }) {
 export default function FirstAidDetailPage() {
   const { isAuthenticated } = useAuth();
   const { postId } = useParams();
-  const detail = getFirstAidDetail(postId);
+  const fallbackDetail = useMemo(() => getFirstAidDetail(postId), [postId]);
+  const [detail, setDetail] = useState(fallbackDetail);
+  const [relatedPosts, setRelatedPosts] = useState(FIRST_AID_POSTS);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    setDetail(fallbackDetail);
+    setIsLoading(true);
+    setLoadError("");
+
+    Promise.all([
+      getFirstAidGuideBySlug(postId),
+      getFirstAidGuidesPage({ limit: 12 }),
+    ])
+      .then(([apiDetail, apiGuides]) => {
+        if (!active) return;
+        setDetail(apiDetail);
+        if (apiGuides.guides.length) {
+          setRelatedPosts(apiGuides.guides.filter((item) => item.id !== apiDetail.id));
+        }
+      })
+      .catch((error) => {
+        if (!active) return;
+        setLoadError(error?.message || "Không thể tải hướng dẫn sơ cứu, đang hiển thị dữ liệu mẫu từ giao diện.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [fallbackDetail, postId]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -152,9 +188,19 @@ export default function FirstAidDetailPage() {
               </div>
               <div className="-ml-[34px] relative z-10"><EmergencySupport /></div>
             </section>
+            {isLoading && (
+              <div className="mt-4 rounded-[16px] bg-white px-6 py-3 text-[#0D47A1]">
+                Đang tải hướng dẫn sơ cứu...
+              </div>
+            )}
+            {loadError && (
+              <div className="mt-4 rounded-[16px] bg-white px-6 py-3 text-[#0D47A1]">
+                {loadError}
+              </div>
+            )}
             <StepSection steps={detail.steps} />
             <VideoSection video={detail.video} />
-            <RelatedSection currentId={detail.id} />
+            <RelatedSection currentId={detail.id} posts={relatedPosts} />
           </div>
         </main>
         <Footer variant="white" />

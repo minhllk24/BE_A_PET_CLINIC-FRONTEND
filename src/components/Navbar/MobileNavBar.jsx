@@ -6,7 +6,8 @@ import cartIcon from "../../assets/images/cart_icon.svg";
 import { navbarImages } from "../../assets/navbarImages";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
-import { getSearchSuggestions } from "../../data/searchResultsData";
+import { getSearchSuggestions as getMockSearchSuggestions } from "../../data/searchResultsData";
+import { getSearchSuggestionsApi } from "../../services/searchService";
 import { formatVnd } from "../../utils/currency";
 import { NAV_LINKS } from "./navbarMenuLinks";
 import NotificationBell from "../Notifications/NotificationBell";
@@ -61,12 +62,24 @@ function MobileSearchPanel({ open, onClose }) {
   const navigate = useNavigate();
   const [term, setTerm] = useState("");
   const [suggestions, setSuggestions] = useState(EMPTY_SUGGESTIONS);
+  const [defaultSuggestions, setDefaultSuggestions] = useState(() => getMockSearchSuggestions("tắm"));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const query = term.trim();
 
   useEffect(() => {
     if (!open) return undefined;
+    getSearchSuggestionsApi("tắm")
+      .then((apiSuggestions) => {
+        const fallback = getMockSearchSuggestions("tắm");
+        setDefaultSuggestions({
+          ...apiSuggestions,
+          products: fallback.products,
+          total: apiSuggestions.total || fallback.total,
+        });
+      })
+      .catch(() => setDefaultSuggestions(getMockSearchSuggestions("tắm")));
+
     const handleKeyDown = (event) => {
       if (event.key === "Escape") onClose();
     };
@@ -85,14 +98,22 @@ function MobileSearchPanel({ open, onClose }) {
     setIsLoading(true);
     setError("");
     const timer = window.setTimeout(() => {
-      try {
-        setSuggestions(getSearchSuggestions(query));
-      } catch {
-        setSuggestions(EMPTY_SUGGESTIONS);
-        setError("Không thể tải gợi ý tìm kiếm");
-      } finally {
-        setIsLoading(false);
-      }
+      getSearchSuggestionsApi(query)
+        .then((apiSuggestions) => {
+          const fallback = getMockSearchSuggestions(query);
+          setSuggestions({
+            ...apiSuggestions,
+            products: fallback.products,
+            total: apiSuggestions.total || fallback.total,
+          });
+        })
+        .catch(() => {
+          setSuggestions(getMockSearchSuggestions(query));
+          setError("");
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }, SEARCH_DEBOUNCE_MS);
 
     return () => window.clearTimeout(timer);
@@ -106,8 +127,8 @@ function MobileSearchPanel({ open, onClose }) {
 
   if (!open) return null;
 
-  const visibleSuggestions = query ? suggestions.suggestions : getSearchSuggestions("tắm").suggestions;
-  const visibleProducts = query ? suggestions.products : getSearchSuggestions("tắm").products;
+  const visibleSuggestions = query ? suggestions.suggestions : defaultSuggestions.suggestions;
+  const visibleProducts = query ? suggestions.products : defaultSuggestions.products;
   const displayQuery = query || "tắm";
 
   return (

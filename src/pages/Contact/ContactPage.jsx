@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CanvasLayout from "../../components/layout/CanvasLayout";
 import Footer from "../../components/Footer/Footer";
 import NavBar from "../../components/Navbar";
 import { useAuth } from "../../context/AuthContext";
+import { getBranches } from "../../services/bookingService";
 import {
   BRANCHES,
   CONTACT_CHANNELS,
@@ -24,6 +25,24 @@ const getGoogleMapsLink = (address) =>
 
 const getGoogleMapsEmbedLink = (address) =>
   `https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=14&output=embed`;
+
+const CONTACT_MAP_POSITIONS = BRANCHES.map((branch) => branch.mapPosition);
+
+function normalizeContactBranch(branch, index) {
+  const fallback = BRANCHES[index % BRANCHES.length] || BRANCHES[0];
+
+  return {
+    ...fallback,
+    ...branch,
+    id: String(branch.id ?? branch.branch_id ?? fallback.id),
+    name: branch.branch_name || branch.name || fallback.name,
+    address: branch.address || fallback.address,
+    hours: branch.operating_hours || branch.hours || fallback.hours,
+    phone: branch.phone || fallback.phone,
+    email: branch.email || "",
+    mapPosition: branch.mapPosition || CONTACT_MAP_POSITIONS[index % CONTACT_MAP_POSITIONS.length],
+  };
+}
 
 function ContactChannel({ channel }) {
   const isExternal = channel.href.startsWith("http");
@@ -173,20 +192,52 @@ function BranchCard({ branch, active, onSelect }) {
 
 function BranchDirectory() {
   const [query, setQuery] = useState("");
-  const [activeBranch, setActiveBranch] = useState(1);
+  const [branches, setBranches] = useState(() => BRANCHES.map(normalizeContactBranch));
+  const [activeBranch, setActiveBranch] = useState(String(BRANCHES[0]?.id ?? 1));
+  const [isLoadingBranches, setIsLoadingBranches] = useState(false);
+  const [branchLoadError, setBranchLoadError] = useState("");
+
+  useEffect(() => {
+    let ignore = false;
+    setIsLoadingBranches(true);
+    setBranchLoadError("");
+
+    getBranches()
+      .then((apiBranches) => {
+        if (ignore || !apiBranches.length) return;
+        const normalizedBranches = apiBranches.map(normalizeContactBranch);
+        setBranches(normalizedBranches);
+        setActiveBranch((current) =>
+          normalizedBranches.some((branch) => branch.id === current)
+            ? current
+            : normalizedBranches[0].id,
+        );
+      })
+      .catch(() => {
+        if (!ignore) setBranchLoadError("Đang hiển thị danh sách chi nhánh dự phòng.");
+      })
+      .finally(() => {
+        if (!ignore) setIsLoadingBranches(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
   const selectedBranch =
-    BRANCHES.find((branch) => branch.id === activeBranch) ?? BRANCHES[0];
+    branches.find((branch) => branch.id === activeBranch) ?? branches[0];
 
   const visibleBranches = useMemo(() => {
     const keyword = query.trim().toLocaleLowerCase("vi");
-    if (!keyword) return BRANCHES;
+    if (!keyword) return branches;
 
-    return BRANCHES.filter((branch) =>
+    return branches.filter((branch) =>
       `${branch.name} ${branch.address} ${branch.phone}`
         .toLocaleLowerCase("vi")
         .includes(keyword),
     );
-  }, [query]);
+  }, [branches, query]);
 
   return (
     <section className="contact-branches" id="branches">
@@ -204,6 +255,12 @@ function BranchDirectory() {
             <img src={contactAssets.search} alt="" />
           </label>
           <div className="contact-branches__list">
+            {isLoadingBranches && (
+              <p className="contact-branches__empty">Đang tải danh sách chi nhánh...</p>
+            )}
+            {branchLoadError && (
+              <p className="contact-branches__empty">{branchLoadError}</p>
+            )}
             {visibleBranches.map((branch) => (
               <BranchCard
                 key={branch.id}
@@ -223,22 +280,22 @@ function BranchDirectory() {
         <div className="contact-map" aria-label="Bản đồ chi nhánh">
           <iframe
             className="contact-map__embed"
-            title={`Google Maps - ${selectedBranch.name}`}
-            src={getGoogleMapsEmbedLink(selectedBranch.address)}
+            title={`Google Maps - ${selectedBranch?.name || "Chi nhánh"}`}
+            src={getGoogleMapsEmbedLink(selectedBranch?.address || "")}
             loading="lazy"
             allowFullScreen
             referrerPolicy="no-referrer-when-downgrade"
           />
           <a
             className="contact-map__open"
-            href={getGoogleMapsLink(selectedBranch.address)}
+            href={getGoogleMapsLink(selectedBranch?.address || "")}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Mở Google Maps cho ${selectedBranch.name}`}
+            aria-label={`Mở Google Maps cho ${selectedBranch?.name || "chi nhánh"}`}
           >
             Google Maps
           </a>
-          {BRANCHES.map((branch) => (
+          {branches.map((branch) => (
             <button
               type="button"
               key={branch.id}

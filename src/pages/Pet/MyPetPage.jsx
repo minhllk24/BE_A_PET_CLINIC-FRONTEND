@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { getMyPets } from "../../services/petService";
 import { MOCK_PETS } from "../../data/mockPets";
 
 import buddyImg from "../../assets/images/pets/buddy.jpg";
@@ -210,19 +211,34 @@ function SearchAndSort({
 
 function PetListPage() {
   const [pets, setPets] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("Tất cả");
   const [sortBy, setSortBy] = useState("name");
 
   useEffect(() => {
-    const storedPets = localStorage.getItem("petsData");
-    if (storedPets) {
-      setPets(JSON.parse(storedPets));
-    } else {
-      localStorage.setItem("petsData", JSON.stringify(MOCK_PETS));
-      setPets(MOCK_PETS);
-    }
+    let active = true;
+    setIsLoading(true);
+    setLoadError("");
+
+    getMyPets()
+      .then((items) => {
+        if (active) setPets(items);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setPets(MOCK_PETS);
+        setLoadError(error?.message || "Không thể tải hồ sơ thú cưng, đang hiển thị dữ liệu mẫu.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const counts = useMemo(() => {
@@ -311,8 +327,15 @@ function PetListPage() {
         </p>
       )}
 
-      <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredPets.map((pet) => {
+      {loadError && !isLoading && (
+        <p className="mb-4 text-center text-sm text-[#0D47A1]">{loadError}</p>
+      )}
+
+      {isLoading ? (
+        <div className="py-12 text-center text-slate-500">Đang tải hồ sơ thú cưng...</div>
+      ) : (
+        <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredPets.map((pet) => {
           const displayStatus = pet.healthStatus === "Khỏe mạnh" ? "Bình thường" : (pet.healthStatus || "Bình thường");
           const statusColor = getHealthStatusColor(displayStatus);
           const currentPetImage = pet.avatar || (pet.name ? petImages[pet.name] : null);
@@ -369,10 +392,11 @@ function PetListPage() {
               </div>
             </div>
           );
-        })}
-      </div>
+          })}
+        </div>
+      )}
 
-      {filteredPets.length === 0 && (
+      {!isLoading && filteredPets.length === 0 && (
         <div className="text-center py-12">
           <p className="text-slate-500">Không tìm thấy thú cưng nào</p>
         </div>
