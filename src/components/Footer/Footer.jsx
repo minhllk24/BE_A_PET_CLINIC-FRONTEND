@@ -20,11 +20,12 @@ const SERVICE_LINKS = [
 ];
 
 const SUPPORT_LINKS = [
-  ["Chính sách đặt lịch", "/policies/dat-lich"],
+  ["Chính sách đặt lịch, đổi lịch & hủy lịch", "/policies/dat-lich-doi-huy-lich"],
   ["Chính sách vận chuyển", "/policies/van-chuyen"],
   ["Chính sách đổi/trả hàng", "/policies/doi-tra-hang"],
   ["Chính sách thanh toán", "/policies/phuong-thuc-thanh-toan"],
-  ["Câu hỏi thường gặp", "/policies/cau-hoi-thuong-gap"],
+  ["Chính sách bán hàng", "/policies/huong-dan-mua-hang"],
+  ["Chính sách bảo mật", "/policies/bao-mat"],
 ];
 
 const LEGAL_LINKS = [
@@ -230,7 +231,7 @@ function Footer({ variant = "auto" }) {
           <ul>
             <FooterLink to="/about">Về chúng tôi</FooterLink>
             <FooterLink to="/contact">Liên hệ</FooterLink>
-            <FooterLink>
+            <FooterLink to="/contact#branches">
               <span className="flex items-center gap-2">
                 Danh sách chi nhánh <span aria-hidden="true">→</span>
               </span>
