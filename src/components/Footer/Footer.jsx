@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { homeImages } from "../../assets/homeImages";
 import ServicePricingModal from "../groomingSpa/ServicePricingModal";
@@ -32,6 +33,12 @@ const LEGAL_LINKS = [
   ["Chính sách bảo mật", "/policies/bao-mat"],
   ["Điều khoản dịch vụ", "/policies/dieu-khoan-dich-vu"],
   ["Cài đặt cookie", "/policies/cookie"],
+];
+
+const MOBILE_SUPPORT_LINKS = [
+  ...SUPPORT_LINKS.slice(0, 4),
+  ...LEGAL_LINKS.slice(0, 2),
+  SUPPORT_LINKS[4],
 ];
 
 function isBlueBackground(element) {
@@ -107,6 +114,155 @@ function AccountFooter() {
   );
 }
 
+function MobileSocialLinks() {
+  return (
+    <div className="flex flex-1 items-center gap-4 text-[#475569]" aria-label="Mạng xã hội">
+      <a href="#" aria-label="Facebook" className="flex size-[22px] items-center justify-center rounded bg-white text-[18px] font-bold leading-none">
+        f
+      </a>
+      <a href="#" aria-label="Zalo" className="flex size-[22px] items-center justify-center rounded bg-white text-[8px] font-bold leading-none">
+        Zalo
+      </a>
+      <a href="#" aria-label="Instagram" className="flex size-[22px] items-center justify-center rounded bg-white">
+        <svg width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true">
+          <rect x="2" y="2" width="13" height="13" rx="4" stroke="#475569" strokeWidth="1.7" />
+          <circle cx="8.5" cy="8.5" r="3.2" stroke="#475569" strokeWidth="1.5" />
+          <circle cx="12.3" cy="4.8" r="1" fill="#475569" />
+        </svg>
+      </a>
+      <a href="#" aria-label="TikTok" className="flex size-[22px] items-center justify-center rounded bg-white">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M10.6 2.2h2.1c.2 1.3 1.2 2.7 3.1 2.9v2.1a5.3 5.3 0 0 1-3.1-1v5.6a4.2 4.2 0 1 1-4.2-4.2h.4v2.2h-.4a2 2 0 1 0 2 2V2.2Z" fill="#475569" />
+        </svg>
+      </a>
+    </div>
+  );
+}
+
+function MobileFooterSection({ title, links, open, onToggle, onPricingOpen }) {
+  return (
+    <section className="border-b-[0.5px] border-[#0D47A1]">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex h-[35px] w-full items-center justify-between text-left"
+        aria-expanded={open}
+      >
+        <span className="font-['Roboto'] text-[13px] font-bold leading-[20.8px] tracking-[0.15px] text-[#0D47A1]">
+          {title}
+        </span>
+        <ChevronDown
+          aria-hidden="true"
+          className={`size-[18px] text-[#0D47A1] transition-transform ${open ? "rotate-180" : ""}`}
+          strokeWidth={1.6}
+        />
+      </button>
+
+      {open && (
+        <ul className="flex flex-col gap-[5px] px-5">
+          {links.map(([label, to]) => (
+            <li key={label} className="flex h-[35px] items-center border-b-[0.5px] border-[#1565C0] pr-5 last:border-b-0">
+              {label === "Bảng giá dịch vụ" ? (
+                <button
+                  type="button"
+                  onClick={onPricingOpen}
+                  className="min-w-0 flex-1 truncate text-left font-['Roboto'] text-[11px] font-normal leading-[16.5px] tracking-[0.15px] text-[#1565C0]"
+                >
+                  {label}
+                </button>
+              ) : (
+                <Link
+                  to={to}
+                  className="min-w-0 flex-1 truncate font-['Roboto'] text-[11px] font-normal leading-[16.5px] tracking-[0.15px] text-[#1565C0]"
+                >
+                  {label}
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function MobileFooter({ isBlue, onPricingOpen }) {
+  const [openSection, setOpenSection] = useState("support");
+  const sections = [
+    { id: "quick", title: "Liên kết nhanh", links: QUICK_LINKS },
+    { id: "services", title: "Dịch vụ nổi bật", links: SERVICE_LINKS },
+    {
+      id: "general",
+      title: "Thông tin chung",
+      links: [
+        ["Về chúng tôi", "/about"],
+        ["Liên hệ", "/contact"],
+        ["Danh sách chi nhánh", "/contact"],
+      ],
+    },
+    { id: "support", title: "Hỗ trợ khách hàng", links: MOBILE_SUPPORT_LINKS },
+  ];
+
+  return (
+    <footer
+      className={`relative flex w-full flex-col items-start px-5 pb-[35px] pt-5 font-sans lg:hidden ${
+        isBlue ? "bg-[#E5F6FD]" : "bg-white"
+      }`}
+      data-footer-mobile="true"
+    >
+      <div className="flex w-full flex-col gap-[5px]">
+        {sections.map((section) => (
+          <MobileFooterSection
+            key={section.id}
+            title={section.title}
+            links={section.links}
+            open={openSection === section.id}
+            onToggle={() => setOpenSection((current) => (current === section.id ? "" : section.id))}
+            onPricingOpen={onPricingOpen}
+          />
+        ))}
+      </div>
+
+      <div className="flex h-[165px] w-full flex-col items-center justify-end pb-1">
+        <div className="flex w-full flex-col gap-[10px]">
+          <div className="flex h-[104px] w-full flex-col items-center justify-center">
+            <div className="flex w-full flex-col items-center justify-center gap-[7px]">
+              <Link to="/" aria-label="Dr. Pet's House - Trang chủ">
+                <img src={homeImages.logo} alt="Dr. Pet's House" className="h-[38px] w-[88px] object-contain" />
+              </Link>
+              <p className="whitespace-nowrap font-['Baloo_Tamma','Baloo_2',cursive] text-[16px] leading-[17.6px] text-[#0D47A1]">
+                TRUNG TÂM CHĂM SÓC THÚ CƯNG
+              </p>
+              <p className="w-full text-center font-['Roboto'] text-[12px] font-normal leading-[16.8px] text-[#475569]">
+                Cung cấp dịch vụ khám bệnh, làm đẹp, và mua sắm sản phẩm cho thú cưng của bạn.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex w-full items-center justify-between">
+            <MobileSocialLinks />
+            <a
+              href="tel:0868686868"
+              className="flex h-[22px] w-[108px] shrink-0 items-center justify-center rounded bg-[#FFF176] px-[6px] shadow-elevation"
+            >
+              <img src={homeImages.phone} alt="" className="size-4 shrink-0" />
+              <span className="w-[79px] whitespace-nowrap font-['Roboto'] text-[12px] font-bold uppercase leading-[31.92px] tracking-[1px] text-black">
+                0868686868
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 flex h-6 items-center justify-center bg-[#B3E5FC]">
+        <p className="whitespace-nowrap text-center font-['Roboto'] text-[10px] italic leading-[14px] text-black/60">
+          © 2026 Dr.Pet&apos;s House. Bản quyền thuộc về Dr.Pet&apos;s House.
+        </p>
+      </div>
+    </footer>
+  );
+}
+
 function Footer({ variant = "auto" }) {
   const footerRef = useRef(null);
   const [autoVariant, setAutoVariant] = useState("blue");
@@ -134,9 +290,10 @@ function Footer({ variant = "auto" }) {
 
   return (
     <>
+      <MobileFooter isBlue={isBlue} onPricingOpen={() => setIsPricingOpen(true)} />
       <footer
         ref={footerRef}
-        className={`relative w-full overflow-hidden font-sans ${
+        className={`relative hidden w-full overflow-hidden font-sans lg:block ${
           isBlue ? "bg-[#E5F6FD]" : "bg-white"
         }`}
         data-footer-variant={resolvedVariant}
