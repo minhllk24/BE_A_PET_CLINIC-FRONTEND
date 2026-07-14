@@ -3,7 +3,12 @@ import { navbarImages } from "../../assets/navbarImages";
 import { NOTIFICATION_ITEMS } from "../../data/notificationData";
 import NotificationPopup from "./NotificationPopup";
 
-function NotificationBell() {
+function NotificationBell({
+  className = "hidden sm:inline-flex",
+  buttonClassName = "p-1",
+  iconClassName = "h-[36px] w-[32px]",
+  badgeClassName = "",
+}) {
   const rootRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
@@ -68,10 +73,10 @@ function NotificationBell() {
   }, [closeAfterViewing, isOpen]);
 
   return (
-    <div className="notification-bell hidden shrink-0 sm:inline-flex" ref={rootRef}>
+    <div className={`notification-bell shrink-0 ${className}`} ref={rootRef}>
       <button
         type="button"
-        className="notification-bell__button btn-icon p-1"
+        className={`notification-bell__button btn-icon ${buttonClassName}`}
         aria-label={`Thông báo${unreadCount > 0 ? `, ${unreadCount} chưa đọc` : ""}`}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
@@ -80,10 +85,10 @@ function NotificationBell() {
         <img
           src={navbarImages.notificationIcon}
           alt=""
-          className="h-[36px] w-[32px]"
+          className={iconClassName}
         />
         {unreadCount > 0 ? (
-          <span className="notification-bell__badge" aria-hidden="true">
+          <span className={`notification-bell__badge ${badgeClassName}`} aria-hidden="true">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         ) : null}

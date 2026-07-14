@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
+import { ChevronDown, Clock, Mail, Phone, ShieldAlert } from "lucide-react";
 import { Link } from "react-router-dom";
 import { homeImages } from "../../assets/homeImages";
 import ServicePricingModal from "../groomingSpa/ServicePricingModal";
@@ -32,6 +33,18 @@ const LEGAL_LINKS = [
   ["Chính sách bảo mật", "/policies/bao-mat"],
   ["Điều khoản dịch vụ", "/policies/dieu-khoan-dich-vu"],
   ["Cài đặt cookie", "/policies/cookie"],
+];
+
+const MOBILE_SUPPORT_LINKS = [
+  ...SUPPORT_LINKS.slice(0, 4),
+  ...LEGAL_LINKS.slice(0, 2),
+  SUPPORT_LINKS[4],
+];
+
+const GENERAL_LINKS = [
+  ["Về chúng tôi", "/about"],
+  ["Liên hệ", "/contact"],
+  ["Danh sách chi nhánh", "/contact#branches"],
 ];
 
 function isBlueBackground(element) {
@@ -88,20 +101,312 @@ function FooterColumn({ title, children, className = "" }) {
 function AccountFooter() {
   return (
     <footer
-      className="flex h-[36px] w-full shrink-0 items-center justify-center overflow-hidden bg-[#B3E5FC] px-4 font-sans sm:px-8 lg:px-12"
+      className="flex h-[36px] w-full shrink-0 items-center justify-center overflow-hidden bg-[#B3E5FC] px-4 font-sans md:h-auto md:items-start md:justify-between md:px-8 md:py-[18px] lg:h-[36px] lg:items-center lg:justify-center lg:px-12 lg:py-0"
       data-footer-variant="account"
     >
-      <div className="flex h-6 w-full max-w-[1373px] items-center justify-between gap-6 text-[14px] text-[rgba(0,0,0,0.6)]">
-        <p className="min-w-0 shrink text-left italic leading-[1.43]">
+      <div className="flex h-6 w-full max-w-[1373px] items-center justify-between gap-6 text-[14px] text-[rgba(0,0,0,0.6)] md:h-auto md:text-[13px] lg:h-6 lg:text-[14px]">
+        <p className="min-w-0 shrink text-left italic leading-[1.43] md:whitespace-nowrap md:not-italic md:leading-[1.35] lg:italic lg:leading-[1.43]">
           © 2026 Dr.Pet&apos;s House. Bản quyền thuộc về Dr.Pet&apos;s House.
         </p>
-        <nav aria-label="Liên kết chân trang tài khoản" className="hidden shrink-0 items-center gap-3 font-medium leading-none sm:flex">
+        <nav aria-label="Liên kết chân trang tài khoản" className="hidden shrink-0 items-center gap-3 font-medium leading-none sm:flex md:items-start md:gap-[10px] md:leading-[1.3] lg:items-center lg:gap-3 lg:leading-none">
           {LEGAL_LINKS.map(([label, to]) => (
             <Link key={label} to={to} className="whitespace-nowrap transition-colors hover:text-[#0D47A1]">
               {label}
             </Link>
           ))}
         </nav>
+      </div>
+    </footer>
+  );
+}
+
+function TabletSocialLinks() {
+  return (
+    <div className="flex items-center gap-4 text-[#475569]" aria-label="Mạng xã hội">
+      <a href="#" aria-label="Facebook" className="flex size-6 items-center justify-center rounded bg-white text-[19px] font-bold leading-none">
+        f
+      </a>
+      <a href="#" aria-label="Zalo" className="flex size-6 items-center justify-center rounded bg-white text-[8px] font-bold leading-none">
+        Zalo
+      </a>
+      <a href="#" aria-label="Instagram" className="flex size-6 items-center justify-center rounded bg-white">
+        <svg width="19" height="19" viewBox="0 0 19 19" fill="none" aria-hidden="true">
+          <rect x="2.5" y="2.5" width="14" height="14" rx="4" stroke="#475569" strokeWidth="1.8" />
+          <circle cx="9.5" cy="9.5" r="3.4" stroke="#475569" strokeWidth="1.6" />
+          <circle cx="13.5" cy="5.5" r="1.05" fill="#475569" />
+        </svg>
+      </a>
+      <a href="#" aria-label="TikTok" className="flex size-6 items-center justify-center rounded bg-white">
+        <svg width="19" height="19" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M10.6 2.2h2.1c.2 1.3 1.2 2.7 3.1 2.9v2.1a5.3 5.3 0 0 1-3.1-1v5.6a4.2 4.2 0 1 1-4.2-4.2h.4v2.2h-.4a2 2 0 1 0 2 2V2.2Z" fill="#475569" />
+        </svg>
+      </a>
+    </div>
+  );
+}
+
+function TabletFooterLink({ children, to = "#", onClick }) {
+  const className = "block text-left font-['Roboto'] text-[15px] font-normal leading-[1.45] text-[#20262E] transition-colors hover:text-[#0D47A1]";
+
+  if (onClick) {
+    return (
+      <button type="button" className={className} onClick={onClick}>
+        {children}
+      </button>
+    );
+  }
+
+  return (
+    <Link to={to} className={className}>
+      {children}
+    </Link>
+  );
+}
+
+function TabletFooterColumn({ title, links, onPricingOpen }) {
+  return (
+    <section className="w-[328px]">
+      <h2 className="mb-[10px] font-['Roboto'] text-[17px] font-bold uppercase leading-[1.25] text-[#0D47A1]">
+        {title}
+      </h2>
+      <ul className="flex flex-col gap-[10px]">
+        {links.map(([label, to]) => (
+          <li key={label}>
+            <TabletFooterLink
+              to={to}
+              onClick={label === "Bảng giá dịch vụ" ? onPricingOpen : undefined}
+            >
+              {label}
+            </TabletFooterLink>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function TabletContactRow({ icon: Icon, children }) {
+  return (
+    <p className="flex items-start gap-2 font-['Roboto'] text-[15px] font-normal leading-[1.4] text-[#20262E]">
+      <Icon className="mt-[2px] size-4 shrink-0 text-[#0D47A1]" strokeWidth={1.8} aria-hidden="true" />
+      <span>{children}</span>
+    </p>
+  );
+}
+
+function TabletFooter({ isBlue, onPricingOpen }) {
+  return (
+    <footer
+      className={`hidden w-full flex-col items-start overflow-hidden font-sans md:flex lg:hidden ${
+        isBlue ? "bg-[#E4F5FC]" : "bg-white"
+      }`}
+      data-footer-tablet="true"
+    >
+      <div className="flex w-full flex-col gap-8 overflow-hidden px-8 pb-10 pt-14">
+        <div className="flex h-[232px] w-full items-start justify-between overflow-hidden">
+          <section className="flex w-[329px] flex-col gap-6">
+            <div className="flex w-[335px] flex-col gap-[10px]">
+              <Link to="/" aria-label="Dr. Pet's House - Trang chủ">
+                <img src={homeImages.logo} alt="Dr. Pet's House" className="h-[88px] w-[202px] object-contain object-left" />
+              </Link>
+              <h2 className="font-['Baloo_2','Baloo_Tamma_2',cursive] text-[20px] font-bold leading-[1.1] text-[#0D47A1]">
+                TRUNG TÂM CHĂM SÓC THÚ CƯNG
+              </h2>
+              <p className="font-['Roboto'] text-[16px] font-normal leading-[1.4] text-[#475569]">
+                Cung cấp dịch vụ khám bệnh, làm đẹp, và mua sắm sản phẩm cho thú cưng của bạn.
+              </p>
+            </div>
+            <TabletSocialLinks />
+          </section>
+
+          <address className="flex w-[300px] flex-col gap-2 not-italic">
+            <TabletContactRow icon={Phone}>
+              <strong className="font-bold">Hotline:</strong> 086 8686868
+            </TabletContactRow>
+            <TabletContactRow icon={Mail}>
+              Email: hello@drpetshouse.vn
+            </TabletContactRow>
+            <TabletContactRow icon={Clock}>
+              Thứ 2 - Chủ nhật: 8:00 - 20:00
+            </TabletContactRow>
+            <TabletContactRow icon={ShieldAlert}>
+              Cấp cứu 24/7
+            </TabletContactRow>
+          </address>
+        </div>
+
+        <div className="flex w-full flex-col gap-8">
+          <div className="flex w-full gap-12">
+            <TabletFooterColumn title="LIÊN KẾT NHANH" links={QUICK_LINKS} onPricingOpen={onPricingOpen} />
+            <TabletFooterColumn title="DỊCH VỤ NỔI BẬT" links={SERVICE_LINKS} />
+          </div>
+          <div className="flex w-full gap-12">
+            <TabletFooterColumn title="THÔNG TIN CHUNG" links={GENERAL_LINKS} />
+            <TabletFooterColumn title="HỖ TRỢ KHÁCH HÀNG" links={SUPPORT_LINKS} />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex w-full items-start justify-between bg-[#B8E6FA] px-8 py-[18px] font-['Roboto'] text-[13px]">
+        <p className="whitespace-nowrap font-normal leading-[1.35] text-[#526575]">
+          © 2026 Dr.Pet&apos;s House. Bản quyền thuộc về Dr.Pet&apos;s House.
+        </p>
+        <nav aria-label="Liên kết pháp lý chân trang tablet" className="flex shrink-0 items-start gap-[10px] font-medium leading-[1.3] text-[#425466]">
+          {LEGAL_LINKS.map(([label, to]) => (
+            <Link key={label} to={to} className="whitespace-nowrap transition-colors hover:text-[#0D47A1]">
+              {label}
+            </Link>
+          ))}
+        </nav>
+      </div>
+    </footer>
+  );
+}
+
+function MobileSocialLinks() {
+  return (
+    <div className="flex flex-1 items-center gap-4 text-[#475569]" aria-label="Mạng xã hội">
+      <a href="#" aria-label="Facebook" className="flex size-[22px] items-center justify-center rounded bg-white text-[18px] font-bold leading-none">
+        f
+      </a>
+      <a href="#" aria-label="Zalo" className="flex size-[22px] items-center justify-center rounded bg-white text-[8px] font-bold leading-none">
+        Zalo
+      </a>
+      <a href="#" aria-label="Instagram" className="flex size-[22px] items-center justify-center rounded bg-white">
+        <svg width="17" height="17" viewBox="0 0 17 17" fill="none" aria-hidden="true">
+          <rect x="2" y="2" width="13" height="13" rx="4" stroke="#475569" strokeWidth="1.7" />
+          <circle cx="8.5" cy="8.5" r="3.2" stroke="#475569" strokeWidth="1.5" />
+          <circle cx="12.3" cy="4.8" r="1" fill="#475569" />
+        </svg>
+      </a>
+      <a href="#" aria-label="TikTok" className="flex size-[22px] items-center justify-center rounded bg-white">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M10.6 2.2h2.1c.2 1.3 1.2 2.7 3.1 2.9v2.1a5.3 5.3 0 0 1-3.1-1v5.6a4.2 4.2 0 1 1-4.2-4.2h.4v2.2h-.4a2 2 0 1 0 2 2V2.2Z" fill="#475569" />
+        </svg>
+      </a>
+    </div>
+  );
+}
+
+function MobileFooterSection({ title, links, open, onToggle, onPricingOpen }) {
+  return (
+    <section className="border-b-[0.5px] border-[#0D47A1]">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex h-[35px] w-full items-center justify-between text-left"
+        aria-expanded={open}
+      >
+        <span className="font-['Roboto'] text-[13px] font-bold leading-[20.8px] tracking-[0.15px] text-[#0D47A1]">
+          {title}
+        </span>
+        <ChevronDown
+          aria-hidden="true"
+          className={`size-[18px] text-[#0D47A1] transition-transform ${open ? "rotate-180" : ""}`}
+          strokeWidth={1.6}
+        />
+      </button>
+
+      {open && (
+        <ul className="flex flex-col gap-[5px] px-5">
+          {links.map(([label, to]) => (
+            <li key={label} className="flex h-[35px] items-center border-b-[0.5px] border-[#1565C0] pr-5 last:border-b-0">
+              {label === "Bảng giá dịch vụ" ? (
+                <button
+                  type="button"
+                  onClick={onPricingOpen}
+                  className="min-w-0 flex-1 truncate text-left font-['Roboto'] text-[11px] font-normal leading-[16.5px] tracking-[0.15px] text-[#1565C0]"
+                >
+                  {label}
+                </button>
+              ) : (
+                <Link
+                  to={to}
+                  className="min-w-0 flex-1 truncate font-['Roboto'] text-[11px] font-normal leading-[16.5px] tracking-[0.15px] text-[#1565C0]"
+                >
+                  {label}
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function MobileFooter({ isBlue, onPricingOpen }) {
+  const [openSection, setOpenSection] = useState("");
+  const sections = [
+    { id: "quick", title: "Liên kết nhanh", links: QUICK_LINKS },
+    { id: "services", title: "Dịch vụ nổi bật", links: SERVICE_LINKS },
+    {
+      id: "general",
+      title: "Thông tin chung",
+      links: [
+        ["Về chúng tôi", "/about"],
+        ["Liên hệ", "/contact"],
+        ["Danh sách chi nhánh", "/contact"],
+      ],
+    },
+    { id: "support", title: "Hỗ trợ khách hàng", links: MOBILE_SUPPORT_LINKS },
+  ];
+
+  return (
+    <footer
+      className={`relative flex w-full flex-col items-start px-5 pb-[35px] pt-5 font-sans md:hidden ${
+        isBlue ? "bg-[#E5F6FD]" : "bg-white"
+      }`}
+      data-footer-mobile="true"
+    >
+      <div className="flex w-full flex-col gap-[5px]">
+        {sections.map((section) => (
+          <MobileFooterSection
+            key={section.id}
+            title={section.title}
+            links={section.links}
+            open={openSection === section.id}
+            onToggle={() => setOpenSection((current) => (current === section.id ? "" : section.id))}
+            onPricingOpen={onPricingOpen}
+          />
+        ))}
+      </div>
+
+      <div className="flex h-[165px] w-full flex-col items-center justify-end pb-1">
+        <div className="flex w-full flex-col gap-[10px]">
+          <div className="flex h-[104px] w-full flex-col items-center justify-center">
+            <div className="flex w-full flex-col items-center justify-center gap-[7px]">
+              <Link to="/" aria-label="Dr. Pet's House - Trang chủ">
+                <img src={homeImages.logo} alt="Dr. Pet's House" className="h-[38px] w-[88px] object-contain" />
+              </Link>
+              <p className="whitespace-nowrap font-['Baloo_Tamma','Baloo_2',cursive] text-[16px] leading-[17.6px] text-[#0D47A1]">
+                TRUNG TÂM CHĂM SÓC THÚ CƯNG
+              </p>
+              <p className="w-full text-center font-['Roboto'] text-[12px] font-normal leading-[16.8px] text-[#475569]">
+                Cung cấp dịch vụ khám bệnh, làm đẹp, và mua sắm sản phẩm cho thú cưng của bạn.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex w-full items-center justify-between">
+            <MobileSocialLinks />
+            <a
+              href="tel:0868686868"
+              className="flex h-[22px] w-[108px] shrink-0 items-center justify-center rounded bg-[#FFF176] px-[6px] shadow-elevation"
+            >
+              <img src={homeImages.phone} alt="" className="size-4 shrink-0" />
+              <span className="w-[79px] whitespace-nowrap font-['Roboto'] text-[12px] font-bold uppercase leading-[31.92px] tracking-[1px] text-black">
+                0868686868
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 flex h-6 items-center justify-center bg-[#B3E5FC]">
+        <p className="whitespace-nowrap text-center font-['Roboto'] text-[10px] italic leading-[14px] text-black/60">
+          © 2026 Dr.Pet&apos;s House. Bản quyền thuộc về Dr.Pet&apos;s House.
+        </p>
       </div>
     </footer>
   );
@@ -134,9 +439,11 @@ function Footer({ variant = "auto" }) {
 
   return (
     <>
+      <div ref={footerRef} data-footer-variant={resolvedVariant}>
+      <MobileFooter isBlue={isBlue} onPricingOpen={() => setIsPricingOpen(true)} />
+      <TabletFooter isBlue={isBlue} onPricingOpen={() => setIsPricingOpen(true)} />
       <footer
-        ref={footerRef}
-        className={`relative w-full overflow-hidden font-sans ${
+        className={`relative hidden w-full overflow-hidden font-sans lg:block ${
           isBlue ? "bg-[#E5F6FD]" : "bg-white"
         }`}
         data-footer-variant={resolvedVariant}
@@ -275,6 +582,7 @@ function Footer({ variant = "auto" }) {
         </div>
       </div>
       </footer>
+      </div>
       <ServicePricingModal
         open={isPricingOpen}
         defaultFilter="all"
