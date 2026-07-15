@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AlertTriangle, Check, CheckCircle, ChevronDown, Phone, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -395,6 +396,7 @@ function CommitmentStep({ values, onChange, errors }) {
 }
 
 function SuccessView({ onClose }) {
+  const navigate = useNavigate();
   return (
     <div className="relative w-[884px] max-w-[calc(100vw-48px)] overflow-hidden rounded-[8px] border border-[#D9E3F6] bg-white p-px shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] sm:rounded-[32px]">
       <div className="flex min-h-[461px] flex-col items-center justify-center bg-[radial-gradient(circle_at_0_0,#D9E3F6_0_1%,transparent_1.2%)] px-8 py-14 text-center sm:px-16">
@@ -408,7 +410,13 @@ function SuccessView({ onClose }) {
           </p>
         </div>
         <div className="mt-8 flex flex-wrap justify-center gap-5">
-          <ModalButton onClick={onClose} className="font-bold">
+          <ModalButton
+            onClick={() => {
+              onClose();
+              navigate("/");
+            }}
+            className="font-bold"
+          >
             Trở về trang chủ
           </ModalButton>
           <ModalButton variant="outline" onClick={onClose} className="shadow-none">

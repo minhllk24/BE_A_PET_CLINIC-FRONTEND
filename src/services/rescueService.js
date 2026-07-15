@@ -78,6 +78,9 @@ export async function createAdoptionRequest(petId, values) {
   const response = await apiClient.post("/adoptions/requests", {
     adoption_pet_id: petId,
     full_name: values.fullName,
+    phone: values.phone,
+    gender: values.gender,
+    birth_year: values.birthYear,
     address: values.address,
     reason: values.adoptionReason || values.futurePlan || "Mong muốn nhận nuôi và chăm sóc thú cưng.",
     housing_info: [
