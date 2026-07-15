@@ -247,7 +247,7 @@ function ServiceCard({ service }) {
           <p className="text-[18px] font-bold leading-7 text-[#0D47A1]">
             {formatServicePrice(service.priceValue ?? parseServicePrice(service.price))}
           </p>
-          <Link to="/booking" className="btn-yellow h-[35px] rounded-full px-[22px] text-[16px]">
+          <Link to="/dat-lich" className="btn-yellow h-[35px] rounded-full px-[22px] text-[16px]">
             Đặt lịch ngay
           </Link>
         </div>

@@ -32,7 +32,7 @@ function EmergencySupport() {
         <a href="tel:0868686868" className="flex h-14 items-center justify-center rounded-full bg-[#D32F2F] text-[15px] font-bold uppercase tracking-[0.46px] text-white shadow-elevation transition-transform hover:scale-[1.02]">
           Gọi ngay 0868686868
         </a>
-        <Link to="/booking" className="flex h-[60px] items-center justify-center rounded-full border-2 border-[#FDD835] bg-[#FFF9C4] text-[16px] font-bold">
+        <Link to="/dat-lich" className="flex h-[60px] items-center justify-center rounded-full border-2 border-[#FDD835] bg-[#FFF9C4] text-[16px] font-bold">
           Đặt lịch khám ngay
         </Link>
       </div>

@@ -35,7 +35,7 @@ function GroomingHero() {
 
           <div className="flex items-start gap-[24px]">
             <Link
-              to="/booking"
+              to="/dat-lich"
               className="focus-ring-brand group relative rounded-[4px]"
             >
               <img

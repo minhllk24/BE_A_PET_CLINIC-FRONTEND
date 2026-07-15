@@ -73,7 +73,7 @@ function MedicalHero() {
             <img src={medicalAssets.heroPaw} alt="" aria-hidden="true" />
             <Link
               className="medical-button medical-button--yellow"
-              to="/booking"
+              to="/dat-lich"
             >
               ĐẶT LỊCH NGAY
             </Link>
@@ -152,7 +152,7 @@ function MedicalCta({ onOpenPricing }) {
           <img src={medicalAssets.ctaPrice} alt="" />
           <span>BẢNG GIÁ CHI TIẾT</span>
         </button>
-        <Link to="/booking" className="medical-cta__item">
+        <Link to="/dat-lich" className="medical-cta__item">
           <img src={medicalAssets.ctaBook} alt="" />
           <span>ĐẶT LỊCH NGAY</span>
         </Link>
@@ -309,7 +309,7 @@ function MedicalDoctors() {
           trong chăm sóc, chúng tôi mang đến trải nghiệm thăm khám đáng tin cậy
           cho mọi khách hàng.
         </p>
-        <Link className="medical-button medical-button--yellow" to="/booking">
+        <Link className="medical-button medical-button--yellow" to="/dat-lich">
           ĐẶT LỊCH NGAY
         </Link>
       </header>

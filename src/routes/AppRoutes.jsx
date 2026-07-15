@@ -39,6 +39,7 @@ const AppRoutes = () => {
       <Route path="/" element={<HomePage />} />
       
       <Route path="/dat-lich" element={<BookingPage />} />
+      <Route path="/booking" element={<BookingPage />} />
 
       <Route path="/petshop" element={<ShopPage />} />
       <Route path="/cua-hang" element={<ShopPage />} />

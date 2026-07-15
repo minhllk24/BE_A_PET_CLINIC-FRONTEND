@@ -135,7 +135,7 @@ function AboutPage() {
                 rất nhiều tình yêu thương.
               </p>
               <div className="relative z-[3] mt-[22px] flex justify-center gap-3.5">
-                <Link className={primaryButtonClass} to="/booking">
+                <Link className={primaryButtonClass} to="/dat-lich">
                   ĐẶT LỊCH NGAY
                 </Link>
                 <a
@@ -416,7 +416,7 @@ function AboutPage() {
               tận tình trong chăm sóc, chúng tôi mang đến trải nghiệm thăm khám
               đáng tin cậy cho mọi khách hàng.
             </p>
-            <Link className={cx(primaryButtonClass, "mb-[38px] min-h-14 px-8 py-4 text-[20px] font-bold tracking-[0.5px] shadow-elevation")} to="/booking">
+            <Link className={cx(primaryButtonClass, "mb-[38px] min-h-14 px-8 py-4 text-[20px] font-bold tracking-[0.5px] shadow-elevation")} to="/dat-lich">
               ĐẶT LỊCH NGAY
             </Link>
             <div className="relative mx-auto mt-[37px] h-[376px] w-[1440px]">

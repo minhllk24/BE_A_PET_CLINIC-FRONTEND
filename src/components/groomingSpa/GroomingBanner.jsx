@@ -32,7 +32,7 @@ function GroomingBanner({ onOpenPricing }) {
 
           <div className="relative h-[154px] w-[428px]">
             <Link
-              to="/booking"
+              to="/dat-lich"
               className="focus-ring-brand absolute inset-x-0 bottom-[17px] top-[74px] flex items-center justify-center rounded-[4px] bg-[#FDD835] px-[22px] py-2 shadow-[0px_3px_1px_-2px_rgba(0,0,0,0.2),0px_2px_2px_0px_rgba(0,0,0,0.14),0px_1px_5px_0px_rgba(0,0,0,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#FBC02D] hover:shadow-[0_5px_12px_rgba(0,0,0,0.18)] active:translate-y-0 active:scale-[0.99]"
               style={{
                 fontFamily: 'Roboto, sans-serif',

@@ -7,7 +7,7 @@ import { groomingTitleStyles } from './groomingTitleStyles'
 function BookButton({ className = '' }) {
   return (
     <Link
-      to="/booking"
+      to="/dat-lich"
       className={`focus-ring-brand z-10 flex h-12 shrink-0 items-center justify-center rounded-[50px] bg-[#0D47A1] px-6 text-center font-['Roboto'] text-[16px] leading-4 text-white no-underline shadow-[0_2px_4px_rgba(0,0,0,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1565C0] hover:shadow-[0_6px_14px_rgba(13,71,161,0.25)] active:translate-y-0 active:scale-[0.98] ${className}`}
     >
       Đặt lịch

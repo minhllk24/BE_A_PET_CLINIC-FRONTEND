@@ -4,6 +4,7 @@ import Footer from "../../components/Footer/Footer";
 import NavBar from "../../components/Navbar";
 import { useAuth } from "../../context/AuthContext";
 import { getBranches } from "../../services/bookingService";
+import { submitContactMessage } from "../../services/contactService";
 import {
   BRANCHES,
   CONTACT_CHANNELS,
@@ -66,15 +67,28 @@ function ContactForm() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [submitted, setSubmitted] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const updateField = (field) => (event) => {
     setSubmitted(false);
+    setError(null);
     setForm((current) => ({ ...current, [field]: event.target.value }));
   };
 
-  const submitForm = (event) => {
+  const submitForm = async (event) => {
     event.preventDefault();
-    setSubmitted(true);
-    setForm(INITIAL_FORM);
+    setLoading(true);
+    setError(null);
+    try {
+      await submitContactMessage(form);
+      setSubmitted(true);
+      setForm(INITIAL_FORM);
+    } catch (err) {
+      setError("Đã xảy ra lỗi khi gửi. Vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -143,7 +157,14 @@ function ContactForm() {
         />
       </label>
 
-      <button type="submit">GỬI CHO CHÚNG TÔI</button>
+      <button type="submit" disabled={loading}>
+        {loading ? "ĐANG GỬI..." : "GỬI CHO CHÚNG TÔI"}
+      </button>
+      {error && (
+        <p className="contact-form__error" role="alert" style={{ color: "red", marginTop: "1rem", fontSize: "1.4rem" }}>
+          {error}
+        </p>
+      )}
       {submitted && (
         <p className="contact-form__success" role="status">
           Cảm ơn bạn! Dr.Pet&apos;s House đã nhận được lời nhắn.
