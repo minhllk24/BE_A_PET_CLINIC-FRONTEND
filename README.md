@@ -1,7 +1,6 @@
 # Giao diện Frontend - Pet Clinic
 
 ## Tài Khoản Test (Test Accounts)
-Thầy cô có thể sử dụng các tài khoản mẫu dưới đây để đăng nhập vào hệ thống và trải nghiệm các tính năng:
 - **Admin**: `admin@petclinic.com`
 - **Bác sĩ (Doctor)**: `doctor1@petclinic.com`
 - **Khách hàng (Customer)**: `customer1@petclinic.com`
