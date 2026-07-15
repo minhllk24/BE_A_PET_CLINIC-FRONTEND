@@ -753,6 +753,7 @@ const POLICY_ALIASES = {
   "chinh-sach-bao-mat": "bao-mat",
   faq: "cau-hoi-thuong-gap",
   "dieu-khoan": "dieu-khoan-dich-vu",
+  cookie: "bao-mat",
 };
 
 export const POLICY_NAV_ITEMS = [

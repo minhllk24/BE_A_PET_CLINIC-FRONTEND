@@ -1,7 +1,34 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { navbarImages } from "../../assets/navbarImages";
-import { NOTIFICATION_ITEMS } from "../../data/notificationData";
+import { notificationImages } from "../../assets/notificationImages";
+import { useNotifications } from "../../context/NotificationContext";
 import NotificationPopup from "./NotificationPopup";
+import { format, formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
+
+function mapNotificationToUI(item) {
+  let icon = null;
+  if (item.notification_type === "appointment") {
+    icon = notificationImages.iconCalendar;
+  } else if (item.notification_type === "system") {
+    icon = notificationImages.iconNote;
+  }
+
+  return {
+    id: item.notification_id,
+    type: item.notification_type,
+    unread: !item.is_read,
+    avatar: item.pet?.profile_image_url || null,
+    avatarAlt: item.pet?.pet_name || "",
+    avatarCrop: {}, // Có thể bỏ qua hoặc thêm logic crop nếu cần
+    icon: icon,
+    iconAlt: "Icon",
+    relativeTime: item.created_at ? formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: vi }).toUpperCase() : "",
+    dateTime: item.created_at ? format(new Date(item.created_at), "HH:mm dd/MM/yyyy", { locale: vi }) : "",
+    searchableText: item.searchable_text || "",
+    messageParts: item.message_parts ? (typeof item.message_parts === 'string' ? JSON.parse(item.message_parts) : item.message_parts) : [{ text: item.content || item.title }],
+  };
+}
 
 function NotificationBell({
   className = "hidden sm:inline-flex",
@@ -13,40 +40,19 @@ function NotificationBell({
   const [isOpen, setIsOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchValue, setSearchValue] = useState("");
-  const [readIds, setReadIds] = useState(
-    NOTIFICATION_ITEMS.filter((item) => !item.unread).map((item) => item.id),
-  );
 
-  const unreadCount = useMemo(
-    () => NOTIFICATION_ITEMS.filter((item) => !readIds.includes(item.id)).length,
-    [readIds],
-  );
+  const { notifications, unreadCount, fetchNotifications, markAsRead, markAllAsRead } = useNotifications();
 
-  const filteredItems = useMemo(() => {
-    const normalizedSearch = searchValue.trim().toLowerCase();
+  useEffect(() => {
+    fetchNotifications(activeFilter, searchValue);
+  }, [activeFilter, searchValue, fetchNotifications]);
 
-    return NOTIFICATION_ITEMS.filter((item) => {
-      const read = readIds.includes(item.id);
-      const matchesFilter =
-        activeFilter === "all" ||
-        (activeFilter === "unread" && !read) ||
-        (activeFilter === "read" && read);
-      const matchesSearch =
-        normalizedSearch.length === 0 ||
-        item.searchableText.toLowerCase().includes(normalizedSearch);
-
-      return matchesFilter && matchesSearch;
-    });
-  }, [activeFilter, readIds, searchValue]);
-
-  const markAllRead = useCallback(() => {
-    setReadIds(NOTIFICATION_ITEMS.map((item) => item.id));
-  }, []);
+  const filteredItems = (notifications || []).map(mapNotificationToUI);
+  const readIds = filteredItems.filter(item => !item.unread).map(item => item.id);
 
   const closeAfterViewing = useCallback(() => {
     setIsOpen(false);
-    markAllRead();
-  }, [markAllRead]);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -104,8 +110,8 @@ function NotificationBell({
           onClose={closeAfterViewing}
           onFilterChange={setActiveFilter}
           onSearchChange={setSearchValue}
-          onRead={(id) => setReadIds((current) => [...new Set([...current, id])])}
-          onReadAll={markAllRead}
+          onRead={(id) => markAsRead(id)}
+          onReadAll={markAllAsRead}
         />
       ) : null}
     </div>
