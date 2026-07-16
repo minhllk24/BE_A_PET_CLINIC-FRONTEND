@@ -2,7 +2,7 @@ import apiClient from './apiClient';
 
 export const getNotifications = async (status, search) => {
   try {
-    const response = await apiClient.get('/api/v1/notifications', {
+    const response = await apiClient.get('/notifications', {
       params: { status, search }
     });
     return response.data;
@@ -14,7 +14,7 @@ export const getNotifications = async (status, search) => {
 
 export const markAsRead = async (notificationId) => {
   try {
-    const response = await apiClient.patch(`/api/v1/notifications/${notificationId}/read`);
+    const response = await apiClient.patch(`/notifications/${notificationId}/read`);
     return response.data;
   } catch (error) {
     console.error('Lỗi khi cập nhật trạng thái thông báo:', error);
@@ -24,10 +24,11 @@ export const markAsRead = async (notificationId) => {
 
 export const markAllAsRead = async () => {
   try {
-    const response = await apiClient.patch('/api/v1/notifications/read-all');
+    const response = await apiClient.patch('/notifications/read-all');
     return response.data;
   } catch (error) {
     console.error('Lỗi khi đánh dấu tất cả thông báo đã đọc:', error);
     throw error;
   }
 };
+
