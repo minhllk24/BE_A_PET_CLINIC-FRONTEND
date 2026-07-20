@@ -49,12 +49,8 @@ function CheckoutOrderItem({ item }) {
         <div className="flex w-full items-center justify-between whitespace-nowrap text-xs font-medium text-slate-700">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
             <div className="flex items-center gap-1">
-              <span>Loại:</span>
-              <span>{item.type || "Mặc định"}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span>Kích cỡ:</span>
-              <span>{item.size || "Mặc định"}</span>
+              <span>Biến thể:</span>
+              <span>{item.type || item.variant_name || item.variant?.variant_name || "Mặc định"}</span>
             </div>
           </div>
           <div className="flex items-center gap-[5px]">

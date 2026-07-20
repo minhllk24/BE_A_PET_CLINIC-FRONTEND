@@ -163,13 +163,13 @@ function CartItemRow({ item }) {
 
         <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 font-['Roboto'] text-[10px] leading-[1.66] tracking-[0.4px] text-[#353535] lg:gap-x-6 lg:text-[12px]">
           <div className="flex items-center gap-[5px] lg:gap-[8px]">
-            <span>Loại:</span>
+            <span>Biến thể:</span>
             {variantOptions.length > 1 ? (
               <select
                 value={String(selectedVariant?.id ?? item.variantId ?? "")}
                 onChange={handleVariantChange}
                 className="h-[22px] max-w-[86px] rounded border border-[#c7c7c7] bg-white px-1 text-[10px] text-[#353535] outline-none transition-colors focus:border-[#0d47a1] lg:max-w-[112px] lg:text-[12px]"
-                aria-label="Chọn loại sản phẩm"
+                aria-label="Chọn biến thể sản phẩm"
               >
                 {variantOptions.map((variant) => (
                   <option key={variant.id ?? variant.name} value={String(variant.id ?? "")}>
@@ -179,25 +179,6 @@ function CartItemRow({ item }) {
               </select>
             ) : (
               <span>{item.type || selectedVariant?.name || "Mặc định"}</span>
-            )}
-          </div>
-          <div className="flex items-center gap-[5px] lg:gap-[8px]">
-            <span>Kích cỡ:</span>
-            {sizeOptions.length > 1 ? (
-              <select
-                value={item.size || sizeOptions[0]}
-                onChange={handleSizeChange}
-                className="h-[22px] max-w-[76px] rounded border border-[#c7c7c7] bg-white px-1 text-[10px] text-[#353535] outline-none transition-colors focus:border-[#0d47a1] lg:max-w-[96px] lg:text-[12px]"
-                aria-label="Chọn kích cỡ sản phẩm"
-              >
-                {sizeOptions.map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <span>{item.size || sizeOptions[0] || "Mặc định"}</span>
             )}
           </div>
         </div>

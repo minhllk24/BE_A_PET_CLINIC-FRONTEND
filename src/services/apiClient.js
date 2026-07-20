@@ -33,10 +33,35 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use(
   (response) => response.data,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
     const status = error.response?.status ?? null;
     const data = error.response?.data ?? null;
     const authExpired = status === 401 || data?.EC === -999;
+
+    if (authExpired && !originalRequest._retry && originalRequest.url !== '/refresh') {
+      originalRequest._retry = true;
+      try {
+        const refreshResponse = await axios.post(`${apiClient.defaults.baseURL}/refresh`, {}, { withCredentials: true });
+        
+        const newToken = refreshResponse.data?.DT?.access_token || refreshResponse.data?.access_token;
+        if (newToken) {
+          if (localStorage.getItem("accessToken")) {
+            localStorage.setItem("accessToken", newToken);
+          } else if (sessionStorage.getItem("accessToken")) {
+            sessionStorage.setItem("accessToken", newToken);
+          }
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        }
+        
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        clearExpiredAuthSession();
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+
     const message =
       authExpired
         ? "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."

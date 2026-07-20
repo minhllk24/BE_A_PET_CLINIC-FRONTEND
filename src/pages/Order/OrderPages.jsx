@@ -28,8 +28,7 @@ const EMPTY_ORDER_PRODUCT = {
   name: "",
   price: 0,
   quantity: 1,
-  variant: "",
-  size: "",
+  variant_name: "",
   image: productImages.detailImage,
 };
 
@@ -113,8 +112,7 @@ function ProductSummary({ product, large = false }) {
         </strong>
         <strong className="text-[14px] text-[#353535]">{formatCurrency(safeProduct.price)}</strong>
         <div className="flex min-w-0 flex-nowrap items-center gap-x-4 text-[12px] text-[#353535]">
-          <span className="min-w-0 truncate">Loại: {safeProduct.variant || "Không có"}</span>
-          <span className="shrink-0">Kích cỡ: {safeProduct.size || "Không có"}</span>
+          <span className="min-w-0 truncate">Biến thể: {safeProduct.variant_name || safeProduct.variant?.variant_name || "Không có"}</span>
           <span className="shrink-0">Số lượng: {safeProduct.quantity}</span>
         </div>
       </div>
