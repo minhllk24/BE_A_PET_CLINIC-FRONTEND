@@ -187,13 +187,19 @@ export async function getBestSellingProducts(limit = 12) {
   return getProducts({ sort: "best_selling", limit, page: 1 });
 }
 
-export async function getActiveFlashSaleProducts(limit = 12) {
+export async function getActiveFlashSale(limit = 12) {
   try {
     const response = unwrap(await apiClient.get("/flash-sales/active"));
     const payload = getPayload(response);
-    if (!payload) return [];
+    if (!payload) {
+      return {
+        sale: null,
+        products: [],
+      };
+    }
 
-    return normalizeArray(payload)
+    const items = Array.isArray(payload?.items) ? payload.items : normalizeArray(payload);
+    const products = items
       .map((item) => {
         const product = item?.product ?? item?.Product ?? item;
         return normalizeProduct({
@@ -205,10 +211,29 @@ export async function getActiveFlashSaleProducts(limit = 12) {
         });
       })
       .slice(0, limit);
+
+    return {
+      sale: {
+        id: getFirstValue(payload?.flash_sale_id, payload?.id),
+        name: getFirstValue(payload?.name, payload?.flash_sale_name),
+        startTime: getFirstValue(payload?.start_time, payload?.startTime),
+        endTime: getFirstValue(payload?.end_time, payload?.endTime),
+        status: payload?.status,
+      },
+      products,
+    };
   } catch (error) {
     warnOptionalApiFailure("Active flash sale", error);
-    return [];
+    return {
+      sale: null,
+      products: [],
+    };
   }
+}
+
+export async function getActiveFlashSaleProducts(limit = 12) {
+  const result = await getActiveFlashSale(limit);
+  return result.products;
 }
 
 export async function getProductDetails(productId) {

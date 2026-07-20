@@ -1,5 +1,5 @@
-import Checkout from "../components/checkout/Checkout";
-import NavBar from "../components/Navbar";
+import Checkout from "../../components/checkout/Checkout";
+import NavBar from "../../components/Navbar";
 
 function CheckoutPage() {
   return (

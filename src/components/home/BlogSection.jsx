@@ -1,15 +1,17 @@
+import { useEffect, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   ALL_BLOG_POSTS,
   FEATURED_BLOG_POST,
 } from "../../data/blogData";
+import { getFeaturedPost, getPostsPage } from "../../services/contentService";
 import { CategoryIcon } from "../blog/BlogCard";
 
 function BlogPostItem({ post, highlighted }) {
   return (
     <Link
-      to={`/bai-viet/${post.id}`}
+      to={`/blog/${post.id}`}
       className={`group block rounded-[10px] px-9 py-8 transition-all hover:-translate-y-0.5 hover:shadow-md ${
         highlighted ? "bg-[#E3F2FD]" : "bg-white"
       }`}
@@ -30,8 +32,53 @@ function BlogPostItem({ post, highlighted }) {
 }
 
 function BlogSection() {
-  const featuredPost = FEATURED_BLOG_POST;
-  const latestPosts = ALL_BLOG_POSTS.slice(0, 4);
+  const [featuredPost, setFeaturedPost] = useState(FEATURED_BLOG_POST);
+  const [latestPosts, setLatestPosts] = useState(() => ALL_BLOG_POSTS.slice(0, 4));
+  const [fallbackNotice, setFallbackNotice] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    setFallbackNotice("");
+
+    Promise.all([
+      getFeaturedPost(),
+      getPostsPage({ type: "official_blog", limit: 4, page: 1 }),
+    ])
+      .then(async ([apiFeatured, apiPosts]) => {
+        if (!active) return;
+        const officialPosts = apiPosts.posts.filter((post) => post.section === "knowledge");
+
+        if (apiFeatured?.section === "knowledge") {
+          setFeaturedPost(apiFeatured);
+        } else if (officialPosts[0]) {
+          setFeaturedPost(officialPosts[0]);
+        }
+
+        if (officialPosts.length) {
+          setLatestPosts(officialPosts.slice(0, 4));
+          return;
+        }
+
+        const allPosts = await getPostsPage({ limit: 4, page: 1 });
+        if (!active) return;
+        const fallbackApiPosts = allPosts.posts.filter((post) => post.section === "knowledge");
+        if (fallbackApiPosts.length) {
+          setLatestPosts(fallbackApiPosts.slice(0, 4));
+          if (fallbackApiPosts[0]) setFeaturedPost(fallbackApiPosts[0]);
+          return;
+        }
+
+        setFallbackNotice("API blog chưa có dữ liệu, đang hiển thị bài viết mẫu.");
+      })
+      .catch((error) => {
+        if (!active) return;
+        setFallbackNotice(error?.message || "Không thể tải blog mới nhất, đang hiển thị bài viết mẫu.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <section id="blog" className="w-full bg-white py-10 md:py-12">
@@ -40,7 +87,7 @@ function BlogSection() {
           <div className="relative">
 
             <h2 className="text-[32px] font-bold tracking-wide text-[#232536] font-baloo relative z-10">
-              Nổi bật
+              Bài viết nổi bật
             </h2>
             {/* Vector vàng */}
             <svg
@@ -65,7 +112,7 @@ function BlogSection() {
 
           </div>
           <Link
-            to={`/bai-viet/${featuredPost.id}`}
+            to={`/blog/${featuredPost.id}`}
             className="group flex flex-col gap-6 border border-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(13,71,161,0.12)] md:p-8"
           >
             <div className="relative overflow-hidden rounded-[24px]">
@@ -107,12 +154,17 @@ function BlogSection() {
               Bài viết mới nhất
             </h2>
             <Link
-              to="/bai-viet#latest-posts"
+              to="/blog#latest-posts"
               className="text-base font-semibold text-[#0D47A1] hover:underline"
             >
               Xem tất cả
             </Link>
           </div>
+          {fallbackNotice && (
+            <p className="mb-2 rounded-xl bg-[#E5F6FD] px-4 py-2 text-sm font-medium text-[#0D47A1]">
+              {fallbackNotice}
+            </p>
+          )}
           {latestPosts.map((post, index) => (
             <BlogPostItem
               key={post.id}

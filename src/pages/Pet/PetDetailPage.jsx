@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { useDecisionModal } from "../../components/shared/DecisionModal";
 import { MOCK_PETS } from "../../data/mockPets";
 import { INITIAL_PET_EVENTS } from "../../data/petEvents";
 import {
@@ -203,6 +204,7 @@ function PetDetailPage() {
   const params = useParams();
   const currentPetId = params.id || params.petId;
   const navigate = useNavigate();
+  const { confirmDelete, showSuccessModal } = useDecisionModal();
   const [pet, setPet] = useState(() => getFallbackPet(currentPetId));
   const [petLoadError, setPetLoadError] = useState("");
   
@@ -219,7 +221,6 @@ function PetDetailPage() {
   const [activeEventDetail, setActiveEventDetail] = useState(null); 
   
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [showDeleteRecordModal, setShowDeleteRecordModal] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
 
   const [showAddMedicalModal, setShowAddMedicalModal] = useState(false);
@@ -230,7 +231,6 @@ function PetDetailPage() {
   const [newMedicalDate, setNewMedicalDate] = useState("");
   const [newMedicalNotes, setNewMedicalNotes] = useState("");
 
-  const [showDeleteNoteConfirm, setShowDeleteNoteConfirm] = useState(false);
   const [noteToDeleteId, setNoteToDeleteId] = useState(null);
 
   const [editingNoteId, setEditingNoteId] = useState(null); 
@@ -479,25 +479,31 @@ function PetDetailPage() {
 
   const handleDeleteNoteTrigger = (id) => {
     setNoteToDeleteId(id);
-    setShowDeleteNoteConfirm(true);
+    confirmDelete({
+      message: "Bạn chắc chắn muốn xóa ghi chú lịch này?\nHành động này không thể hoàn tác",
+      confirmLabel: "Xóa",
+      onConfirm: () => handleConfirmDeleteNote(id),
+    });
   };
 
-  const handleConfirmDeleteNote = async () => {
-    const targetEvent = eventsList.find((event) => event.id === noteToDeleteId);
+  const handleConfirmDeleteNote = async (targetId = noteToDeleteId) => {
+    const targetEvent = eventsList.find((event) => event.id === targetId);
     if (targetEvent?.sourceType === "reminder") {
       try {
-        await deleteReminder(noteToDeleteId);
+        await deleteReminder(targetId);
       } catch (error) {
         // API lỗi thì vẫn xóa khỏi fallback local để UI không bị kẹt.
       }
     }
 
-    setEventsList(prev => prev.filter(ev => ev.id !== noteToDeleteId));
-    setShowDeleteNoteConfirm(false);
+    setEventsList(prev => prev.filter(ev => ev.id !== targetId));
     setNoteToDeleteId(null);
-    if (activeEventDetail && activeEventDetail.id === noteToDeleteId) {
+    if (activeEventDetail && activeEventDetail.id === targetId) {
       setActiveEventDetail(null);
     }
+    showSuccessModal({
+      message: "Đã xóa ghi chú lịch thành công.\nBạn có thể tiếp tục hoặc quay về trang chủ",
+    });
   };
 
   // Mở modal để tạo mới bệnh án
@@ -595,17 +601,28 @@ function PetDetailPage() {
     setNewMedicalName(""); setNewMedicalDoctor(""); setNewMedicalDate(""); setNewMedicalNotes("");
   };
 
-  const handleConfirmDeleteMedicalRecord = async () => {
-    const newList = medicalHistoryList.filter(r => r.id !== recordToDelete);
+  const handleDeleteMedicalRecordTrigger = (id) => {
+    setRecordToDelete(id);
+    confirmDelete({
+      message: "Bạn chắc chắn muốn xóa bệnh án này?\nHành động này không thể hoàn tác",
+      confirmLabel: "Xóa",
+      onConfirm: () => handleConfirmDeleteMedicalRecord(id),
+    });
+  };
+
+  const handleConfirmDeleteMedicalRecord = async (targetId = recordToDelete) => {
+    const newList = medicalHistoryList.filter(r => r.id !== targetId);
     try {
-      await deleteMedicalRecord(recordToDelete);
+      await deleteMedicalRecord(targetId);
     } catch (error) {
       // API lỗi thì vẫn xóa khỏi fallback local để UI không bị kẹt.
     }
     setMedicalHistoryList(newList);
-    setShowDeleteRecordModal(false); 
     setRecordToDelete(null);
     syncFallbackMedicalRecords(currentPetId, newList);
+    showSuccessModal({
+      message: "Đã xóa bệnh án thành công.\nBạn có thể tiếp tục hoặc quay về trang chủ",
+    });
   };
 
   const handleDownloadFile = (fileName) => {
@@ -1443,7 +1460,7 @@ function PetDetailPage() {
                             <button type="button" onClick={() => handleDownloadFile(item.fileUrl || item.name)} className="p-1.5 text-slate-400 hover:text-blue-600 transition bg-slate-50 border border-slate-100 rounded-md" title="Tải file đính kèm">
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                             </button>
-                            <button type="button" onClick={() => { setRecordToDelete(item.id); setShowDeleteRecordModal(true); }} className="text-slate-400 hover:text-red-600 transition p-1.5 bg-slate-50 border border-slate-100 rounded-md" title="Xóa bệnh án">
+                            <button type="button" onClick={() => handleDeleteMedicalRecordTrigger(item.id)} className="text-slate-400 hover:text-red-600 transition p-1.5 bg-slate-50 border border-slate-100 rounded-md" title="Xóa bệnh án">
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                           </div>
@@ -1473,42 +1490,6 @@ function PetDetailPage() {
         </div>
       )}
 
-      {/* MODAL XÁC NHẬN XÓA 1 BỆNH ÁN BÊN TRONG LỊCH SỬ TỔNG QUÁT */}
-      {showDeleteRecordModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 animate-fade-in-up">
-            <div className="flex items-center gap-3 mb-3 text-red-600">
-              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-slate-900">Xóa bệnh án?</h3>
-            </div>
-            <p className="text-sm text-slate-600 mb-6 pl-13">Bạn có chắc chắn muốn xóa bệnh án này khỏi hệ thống? Hành động này không thể hoàn tác.</p>
-            <div className="flex justify-end gap-3">
-              <button type="button" onClick={() => setShowDeleteRecordModal(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">Giữ lại</button>
-              <button type="button" onClick={handleConfirmDeleteMedicalRecord} className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition">Xóa vĩnh viễn</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL XÁC NHẬN XÓA GHI CHÚ LỊCH TRÌNH */}
-      {showDeleteNoteConfirm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 animate-fade-in-up">
-            <div className="flex items-center gap-3 mb-3 text-red-600">
-              <h3 className="text-lg font-bold text-slate-900">Xóa ghi chú lịch?</h3>
-            </div>
-            <p className="text-sm text-slate-600 mb-6">Hành động này sẽ xóa ghi chú này ra khỏi lịch biểu chăm sóc thú cưng của bạn.</p>
-            <div className="flex justify-end gap-3">
-              <button type="button" onClick={() => setShowDeleteNoteConfirm(false)} className="px-4 py-2 text-sm bg-slate-100 rounded-lg">Giữ lại</button>
-              <button type="button" onClick={handleConfirmDeleteNote} className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg">Xóa ngay</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

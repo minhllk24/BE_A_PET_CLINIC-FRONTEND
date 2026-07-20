@@ -11,7 +11,7 @@ export const HOME_SERVICES = [
     image: homeImages.service2,
     title: "Grooming & Spa",
     description: "Dịch vụ tắm sấy, cắt tỉa lông và chăm sóc vệ sinh giúp thú cưng luôn sạch sẽ, khỏe mạnh và thoải mái.",
-    href: "/dich-vu/tam-cat-tia-spa",
+    href: "/dich-vu/grooming-spa",
   },
   {
     image: homeImages.service3,

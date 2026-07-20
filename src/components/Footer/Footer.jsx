@@ -6,7 +6,7 @@ import ServicePricingModal from "../groomingSpa/ServicePricingModal";
 
 const QUICK_LINKS = [
   ["Trang chủ", "/"],
-  ["Bảng giá dịch vụ", "/dich-vu/tam-cat-tia-spa"],
+  ["Bảng giá dịch vụ", "/dich-vu/grooming-spa"],
   ["Mua sắm", "/cua-hang"],
   ["Lịch sử đơn hàng", "/don-hang-cua-toi"],
   ["Hồ sơ thú cưng", "/thu-cung-cua-toi"],
@@ -16,7 +16,7 @@ const QUICK_LINKS = [
 
 const SERVICE_LINKS = [
   ["Khám & Điều trị", "/dich-vu/kham-dieu-tri"],
-  ["Grooming & Spa", "/dich-vu/tam-cat-tia-spa"],
+  ["Grooming & Spa", "/dich-vu/grooming-spa"],
   ["Mua sắm sản phẩm", "/cua-hang"],
 ];
 

@@ -1,16 +1,16 @@
 import { useState } from "react";
-import Footer from "../components/Footer/Footer";
-import ScaledCanvasLayout from "../components/layout/ScaledCanvasLayout";
-import NavBar from "../components/Navbar";
-import GroomingBanner from "../components/groomingSpa/GroomingBanner";
-import GroomingCombos from "../components/groomingSpa/GroomingCombos";
-import GroomingFAQ from "../components/groomingSpa/GroomingFAQ";
-import GroomingFeedbackSection from "../components/groomingSpa/GroomingFeedbackSection";
-import GroomingHero from "../components/groomingSpa/GroomingHero";
-import ServicePricingModal from "../components/groomingSpa/ServicePricingModal";
-import GroomingServices from "../components/groomingSpa/GroomingServices";
-import GroomingWhyUs from "../components/groomingSpa/GroomingWhyUs";
-import { useAuth } from "../context/AuthContext";
+import Footer from "../../components/Footer/Footer";
+import ScaledCanvasLayout from "../../components/layout/ScaledCanvasLayout";
+import NavBar from "../../components/Navbar";
+import GroomingBanner from "../../components/groomingSpa/GroomingBanner";
+import GroomingCombos from "../../components/groomingSpa/GroomingCombos";
+import GroomingFAQ from "../../components/groomingSpa/GroomingFAQ";
+import GroomingFeedbackSection from "../../components/groomingSpa/GroomingFeedbackSection";
+import GroomingHero from "../../components/groomingSpa/GroomingHero";
+import ServicePricingModal from "../../components/groomingSpa/ServicePricingModal";
+import GroomingServices from "../../components/groomingSpa/GroomingServices";
+import GroomingWhyUs from "../../components/groomingSpa/GroomingWhyUs";
+import { useAuth } from "../../context/AuthContext";
 
 function GroomingCanvas({ onOpenPricing }) {
   return (

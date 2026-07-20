@@ -6,22 +6,22 @@ import HomePage from "../pages/HomePage/HomePage";
 import BookingPage from "../pages/Booking/BookingPage";
 import AppointmentHistoryPage from "../pages/Booking/AppointmentHistoryPage";
 
-import ShopPage from "../pages/ShopPage";
-import ProductPage from "../pages/ProductPage";
-import ProductDetailsPage from "../pages/ProductDetailsPage";
-import WriteReviewPage from "../pages/WriteReviewPage";
-import CartOpenHandler from "../pages/CartOpenHandler";
+import ShopPage from "../pages/Shop/ShopPage";
+import ProductPage from "../pages/Product/ProductPage";
+import ProductDetailsPage from "../pages/Product/ProductDetailsPage";
+import WriteReviewPage from "../pages/Product/WriteReviewPage";
+import CartOpenHandler from "../pages/Shop/CartOpenHandler";
 import BlogPage from "../pages/Blog/BlogPage";
 import BlogDetailPage from "../pages/Blog/BlogDetailPage";
 import CommunityPage from "../pages/Blog/CommunityPage";
 import FirstAidPage from "../pages/Blog/FirstAidPage";
 import FirstAidDetailPage from "../pages/Blog/FirstAidDetailPage";
 import RescuePage from "../pages/Rescue/RescuePage";
-import SearchResultsPage from "../pages/SearchResultsPage";
+import SearchResultsPage from "../pages/Search/SearchResultsPage";
 
-import GroomingSpaPage from "../pages/GroomingSpaPage";
-import MedicalTreatmentPage from "../pages/MedicalTreatment/MedicalTreatmentPage";
-import CheckoutPage from "../pages/CheckoutPage";
+import GroomingSpaPage from "../pages/Services/GroomingSpaPage";
+import MedicalTreatmentPage from "../pages/Services/MedicalTreatmentPage";
+import CheckoutPage from "../pages/Checkout/CheckoutPage";
 
 import MyPetPage from "../pages/Pet/MyPetPage";
 import PetDetailPage from "../pages/Pet/PetDetailPage";
@@ -31,7 +31,7 @@ import UserProfilePage from "../pages/User/UserProfilePage";
 import AboutPage from "../pages/About/AboutPage";
 import ContactPage from "../pages/Contact/ContactPage";
 import PolicyPage from "../pages/Policy/PolicyPage";
-import NotFoundPage from "../pages/NotFoundPage";
+import NotFoundPage from "../pages/Error/NotFoundPage";
 
 const AppRoutes = () => {
   return (
@@ -77,7 +77,6 @@ const AppRoutes = () => {
       <Route path="/services/kham-dieu-tri" element={<MedicalTreatmentPage />} />
       <Route path="/dich-vu" element={<MedicalTreatmentPage />} />
       <Route path="/dich-vu/grooming-spa" element={<GroomingSpaPage />} />
-      <Route path="/dich-vu/tam-cat-tia-spa" element={<GroomingSpaPage />} />
       <Route path="/dich-vu/kham-dieu-tri" element={<MedicalTreatmentPage />} />
       <Route path="/checkout" element={<CheckoutPage />} />
 

@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { shopImages } from "../assets/shopImages";
-import Footer from "../components/Footer/Footer";
-import CanvasLayout from "../components/layout/CanvasLayout";
-import ScaledCanvasLayout from "../components/layout/ScaledCanvasLayout";
-import NavBar from "../components/Navbar";
-import ShoppingProductCard from "../components/product/ShoppingProductCard";
-import FeedbackSection from "../components/shop/FeedbackSection";
-import ShopHeroSection from "../components/shop/ShopHeroSection";
-import { useAuth } from "../context/AuthContext";
-import { FEATURED_PRODUCTS, PRODUCT_CATEGORIES, SHOP_PRODUCTS, SHOP_PROMOTION_PAGES } from "../data/shopData";
-import { getActiveFlashSaleProducts, getBestSellingProducts } from "../services/productService";
+import { shopImages } from "../../assets/shopImages";
+import Footer from "../../components/Footer/Footer";
+import CanvasLayout from "../../components/layout/CanvasLayout";
+import ScaledCanvasLayout from "../../components/layout/ScaledCanvasLayout";
+import NavBar from "../../components/Navbar";
+import ShoppingProductCard from "../../components/product/ShoppingProductCard";
+import FeedbackSection from "../../components/shop/FeedbackSection";
+import ShopHeroSection from "../../components/shop/ShopHeroSection";
+import { useAuth } from "../../context/AuthContext";
+import { FEATURED_PRODUCTS, PRODUCT_CATEGORIES, SHOP_PRODUCTS, SHOP_PROMOTION_PAGES } from "../../data/shopData";
+import { getActiveFlashSale, getBestSellingProducts } from "../../services/productService";
+
+const FLASH_SALE_FALLBACK_MS = 5 * 60 * 60 * 1000;
 
 const SECTION_TITLE_TYPOGRAPHY = {
   fontFamily: '"Baloo Tamma 2", "Baloo 2", cursive',
@@ -20,6 +22,31 @@ const SECTION_TITLE_TYPOGRAPHY = {
   lineHeight: "110%",
   letterSpacing: "0px",
 };
+
+function getFallbackFlashSaleEndTime() {
+  return new Date(Date.now() + FLASH_SALE_FALLBACK_MS).toISOString();
+}
+
+function getFlashSaleCountdownTarget(sale) {
+  const endTime = sale?.endTime ? new Date(sale.endTime).getTime() : NaN;
+  if (Number.isFinite(endTime) && endTime > Date.now()) return sale.endTime;
+
+  const startTime = sale?.startTime ? new Date(sale.startTime).getTime() : NaN;
+  if (Number.isFinite(startTime) && startTime > Date.now()) return sale.startTime;
+
+  return getFallbackFlashSaleEndTime();
+}
+
+function getRemainingTimeParts(targetTime) {
+  const target = new Date(targetTime).getTime();
+  const remainingMs = Number.isFinite(target) ? Math.max(target - Date.now(), 0) : FLASH_SALE_FALLBACK_MS;
+  const totalSeconds = Math.floor(remainingMs / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [hours, minutes, seconds].map((value) => String(value).padStart(2, "0"));
+}
 
 function ShopCanvas() {
   const navigate = useNavigate();
@@ -33,6 +60,8 @@ function ShopCanvas() {
   const [bestSellerProducts, setBestSellerProducts] = useState([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [productError, setProductError] = useState("");
+  const [flashSaleEndsAt, setFlashSaleEndsAt] = useState(getFallbackFlashSaleEndTime);
+  const [flashSaleCountdown, setFlashSaleCountdown] = useState(() => getRemainingTimeParts(flashSaleEndsAt));
   const discountedBestSellers = bestSellerProducts.filter((product) => product.discountPercent);
   const flashDisplayProducts = flashProducts.length
     ? flashProducts
@@ -48,19 +77,22 @@ function ShopCanvas() {
       try {
         setIsLoadingProducts(true);
         setProductError("");
-        const [activeFlashSaleProducts, bestSellingProducts] = await Promise.all([
-          getActiveFlashSaleProducts(12),
+        const [activeFlashSale, bestSellingProducts] = await Promise.all([
+          getActiveFlashSale(12),
           getBestSellingProducts(12),
         ]);
 
         if (isMounted) {
+          const activeFlashSaleProducts = activeFlashSale?.products ?? [];
           setFlashProducts(Array.isArray(activeFlashSaleProducts) ? activeFlashSaleProducts : []);
+          setFlashSaleEndsAt(getFlashSaleCountdownTarget(activeFlashSale?.sale));
           setBestSellerProducts(Array.isArray(bestSellingProducts) ? bestSellingProducts : []);
         }
       } catch {
         if (isMounted) {
           setProductError("");
           setFlashProducts(FEATURED_PRODUCTS.filter((product) => product.discountPercent).slice(0, 12));
+          setFlashSaleEndsAt(getFallbackFlashSaleEndTime());
           setBestSellerProducts(SHOP_PRODUCTS.slice(0, 12));
         }
       } finally {
@@ -76,6 +108,15 @@ function ShopCanvas() {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    setFlashSaleCountdown(getRemainingTimeParts(flashSaleEndsAt));
+    const timer = window.setInterval(() => {
+      setFlashSaleCountdown(getRemainingTimeParts(flashSaleEndsAt));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [flashSaleEndsAt]);
 
   useEffect(() => {
     setFlashOffset(0);
@@ -189,10 +230,10 @@ function ShopCanvas() {
             FLASH SALE
           </h2>
           <div className="mt-1 flex justify-center">
-            {["Giờ", "Phút", "Giây"].map((label) => (
+            {["Giờ", "Phút", "Giây"].map((label, index) => (
               <div key={label} className="w-[88px] text-center">
                 <div className="mx-auto flex h-[50px] w-[58px] items-center justify-center rounded-[30px] bg-[#FDD835] font-['Fredoka'] text-[32px] font-semibold leading-[67.98px] text-[rgba(0,0,0,0.87)]">
-                  17
+                  {flashSaleCountdown[index]}
                 </div>
                 <p className="mt-1 font-['Roboto'] text-[20px] font-medium leading-[1.6] tracking-[0.15px] text-[#02000F]">{label}</p>
               </div>

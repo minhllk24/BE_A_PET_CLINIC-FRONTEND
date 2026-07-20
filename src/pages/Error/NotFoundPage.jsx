@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import Footer from "../components/Footer/Footer";
-import NavBar from "../components/Navbar";
-import sleepingPetImage from "../assets/images/not-found/sleeping-pet.png";
-import tennisBallImage from "../assets/images/not-found/tennis-ball.png";
+import Footer from "../../components/Footer/Footer";
+import NavBar from "../../components/Navbar";
+import sleepingPetImage from "../../assets/images/not-found/sleeping-pet.png";
+import tennisBallImage from "../../assets/images/not-found/tennis-ball.png";
 
 const NOT_FOUND_COPY = {
   title: "Ôi, trang này ngủ mất rồi!",

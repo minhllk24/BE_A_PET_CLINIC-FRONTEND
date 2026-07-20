@@ -1,24 +1,86 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cartImages } from "../../assets/cartImages";
+import { useDecisionModal } from "../shared/DecisionModal";
 import { useCart } from "../../context/CartContext";
+import { getProductDetails } from "../../services/productService";
 import { formatVnd, getNumericPrice } from "../../utils/currency";
 
 function formatPrice(value) {
   return formatVnd(value);
 }
 
+function normalizeVariantOption(variant) {
+  return {
+    ...variant,
+    id: variant.id ?? variant.variant_id,
+    name: variant.name ?? variant.variant_name ?? "Mặc định",
+    price: variant.price ?? 0,
+    sizes: Array.isArray(variant.sizes) ? variant.sizes : [],
+  };
+}
+
 function CartItemRow({ item }) {
-  const { toggleCartItem, removeCartItem, updateCartQty } = useCart();
+  const { toggleCartItem, removeCartItem, updateCartQty, updateCartOptions } = useCart();
+  const { confirmDelete, showSuccessModal } = useDecisionModal();
   const [deleting, setDeleting] = useState(false);
+  const [loadedVariants, setLoadedVariants] = useState([]);
+  const variantOptions = (Array.isArray(item.variants) && item.variants.length ? item.variants : loadedVariants).map(normalizeVariantOption);
+  const selectedVariant =
+    variantOptions.find((variant) => String(variant.id) === String(item.variantId)) ||
+    variantOptions.find((variant) => variant.name === item.type) ||
+    variantOptions[0];
+  const sizeOptions = selectedVariant?.sizes?.length ? selectedVariant.sizes : item.size ? [item.size] : [];
 
   const handleDelete = () => {
-    setDeleting(true);
-    setTimeout(() => removeCartItem(item.id), 250);
+    confirmDelete({
+      message: `Bạn chắc chắn muốn xóa "${item.name}" khỏi giỏ hàng?\nHành động này không thể hoàn tác`,
+      confirmLabel: "Xóa",
+      onConfirm: () => {
+        setDeleting(true);
+        setTimeout(() => {
+          removeCartItem(item.id);
+          showSuccessModal({
+            message: "Đã xóa sản phẩm khỏi giỏ hàng.\nBạn có thể tiếp tục mua sắm hoặc quay về trang chủ",
+          });
+        }, 250);
+      },
+    });
+  };
+
+  useEffect(() => {
+    if ((Array.isArray(item.variants) && item.variants.length) || !item.productId) return;
+    let active = true;
+    getProductDetails(item.productId)
+      .then((product) => {
+        if (active) setLoadedVariants(product.variants || []);
+      })
+      .catch(() => {
+        if (active) setLoadedVariants([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [item.productId, item.variants]);
+
+  const handleVariantChange = (event) => {
+    const nextVariant = variantOptions.find((variant) => String(variant.id) === event.target.value);
+    if (!nextVariant) return;
+    const nextSize = nextVariant.sizes?.includes(item.size) ? item.size : nextVariant.sizes?.[0] || "";
+    updateCartOptions(item.id, {
+      variantId: nextVariant.id,
+      type: nextVariant.name,
+      size: nextSize,
+      price: nextVariant.price || item.price,
+    });
+  };
+
+  const handleSizeChange = (event) => {
+    updateCartOptions(item.id, { size: event.target.value });
   };
 
   return (
     <div
-      className={`relative flex h-[80px] w-full shrink-0 items-center gap-[10px] border-b border-solid border-[#e0e0e0] py-0 transition-all duration-200 lg:h-[100px] lg:w-[503px] lg:py-[10px] ${
+      className={`relative flex min-h-[118px] w-full shrink-0 items-center gap-[10px] border-b border-solid border-[#e0e0e0] px-[6px] py-[10px] transition-all duration-200 lg:my-[10px] lg:min-h-[132px] lg:w-full lg:px-[10px] lg:py-[14px] ${
         deleting ? "translate-x-full opacity-0" : "translate-x-0 opacity-100"
       }`}
     >
@@ -44,7 +106,7 @@ function CartItemRow({ item }) {
 
       {/* Product image */}
       <div className="flex h-full shrink-0 items-center justify-center">
-        <div className="h-[60px] w-[60px] lg:h-full lg:w-[80px]">
+        <div className="h-[64px] w-[64px] lg:h-[92px] lg:w-[92px]">
           <img
             src={item.image || item.imageUrl || item.thumbnail || cartImages.productThumb}
             alt={item.name}
@@ -54,9 +116,9 @@ function CartItemRow({ item }) {
       </div>
 
       {/* Product info */}
-      <div className="flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-[3px] lg:gap-[10px]">
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-[8px] lg:gap-[12px]">
         <div className="flex w-full items-start justify-between">
-          <p className="mr-[-58px] w-[278px] break-words font-['Roboto'] text-[12px] font-bold leading-[1.43] tracking-[0.17px] text-[#0d47a1] lg:mr-0 lg:text-[14px]">
+          <p className="line-clamp-2 min-w-0 pr-3 font-['Roboto'] text-[12px] font-bold leading-[1.43] tracking-[0.17px] text-[#0d47a1] lg:text-[14px]">
             {item.name}
           </p>
           <button
@@ -99,14 +161,44 @@ function CartItemRow({ item }) {
           </div>
         </div>
 
-        <div className="flex w-full items-center gap-10 whitespace-nowrap font-['Roboto'] text-[10px] leading-[1.66] tracking-[0.4px] text-[#353535] lg:text-[12px]">
-          <div className="flex items-center gap-[5px] lg:gap-[10px]">
+        <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 font-['Roboto'] text-[10px] leading-[1.66] tracking-[0.4px] text-[#353535] lg:gap-x-6 lg:text-[12px]">
+          <div className="flex items-center gap-[5px] lg:gap-[8px]">
             <span>Loại:</span>
-            <span>{item.type || "Mặc định"}</span>
+            {variantOptions.length > 1 ? (
+              <select
+                value={String(selectedVariant?.id ?? item.variantId ?? "")}
+                onChange={handleVariantChange}
+                className="h-[22px] max-w-[86px] rounded border border-[#c7c7c7] bg-white px-1 text-[10px] text-[#353535] outline-none transition-colors focus:border-[#0d47a1] lg:max-w-[112px] lg:text-[12px]"
+                aria-label="Chọn loại sản phẩm"
+              >
+                {variantOptions.map((variant) => (
+                  <option key={variant.id ?? variant.name} value={String(variant.id ?? "")}>
+                    {variant.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span>{item.type || selectedVariant?.name || "Mặc định"}</span>
+            )}
           </div>
-          <div className="flex items-center gap-[5px] lg:gap-[10px]">
+          <div className="flex items-center gap-[5px] lg:gap-[8px]">
             <span>Kích cỡ:</span>
-            <span>{item.size || "Mặc định"}</span>
+            {sizeOptions.length > 1 ? (
+              <select
+                value={item.size || sizeOptions[0]}
+                onChange={handleSizeChange}
+                className="h-[22px] max-w-[76px] rounded border border-[#c7c7c7] bg-white px-1 text-[10px] text-[#353535] outline-none transition-colors focus:border-[#0d47a1] lg:max-w-[96px] lg:text-[12px]"
+                aria-label="Chọn kích cỡ sản phẩm"
+              >
+                {sizeOptions.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span>{item.size || sizeOptions[0] || "Mặc định"}</span>
+            )}
           </div>
         </div>
       </div>
@@ -125,7 +217,7 @@ function MyCartPanel({ onClose }) {
 
   return (
     <aside
-      className="cart-panel-motion absolute inset-0 flex h-screen w-full flex-col items-center gap-[10px] overflow-hidden bg-[#fffde7] px-[10px] py-0 lg:inset-auto lg:right-[94px] lg:top-0 lg:h-[638px] lg:max-h-[calc(100vh-104px)] lg:w-[551px] lg:rounded lg:px-5 lg:py-[10px] lg:shadow-[0_4px_24px_rgba(0,0,0,0.12)]"
+      className="cart-panel-motion pointer-events-auto absolute inset-0 flex h-screen w-full flex-col items-center gap-[10px] overflow-hidden bg-[#fffde7] px-[10px] py-0 lg:inset-auto lg:right-[94px] lg:top-0 lg:h-[638px] lg:max-h-[calc(100vh-104px)] lg:w-[551px] lg:rounded lg:px-5 lg:py-[10px] lg:shadow-[0_4px_24px_rgba(0,0,0,0.12)]"
       data-name="my cart"
       role="dialog"
       aria-label="Giỏ hàng"

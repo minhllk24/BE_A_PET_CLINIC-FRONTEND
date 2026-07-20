@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { getMyPets } from "../../services/petService";
 import { MOCK_PETS } from "../../data/mockPets";
+import { appointmentImages } from "../../assets/appointmentImages";
 
 import buddyImg from "../../assets/images/pets/buddy.jpg";
 import lunaImg from "../../assets/images/pets/luna.jpg";
@@ -161,6 +162,7 @@ function SearchAndSort({
   searchInput,
   onSearchInputChange,
   onSearch,
+  onClearSearch,
   sortBy,
   onSortChange,
 }) {
@@ -180,14 +182,22 @@ function SearchAndSort({
           onChange={(event) => onSearchInputChange(event.target.value)}
           className="min-w-0 flex-1 bg-transparent text-[15px] text-[#5f5f5f] outline-none placeholder:text-[#5f5f5f]"
         />
+        {searchInput && (
+          <button
+            type="button"
+            onClick={onClearSearch}
+            className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E3F2FD] text-[28px] font-semibold leading-none text-[#0D47A1] transition-colors hover:bg-[#BBDEFB]"
+            aria-label="Xóa tìm kiếm hồ sơ"
+          >
+            ×
+          </button>
+        )}
         <button
           type="submit"
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[#fff176]"
-          aria-label="Tìm kiếm thú cưng"
+          aria-label="Tìm kiếm hồ sơ"
         >
-          <svg className="h-5 w-5 text-[#06105a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <img src={appointmentImages.searchIcon} alt="" className="h-7 w-7" />
         </button>
       </label>
 
@@ -310,6 +320,10 @@ function PetListPage() {
           searchInput={searchInput}
           onSearchInputChange={setSearchInput}
           onSearch={() => setSearchQuery(searchInput.trim())}
+          onClearSearch={() => {
+            setSearchInput("");
+            setSearchQuery("");
+          }}
           sortBy={sortBy}
           onSortChange={setSortBy}
         />

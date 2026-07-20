@@ -67,6 +67,226 @@ body {
   color: rgba(0, 0, 0, 0.87);
 }
 
+.decision-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+}
+
+.decision-modal {
+  position: relative;
+  width: min(448px, calc(100vw - 32px));
+  height: 399px;
+  border-radius: 32px;
+  background: #ffffff;
+  box-shadow: 0 24px 48px -12px rgba(161, 64, 0, 0.15);
+  font-family: Roboto, system-ui, sans-serif;
+}
+
+.decision-modal__close {
+  position: absolute;
+  top: 19px;
+  right: 20px;
+  z-index: 2;
+  display: flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  color: #717785;
+  transition: transform 180ms ease, color 180ms ease;
+}
+
+.decision-modal__close:hover {
+  color: #30343f;
+  transform: scale(1.08);
+}
+
+.decision-modal__body,
+.decision-modal__success-body {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.decision-modal__body {
+  padding-top: 39px;
+}
+
+.decision-modal__success-body {
+  padding-top: 81.5px;
+}
+
+.decision-modal__icon-wrap {
+  position: relative;
+  width: 84.08px;
+  height: 84.08px;
+  flex: 0 0 auto;
+}
+
+.decision-modal__icon-glow {
+  position: absolute;
+  left: -17.96px;
+  top: -17.96px;
+  width: 80px;
+  height: 80px;
+  border-radius: 9999px;
+  background: rgba(255, 241, 118, 0.5);
+  filter: blur(24px);
+}
+
+.decision-modal__icon-tile {
+  position: absolute;
+  left: 4.19px;
+  top: 0;
+  display: flex;
+  width: 80px;
+  height: 80px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 4px solid #ffffff;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 28% 25%, rgba(255, 245, 157, 0.98), rgba(255, 241, 118, 0.94) 38%, rgba(255, 213, 79, 0.92) 100%),
+    linear-gradient(135deg, #fffde7, #fdd835);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.decision-modal__paw {
+  position: absolute;
+  left: 58.04px;
+  top: 58.04px;
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  border-radius: 9999px;
+  background: #ffdad6;
+  color: #ffb400;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.decision-modal__paw--success {
+  background: #4caf50;
+  color: #ffffff;
+}
+
+.decision-modal__copy {
+  margin-top: 17.42px;
+  width: 256.23px;
+  text-align: center;
+}
+
+.decision-modal__copy--success {
+  margin-top: 24px;
+  width: 309.23px;
+}
+
+.decision-modal__copy h2 {
+  height: 52px;
+  margin: 0;
+  padding-bottom: 12px;
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 40px;
+  letter-spacing: -0.8px;
+}
+
+.decision-modal__copy p {
+  min-height: 52px;
+  margin: 0;
+  padding: 0 4.11px;
+  white-space: pre-line;
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 26px;
+  letter-spacing: 0;
+}
+
+.decision-modal__actions {
+  display: flex;
+  width: 100%;
+  margin-top: 24px;
+  justify-content: center;
+  gap: 22px;
+  padding: 0 40px;
+}
+
+.decision-modal__button {
+  display: inline-flex;
+  width: 173px;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-family: Roboto, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+
+.decision-modal__button:active {
+  transform: scale(0.98);
+}
+
+.decision-modal__button--outline {
+  border: 0.5px solid rgba(0, 0, 0, 0.5);
+  color: rgba(0, 0, 0, 0.6);
+  font-weight: 500;
+  line-height: 22px;
+  letter-spacing: 0.1px;
+}
+
+.decision-modal__button--danger {
+  background: #d32f2f;
+  color: #ffffff;
+  font-weight: 400;
+  letter-spacing: 0.17px;
+}
+
+.decision-modal__button--yellow-outline {
+  border: 1px solid #fdd835;
+  color: rgba(0, 0, 0, 0.87);
+  font-weight: 400;
+  letter-spacing: 0.17px;
+}
+
+.decision-modal__button--yellow {
+  background: #fdd835;
+  color: rgba(0, 0, 0, 0.87);
+  font-weight: 400;
+  letter-spacing: 0.17px;
+}
+
+@media (max-width: 520px) {
+  .decision-modal {
+    height: auto;
+    min-height: 399px;
+  }
+
+  .decision-modal__actions {
+    gap: 12px;
+    padding: 0 24px 32px;
+  }
+
+  .decision-modal__button {
+    width: 50%;
+  }
+}
+
 @layer base {
   :focus:not(:focus-visible) {
     outline: none;
@@ -446,11 +666,11 @@ body {
   --notification-blue: #094cb2;
   --notification-border: rgba(195, 198, 213, 0.2);
   --notification-border-strong: rgba(195, 198, 213, 0.78);
-  position: absolute;
-  right: -108px;
-  top: calc(100% + 52px);
+  position: fixed;
+  right: max(16px, calc((100vw - 1440px) / 2 + 160px));
+  top: 88px;
   z-index: 90;
-  width: 460px;
+  width: 551px;
   height: 403px;
   overflow: hidden;
   border: 1px solid var(--notification-border);
@@ -476,7 +696,7 @@ body {
 
 .notification-popover__header-main {
   display: flex;
-  width: 350px;
+  width: 430px;
   align-items: center;
   justify-content: space-between;
 }
@@ -544,7 +764,7 @@ body {
 .notification-popover__search {
   position: relative;
   display: flex;
-  width: 198px;
+  width: 240px;
   height: 33px;
   flex: 0 0 auto;
   align-items: center;
@@ -618,7 +838,7 @@ body {
 }
 
 .notification-popover__list {
-  width: 450px;
+  width: 541px;
   height: 318px;
   overflow-y: auto;
   scrollbar-width: none;
@@ -645,7 +865,7 @@ body {
 
 .notification-item {
   display: flex;
-  width: 450px;
+  width: 541px;
   align-items: flex-start;
   gap: 16px;
   border: 0;
@@ -743,7 +963,7 @@ body {
 }
 
 .notification-item--appointment .notification-item__message {
-  width: 362px;
+  width: 453px;
 }
 
 .notification-item--pet .notification-item__message,

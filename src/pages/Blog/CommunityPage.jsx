@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Bookmark,
   Camera,
   Check,
   Heart,
@@ -95,7 +94,7 @@ function TypeBadge({ type }) {
   return <span className={`rounded-full px-3 py-1 text-[12px] font-semibold ${POST_TYPES[type] || "bg-[#EEE] text-[#414753]"}`}>{type}</span>;
 }
 
-function Actions({ post, liked, saved, onLike, onComment, onShare, onSave }) {
+function Actions({ post, liked, onLike, onComment, onShare }) {
   const action = (handler) => (event) => {
     event.stopPropagation();
     handler();
@@ -109,14 +108,13 @@ function Actions({ post, liked, saved, onLike, onComment, onShare, onSave }) {
         <button type="button" onClick={action(onComment)} className="flex items-center gap-2"><MessageSquare className="h-5 w-5" /> {post.comments}</button>
       </div>
       <div className="flex gap-4">
-        <button type="button" onClick={action(onSave)} aria-label="Lưu bài viết" className={saved ? "text-[#005AB4]" : ""}><Bookmark className="h-5 w-5" fill={saved ? "currentColor" : "none"} /></button>
         <button type="button" onClick={action(onShare)} aria-label="Chia sẻ"><Share2 className="h-5 w-5" /></button>
       </div>
     </div>
   );
 }
 
-function CommunityCard({ post, state, onOpen, onLike, onShare, onSave }) {
+function CommunityCard({ post, state, onOpen, onLike, onComment, onShare }) {
   return (
     <article
       role="button"
@@ -135,14 +133,14 @@ function CommunityCard({ post, state, onOpen, onLike, onShare, onSave }) {
         <div className={`mt-3 whitespace-pre-line text-[16px] leading-[26px] text-[#414753]`}>{post.content}</div>
         {post.tags && <div className="mt-4 flex flex-wrap gap-2">{post.tags.map((tag) => <span key={tag} className="rounded-lg bg-[rgba(214,227,255,0.5)] px-2 py-0.5 text-[10px] font-semibold text-[#005AB4]">{tag}</span>)}</div>}
         <div className="mt-6">
-          <Actions post={post} liked={state.liked} saved={state.saved} onLike={onLike} onComment={onOpen} onShare={onShare} onSave={onSave} />
+          <Actions post={post} liked={state.liked} onLike={onLike} onComment={onComment} onShare={onShare} />
         </div>
       </div>
     </article>
   );
 }
 
-function Composer({ onPost }) {
+function Composer({ onPost, canPost, onRequireAuth }) {
   const imageInput = useRef(null);
   const videoInput = useRef(null);
   const [value, setValue] = useState("");
@@ -150,16 +148,28 @@ function Composer({ onPost }) {
   const [media, setMedia] = useState(null);
   const [showTypes, setShowTypes] = useState(false);
 
+  const requirePostAuth = () => {
+    if (canPost) return true;
+    onRequireAuth("đăng bài");
+    return false;
+  };
   const selectFile = (event, kind) => {
+    if (!requirePostAuth()) {
+      event.target.value = "";
+      return;
+    }
     const file = event.target.files?.[0];
     if (!file) return;
     setMedia({ kind, name: file.name, url: URL.createObjectURL(file) });
   };
   const submit = () => {
+    if (!requirePostAuth()) return;
     if (!value.trim() && !media) return;
     onPost({ content: value.trim(), type, [media?.kind]: media?.url });
     setValue("");
     setMedia(null);
+    setType("");
+    setShowTypes(false);
   };
 
   return (
@@ -168,7 +178,16 @@ function Composer({ onPost }) {
       <div className="relative flex gap-6">
         <img src={blogImages.communityAuthor} alt="" className="h-[57px] w-[57px] rounded-full border-2 border-[#005AB4] object-cover" />
         <div className="flex-1">
-          <textarea value={value} onChange={(event) => setValue(event.target.value)} placeholder="Sen đang nghĩ gì về các boss hôm nay..." className="h-[80px] w-full resize-none rounded-[24px] border border-white/80 bg-white/60 px-6 py-4 outline-none" />
+          <textarea
+            value={value}
+            onChange={(event) => {
+              if (canPost) setValue(event.target.value);
+            }}
+            onFocus={requirePostAuth}
+            placeholder={canPost ? "Sen đang nghĩ gì về các boss hôm nay..." : "Đăng nhập để chia sẻ với cộng đồng..."}
+            readOnly={!canPost}
+            className="h-[80px] w-full resize-none rounded-[24px] border border-white/80 bg-white/60 px-6 py-4 outline-none"
+          />
           {media && <div className="mt-3 flex items-center justify-between rounded-xl bg-white/70 px-4 py-2 text-sm text-[#005AB4]"><span>{media.kind === "image" ? "Ảnh" : "Video"}: {media.name}</span><button onClick={() => setMedia(null)}><X className="h-4 w-4" /></button></div>}
         </div>
       </div>
@@ -176,20 +195,20 @@ function Composer({ onPost }) {
         <div className="flex gap-4">
           <input ref={imageInput} type="file" accept="image/*" className="hidden" onChange={(event) => selectFile(event, "image")} />
           <input ref={videoInput} type="file" accept="video/*" className="hidden" onChange={(event) => selectFile(event, "video")} />
-          <button type="button" onClick={() => imageInput.current?.click()} className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm"><Image className="h-[18px] w-[18px]" />Ảnh</button>
-          <button type="button" onClick={() => videoInput.current?.click()} className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm"><Video className="h-[18px] w-[18px]" />Video</button>
+          <button type="button" onClick={() => requirePostAuth() && imageInput.current?.click()} className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm"><Image className="h-[18px] w-[18px]" />Ảnh</button>
+          <button type="button" onClick={() => requirePostAuth() && videoInput.current?.click()} className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm"><Video className="h-[18px] w-[18px]" />Video</button>
           <div className="relative">
-            <button type="button" onClick={() => setShowTypes((open) => !open)} className={`flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm ${POST_TYPES[type]}`}><Tag className="h-[18px] w-[18px]" />{type || "Thẻ"}</button>
+            <button type="button" onClick={() => requirePostAuth() && setShowTypes((open) => !open)} className={`flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm ${POST_TYPES[type]}`}><Tag className="h-[18px] w-[18px]" />{type || "Thẻ"}</button>
             {showTypes && <div className="absolute left-0 top-12 z-20 flex w-44 flex-col gap-2 rounded-2xl bg-white p-3 shadow-xl">{Object.keys(POST_TYPES).map((item) => <button key={item} type="button" onClick={() => { setType(item); setShowTypes(false); }} className={`flex items-center justify-between rounded-xl px-3 py-2 text-left text-sm ${POST_TYPES[item]}`}>{item}{type === item && <Check className="h-4 w-4" />}</button>)}</div>}
           </div>
         </div>
-        <button type="button" onClick={submit} disabled={!value.trim() && !media} className="rounded-full bg-[#90CAF9] px-10 py-3 font-semibold shadow-lg transition-colors hover:bg-[#64B5F6] disabled:cursor-not-allowed disabled:opacity-50">Chia sẻ</button>
+        <button type="button" onClick={submit} disabled={canPost && !value.trim() && !media} className="rounded-full bg-[#90CAF9] px-10 py-3 font-semibold shadow-lg transition-colors hover:bg-[#64B5F6] disabled:cursor-not-allowed disabled:opacity-50">Chia sẻ</button>
       </div>
     </section>
   );
 }
 
-function PostModal({ post, comments, state, onClose, onAddComment, onLike, onShare, onSave }) {
+function PostModal({ post, comments, state, onClose, onAddComment, onLike, onShare, canInteract, onRequireAuth }) {
   const imageInput = useRef(null);
   const fileInput = useRef(null);
   const commentInput = useRef(null);
@@ -203,6 +222,10 @@ function PostModal({ post, comments, state, onClose, onAddComment, onLike, onSha
   };
   const submit = () => {
     if (!value.trim() && !attachment) return;
+    if (!canInteract) {
+      onRequireAuth("bình luận");
+      return;
+    }
     onAddComment(value.trim() || `Đã gửi ${attachment.kind === "image" ? "một ảnh" : "một tệp đính kèm"}`, replyTo);
     setValue("");
     setReplyTo(null);
@@ -219,7 +242,7 @@ function PostModal({ post, comments, state, onClose, onAddComment, onLike, onSha
             <div className="flex items-start justify-between"><Author post={post} large /><TypeBadge type={post.type} /></div>
             {post.title && <h2 className="mt-5 text-[16px] font-semibold">{post.title}</h2>}
             <div className="mt-4 whitespace-pre-line text-[16px] leading-[26px] text-[#414753]">{post.content}</div>
-            <div className="mt-6"><Actions post={post} liked={state.liked} saved={state.saved} onLike={onLike} onComment={() => commentInput.current?.focus()} onShare={onShare} onSave={onSave} /></div>
+            <div className="mt-6"><Actions post={post} liked={state.liked} onLike={onLike} onComment={() => canInteract ? commentInput.current?.focus() : onRequireAuth("bình luận")} onShare={onShare} /></div>
           </div>
         </div>
         <div className="flex min-h-0 w-[400px] flex-col">
@@ -230,7 +253,7 @@ function PostModal({ post, comments, state, onClose, onAddComment, onLike, onSha
                 <span className="h-8 w-8 shrink-0 rounded-full bg-[#EEE]" />
                 <div className="flex-1">
                   <div className="rounded-bl-[16px] rounded-br-[16px] rounded-tr-[16px] bg-[#F3F3F3] p-3"><p className="text-[16px] text-[#1A1C1C]">{comment.author}</p>{comment.replyTo && <p className="text-xs text-[#005AB4]">Trả lời {comment.replyTo}</p>}<p className="text-[16px] text-[#414753]">{comment.content}</p></div>
-                  <div className="mt-1 flex gap-4 px-1 text-[12px]"><button className={likedComments[comment.id] ? "font-semibold text-[#005AB4]" : ""} onClick={() => setLikedComments((items) => ({ ...items, [comment.id]: !items[comment.id] }))}>Thích</button><button onClick={() => { setReplyTo(comment.author); commentInput.current?.focus(); }}>Trả lời</button><span className="opacity-60">{comment.time}</span></div>
+                  <div className="mt-1 flex gap-4 px-1 text-[12px]"><button className={likedComments[comment.id] ? "font-semibold text-[#005AB4]" : ""} onClick={() => canInteract ? setLikedComments((items) => ({ ...items, [comment.id]: !items[comment.id] })) : onRequireAuth("like")}>Thích</button><button onClick={() => { if (!canInteract) { onRequireAuth("bình luận"); return; } setReplyTo(comment.author); commentInput.current?.focus(); }}>Trả lời</button><span className="opacity-60">{comment.time}</span></div>
                 </div>
               </div>
             )) : <div className="flex h-full flex-col items-center justify-center text-center text-[#414753]"><MessageSquare className="h-14 w-14 text-[#C1C6D5]" /><p className="mt-3 text-[#1A1C1C]">Chưa có bình luận nào</p><p>Hãy là người đầu tiên bình luận.</p></div>}
@@ -239,14 +262,14 @@ function PostModal({ post, comments, state, onClose, onAddComment, onLike, onSha
             <img src={blogImages.communityAuthor} alt="" className="h-10 w-10 rounded-full border-2 border-[#005AB4]" />
             <div className="flex-1 rounded-[16px] bg-[#EEE] p-3">
               {replyTo && <div className="mb-2 flex justify-between text-[12px] text-[#414753]"><span>Đang trả lời <b>{replyTo}</b></span><button onClick={() => setReplyTo(null)}><X className="h-3 w-3" /></button></div>}
-              <textarea ref={commentInput} value={value} onChange={(event) => setValue(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); submit(); } }} placeholder="Sen nghĩ gì về bài đăng này..." className="h-12 w-full resize-none bg-transparent outline-none" />
+              <textarea ref={commentInput} value={value} onChange={(event) => setValue(event.target.value)} onFocus={() => { if (!canInteract) onRequireAuth("bình luận"); }} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); submit(); } }} placeholder={canInteract ? "Sen nghĩ gì về bài đăng này..." : "Đăng nhập để bình luận..."} readOnly={!canInteract} className="h-12 w-full resize-none bg-transparent outline-none" />
               {attachment && <div className="mb-2 flex items-center justify-between rounded-lg bg-white px-2 py-1 text-[11px] text-[#005AB4]"><span className="truncate">{attachment.name}</span><button type="button" onClick={() => setAttachment(null)}><X className="h-3 w-3" /></button></div>}
               <div className="flex items-center justify-between border-t border-[#C1C6D5]/30 pt-2">
                 <div className="flex gap-2">
                   <input ref={imageInput} type="file" accept="image/*" className="hidden" onChange={(event) => selectAttachment(event, "image")} />
                   <input ref={fileInput} type="file" className="hidden" onChange={(event) => selectAttachment(event, "file")} />
-                  <button type="button" onClick={() => imageInput.current?.click()} aria-label="Đính kèm ảnh"><Camera className="h-4 w-4" /></button>
-                  <button type="button" onClick={() => fileInput.current?.click()} aria-label="Đính kèm tệp"><Paperclip className="h-5 w-5" /></button>
+                  <button type="button" onClick={() => canInteract ? imageInput.current?.click() : onRequireAuth("bình luận")} aria-label="Đính kèm ảnh"><Camera className="h-4 w-4" /></button>
+                  <button type="button" onClick={() => canInteract ? fileInput.current?.click() : onRequireAuth("bình luận")} aria-label="Đính kèm tệp"><Paperclip className="h-5 w-5" /></button>
                 </div>
                 <button type="button" onClick={submit} disabled={!value.trim() && !attachment} className="rounded-full bg-[#005AB4] p-2 text-white disabled:opacity-40"><Send className="h-4 w-4" /></button>
               </div>
@@ -259,7 +282,7 @@ function PostModal({ post, comments, state, onClose, onAddComment, onLike, onSha
 }
 
 export default function CommunityPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, openAuth } = useAuth();
   const featured = useMemo(() => ({ ...normalizeCommunityPost(FEATURED_COMMUNITY_POST), featured: true }), []);
   const [posts, setPosts] = useState(() => COMMUNITY_POSTS.map(normalizeCommunityPost));
   const [selectedId, setSelectedId] = useState(null);
@@ -302,11 +325,17 @@ export default function CommunityPage() {
   const allPosts = useMemo(() => [featured, ...posts], [featured, posts]);
   const selectedPost = allPosts.find((post) => post.id === selectedId);
   const columns = useMemo(() => splitBalanced(allPosts), [allPosts]);
-  const getState = (id) => postState[id] || { liked: false, saved: false };
+  const getState = (id) => postState[id] || { liked: false };
   const updatePostState = (id, key) => setPostState((state) => {
-    const current = state[id] || { liked: false, saved: false };
+    const current = state[id] || { liked: false };
     return { ...state, [id]: { ...current, [key]: !current[key] } };
   });
+  const requireAuth = (actionName) => {
+    setShareNotice(`Vui lòng đăng nhập để ${actionName}.`);
+    window.setTimeout(() => setShareNotice(""), 2200);
+    openAuth?.("login");
+    return false;
+  };
   const openPost = async (id) => {
     setSelectedId(id);
     const selected = allPosts.find((post) => post.id === id);
@@ -351,14 +380,25 @@ export default function CommunityPage() {
     setShareNotice("Đã sao chép liên kết bài viết");
     window.setTimeout(() => setShareNotice(""), 1800);
   };
-  const addPost = (payload) => setPosts((items) => [{ id: `post-${Date.now()}`, author: "Bạn", initials: "B", time: "Vừa xong", likes: 0, comments: 0, ...payload }, ...items]);
+  const addPost = (payload) => {
+    if (!isAuthenticated) {
+      requireAuth("đăng bài");
+      return;
+    }
+    setPosts((items) => [{ id: `post-${Date.now()}`, author: "Bạn", initials: "B", time: "Vừa xong", likes: 0, comments: 0, ...payload }, ...items]);
+  };
   const addComment = async (postId, content, replyTo) => {
     const selected = allPosts.find((post) => post.id === postId);
     if (!selected) return;
 
-    if (!isAuthenticated || !selected.backendId) {
-      setCommentsByPost((state) => ({ ...state, [postId]: [...(state[postId] || []), { id: Date.now(), author: "Bạn", content, replyTo, time: "Vừa xong" }] }));
-      setPosts((items) => items.map((post) => post.id === postId ? { ...post, comments: Number(post.comments || 0) + 1 } : post));
+    if (!isAuthenticated) {
+      requireAuth("bình luận");
+      return;
+    }
+
+    if (!selected.backendId) {
+      setShareNotice("Bài viết mẫu chưa hỗ trợ bình luận.");
+      window.setTimeout(() => setShareNotice(""), 2200);
       return;
     }
 
@@ -405,8 +445,14 @@ export default function CommunityPage() {
   };
 
   const handleLikePost = async (post) => {
-    if (!post.backendId || !isAuthenticated) {
-      updatePostState(post.id, "liked");
+    if (!isAuthenticated) {
+      requireAuth("like");
+      return;
+    }
+
+    if (!post.backendId) {
+      setShareNotice("Bài viết mẫu chưa hỗ trợ like.");
+      window.setTimeout(() => setShareNotice(""), 2200);
       return;
     }
 
@@ -417,7 +463,7 @@ export default function CommunityPage() {
       setPostState((state) => ({
         ...state,
         [post.id]: {
-          ...(state[post.id] || { saved: false }),
+          ...(state[post.id] || { liked: false }),
           liked: !currentlyLiked,
         },
       }));
@@ -445,18 +491,18 @@ export default function CommunityPage() {
             <Link to="/blog/so-cuu" className="font-medium text-[#4B5563]">Cẩm nang sơ cứu</Link>
           </nav>
           <section className="flex flex-col items-center pb-5 pt-2 text-center"><h1 className="flex items-center gap-1 text-[40px] font-bold tracking-[-0.8px]">Kết nối <span className="text-[#0D47A1]">chia sẻ</span><img src={blogImages.communityTitle} alt="" className="h-12 w-12" /></h1><p className="mt-2 text-[16px] leading-6 text-[#414753]">Nơi chia sẻ khoảnh khắc, kinh nghiệm và lan tỏa yêu thương<br />cùng cộng đồng yêu thú cưng!!</p></section>
-          <Composer onPost={addPost} />
+          <Composer onPost={addPost} canPost={isAuthenticated} onRequireAuth={requireAuth} />
           {loadError && <p className="w-[1208px] text-[14px] text-[#D32F2F]">{loadError}</p>}
           {apiEmptyMessage && !loadError && <p className="w-[1208px] text-[14px] text-[#0D47A1]">{apiEmptyMessage}</p>}
           {isLoading && <p className="w-[1208px] text-[16px] text-[#0D47A1]">Đang tải bài viết cộng đồng...</p>}
           <section className="mt-7 grid w-[1208px] grid-cols-2 items-start gap-4">
-            {columns.map((column, columnIndex) => <div key={columnIndex} className="flex flex-col gap-4">{column.map((post) => <CommunityCard key={post.id} post={post} state={getState(post.id)} onOpen={() => openPost(post.id)} onLike={() => handleLikePost(post)} onSave={() => updatePostState(post.id, "saved")} onShare={() => sharePost(post)} />)}{columnIndex === 1 && <div className="rounded-[24px] bg-[#0D47A1] p-8 text-center text-white"><h3 className="font-semibold">Gia đình Dr.Pet</h3><p className="mt-2 text-[14px]">Tham gia cộng đồng Zalo để cập nhật tin tức và ưu đãi sớm nhất.</p><button className="mt-5 rounded-full bg-white px-8 py-2 text-[12px] font-bold text-[#0D47A1]">THAM GIA NGAY</button></div>}</div>)}
+            {columns.map((column, columnIndex) => <div key={columnIndex} className="flex flex-col gap-4">{column.map((post) => <CommunityCard key={post.id} post={post} state={getState(post.id)} onOpen={() => openPost(post.id)} onLike={() => handleLikePost(post)} onComment={() => isAuthenticated ? openPost(post.id) : requireAuth("bình luận")} onShare={() => sharePost(post)} />)}{columnIndex === 1 && <div className="rounded-[24px] bg-[#0D47A1] p-8 text-center text-white"><h3 className="font-semibold">Gia đình Dr.Pet</h3><p className="mt-2 text-[14px]">Tham gia cộng đồng Zalo để cập nhật tin tức và ưu đãi sớm nhất.</p><button className="mt-5 rounded-full bg-white px-8 py-2 text-[12px] font-bold text-[#0D47A1]">THAM GIA NGAY</button></div>}</div>)}
           </section>
         </main>
         <Footer variant="white" />
       </CanvasLayout>
       {shareNotice && <div className="fixed bottom-6 left-1/2 z-[110] -translate-x-1/2 rounded-full bg-[#1A1C1C] px-5 py-3 text-sm text-white shadow-xl">{shareNotice}</div>}
-      {selectedPost && <PostModal post={selectedPost} comments={commentsLoading ? EMPTY_COMMENTS : (commentsByPost[selectedPost.id] || EMPTY_COMMENTS)} state={getState(selectedPost.id)} onClose={() => setSelectedId(null)} onAddComment={(content, replyTo) => addComment(selectedPost.id, content, replyTo)} onLike={() => handleLikePost(selectedPost)} onSave={() => updatePostState(selectedPost.id, "saved")} onShare={() => sharePost(selectedPost)} />}
+      {selectedPost && <PostModal post={selectedPost} comments={commentsLoading ? EMPTY_COMMENTS : (commentsByPost[selectedPost.id] || EMPTY_COMMENTS)} state={getState(selectedPost.id)} onClose={() => setSelectedId(null)} onAddComment={(content, replyTo) => addComment(selectedPost.id, content, replyTo)} onLike={() => handleLikePost(selectedPost)} onShare={() => sharePost(selectedPost)} canInteract={isAuthenticated} onRequireAuth={requireAuth} />}
     </div>
   );
 }

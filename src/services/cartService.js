@@ -33,6 +33,7 @@ export function normalizeCartItem(item = {}) {
     image: getPrimaryProductImage(product) || item.image || item.imageUrl || item.thumbnail,
     type: variant.variant_name ?? item.type ?? "",
     size: item.size ?? "",
+    variants: Array.isArray(product.variants) ? product.variants : item.variants,
     qty: Number(item.quantity ?? item.qty ?? 1),
     selected: Boolean(item.is_selected ?? item.selected ?? true),
     raw: item,
@@ -53,6 +54,7 @@ export async function addCartItem(item) {
   const response = await apiClient.post("/cart", {
     product_id: item.productId || item.product_id || item.id,
     variant_id: item.variantId || item.variant_id || null,
+    size: item.size || "",
     quantity: item.qty || item.quantity || 1,
   });
   return normalizeCartItem(assertSuccess(response));
@@ -61,6 +63,9 @@ export async function addCartItem(item) {
 export async function updateCartItem(itemId, updates) {
   const payload = {};
   if (updates.quantity !== undefined) payload.quantity = updates.quantity;
+  if (updates.variantId !== undefined) payload.variant_id = updates.variantId;
+  if (updates.variant_id !== undefined) payload.variant_id = updates.variant_id;
+  if (updates.size !== undefined) payload.size = updates.size;
   if (updates.isSelected !== undefined) payload.is_selected = updates.isSelected;
   if (updates.is_selected !== undefined) payload.is_selected = updates.is_selected;
 

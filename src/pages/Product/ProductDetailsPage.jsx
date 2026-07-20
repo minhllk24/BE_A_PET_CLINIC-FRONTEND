@@ -1,17 +1,17 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import CanvasLayout from "../components/layout/CanvasLayout";
-import Breadcrumb from "../components/layout/Breadcrumb";
-import NavBar from "../components/Navbar";
-import ShoppingProductCard from "../components/product/ShoppingProductCard";
-import WriteReviewForm from "../components/product/WriteReviewForm";
-import Footer from "../components/Footer/Footer";
-import ProductRating from "../components/product/ProductRating";
+import { Link, useParams } from "react-router-dom";
+import CanvasLayout from "../../components/layout/CanvasLayout";
+import Breadcrumb from "../../components/layout/Breadcrumb";
+import NavBar from "../../components/Navbar";
+import ShoppingProductCard from "../../components/product/ShoppingProductCard";
+import WriteReviewForm from "../../components/product/WriteReviewForm";
+import Footer from "../../components/Footer/Footer";
+import ProductRating from "../../components/product/ProductRating";
 
-import { productImages } from "../assets/productImages";
-import { useAuth } from "../context/AuthContext";
-import { useCart } from "../context/CartContext";
-import { formatVnd } from "../utils/currency";
+import { productImages } from "../../assets/productImages";
+import { useAuth } from "../../context/AuthContext";
+import { useCart } from "../../context/CartContext";
+import { formatVnd } from "../../utils/currency";
 import {
   createProductReview,
   getProductDetails,
@@ -20,8 +20,8 @@ import {
   likeProductReview,
   normalizeProduct,
   normalizeArray,
-} from "../services/productService";
-import { FEATURED_PRODUCTS, SHOP_PRODUCTS } from "../data/shopData";
+} from "../../services/productService";
+import { FEATURED_PRODUCTS, SHOP_PRODUCTS } from "../../data/shopData";
 
 const REVIEW_PAGE_SIZE = 2;
 const EMPTY_REVIEWS_DATA = { items: [], totalPages: 1, totalItems: 0, averageRating: 0, ratingBreakdown: {} };
@@ -31,11 +31,11 @@ function buildFallbackProduct(product) {
   return normalizeProduct({
     ...product,
     description: product.description || "Thông tin sản phẩm đang được cập nhật. Bạn vẫn có thể tham khảo giá và thêm sản phẩm vào giỏ hàng.",
-    shortDescription: product.shortDescription || "Sản phẩm chăm sóc thú cưng từ Dr. Pet's House.",
+    shortDescription: product.shortDescription || "Sản phẩm chăm sóc thú cưng từ Dr. Pet's House. uhcbshbcc zxbhcbhbcacv xgchzxbj  ck  b uhbcahcbzxj kzjxh k  zxcgvbjh bzxk zxkhb zxucbshc zxj cxbcy fuhfasjhbjcjhdvjgvcjsasgucsuhcjzuhcbjdcdvczch",
     images: product.image ? [product.image] : [],
     variants: product.variants || [{ id: "default", name: "Mặc định", price: product.price, sizes: [] }],
     shipping: {
-      freeShippingThreshold: 300000,
+      freeShippingThreshold: 500000,
       deliveryEstimate: "2-4 ngày",
     },
   });
@@ -70,10 +70,9 @@ function normalizeReviewsData(response) {
 }
 
 export default function ProductDetailsPage({ showWriteReview = false }) {
-  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { productId } = useParams();
-  const { addToCart, openCart } = useCart();
+  const { addToCart, openCart, openCheckout } = useCart();
   const descriptionRef = useRef(null);
   const [product, setProduct] = useState(null);
   const [reviewsData, setReviewsData] = useState(EMPTY_REVIEWS_DATA);
@@ -220,7 +219,12 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
 
   /* ---- Scroll to description on "Đọc thêm" ---- */
   const handleReadMore = () => {
-    descriptionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (isReviewTab) {
+      setIsReviewTab(false);
+    }
+    setTimeout(() => {
+      (descriptionRef.current || tabSectionRef.current)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
   };
 
   /* ---- Dropdown outside click + Escape key ---- */
@@ -259,6 +263,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
       image: selectedImage,
       type: variant?.name,
       size: dropdownValue,
+      variants: product.variants,
       qty: quantity,
     });
     openCart();
@@ -268,7 +273,21 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
 
   /* ---- Buy now ---- */
   const handleBuyNow = () => {
-    navigate("/checkout");
+    const variant = product?.variants?.[selectedTypeIdx];
+    const itemPrice = variant?.price ?? product.price;
+    addToCart({
+      id: `${product.id}:${variant?.id ?? "default"}:${dropdownValue || "default"}`,
+      productId: product.id,
+      variantId: variant?.id ?? null,
+      name: product.name,
+      price: itemPrice,
+      image: selectedImage,
+      type: variant?.name,
+      size: dropdownValue,
+      variants: product.variants,
+      qty: quantity,
+    });
+    openCheckout();
   };
 
   /* ---- Review pagination ---- */
@@ -435,15 +454,17 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                     <div className="h-px w-[494px] bg-[#D7D7D7]" />
 
                     {/* Description + "Đọc thêm" scroll */}
-                    <div ref={descriptionRef} className="w-[494px] text-[16px] leading-[1.5] tracking-[0.15px] text-[#414141]">
-                      <p className="mb-0">
+                    <div className="w-[494px] text-[16px] leading-[1.5] tracking-[0.15px] text-[#414141]">
+                      <p
+                        className="mb-0 overflow-hidden"
+                        style={{ display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2 }}
+                      >
                         {product.shortDescription || product.description}
                       </p>
-                      <br />
                       <button
                         type="button"
                         onClick={handleReadMore}
-                        className="text-[#0D47A1] underline underline-offset-2 hover:no-underline hover:text-[#1565C0] focus-ring-brand transition-all duration-micro"
+                        className="mt-[8px] text-[#0D47A1] underline underline-offset-2 hover:no-underline hover:text-[#1565C0] focus-ring-brand transition-all duration-micro"
                       >
                         Đọc thêm...
                       </button>
@@ -583,7 +604,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                 </div>
 
                 {/* Shipping info */}
-                <div className="w-[350px] space-y-[16px] pb-[2px] font-['Oxygen'] text-[14px] leading-[normal] text-[#424242]">
+                <div className="w-[350px] space-y-[16px] pb-[2px] font-['Roboto'] text-[14px] leading-[normal] text-[#424242]">
                   <div className="flex items-center gap-[20px]">
                     <img src={productImages.truck} alt="" className="h-6 w-[26px]" />
                     {product.shipping?.freeShippingThreshold
@@ -593,13 +614,12 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                   <div className="flex items-center gap-[20px] whitespace-nowrap">
                     <img src={productImages.rotate3d} alt="" className="h-[26px] w-[26px]" />
                     Giao hàng trong: {product.shipping?.deliveryEstimate || "Đang cập nhật"}{" "}
-                    <button
-                      type="button"
-                      onClick={handleReadMore}
+                    <Link
+                      to="/policies/van-chuyen"
                       className="underline underline-offset-2 hover:no-underline hover:text-[#0D47A1] transition-colors duration-micro"
                     >
-                      Shipping & Return
-                    </button>
+                      Chính sách giao hàng
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -654,7 +674,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
 
             {!isReviewTab ? (
               /* ---- Description content ---- */
-              <div className="w-full font-['Roboto'] text-[16px] font-normal leading-[24px] tracking-[0.15px] text-[#575757]">
+              <div ref={descriptionRef} className="w-full scroll-mt-[24px] font-['Roboto'] text-[16px] font-normal leading-[24px] tracking-[0.15px] text-[#575757]">
                 <p className="mb-0">
                   {product.description}
                 </p>

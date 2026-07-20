@@ -21,7 +21,7 @@ export const SHOP_PRODUCTS = Array.from({ length: 45 }, (_, index) => {
   return {
     id: index + 1,
     categoryIdx: index % PRODUCT_CATEGORIES.length,
-    name: `Sản phẩm ${index + 1}`,
+    name: `Sản phẩm hfbsdbjasbds cd cvsab shc  vsdcshc kcsdvgabdjb ác  ${index + 1}`,
     price,
     originalPrice: Math.round(price * 1.6),
     rating: 4.5,

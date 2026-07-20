@@ -14,7 +14,7 @@ function ButtonComponent({
     danger:
       "btn-brand bg-red-500 text-white hover:bg-red-600 focus-ring-brand",
     outline:
-      "btn-brand border-2 border-primary bg-transparent text-primary hover:bg-primary hover:text-white focus-ring-brand",
+      "btn-brand border-2 border-primary bg-white text-primary hover:bg-primary hover:text-white focus-ring-brand",
   };
 
   return (

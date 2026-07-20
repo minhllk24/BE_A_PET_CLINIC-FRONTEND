@@ -27,9 +27,28 @@ function normalizePaymentMethod(order = {}) {
   return method || "Đang cập nhật";
 }
 
+function parseVariantMeta(value = "") {
+  const text = String(value || "").trim();
+  if (!text || ["mac dinh", "mặc định", "default"].includes(text.toLocaleLowerCase("vi"))) {
+    return { variant: "", size: "" };
+  }
+
+  const sizePattern = /\b(?:size\s*)?(XS|S|M|L|XL|XXL|\d+(?:[.,]\d+)?\s*(?:g|kg|ml|l|cm|mm))\b/i;
+  const sizeMatch = text.match(sizePattern);
+  const size = sizeMatch?.[0]?.trim() || "";
+  const variant = size ? text.replace(sizeMatch[0], "").replace(/[-–—|,/]+/g, " ").trim() : text;
+
+  return {
+    variant: variant || (size ? "" : text),
+    size,
+  };
+}
+
 function normalizeOrderProduct(item = {}) {
   const itemName = item.item_name_snapshot || item.product?.product_name || "Sản phẩm";
-  const [name, variantName] = itemName.split(" - ");
+  const [name, snapshotVariantName] = itemName.split(" - ");
+  const variantName = item.variant?.variant_name || item.variant_name || snapshotVariantName || "";
+  const parsedVariant = parseVariantMeta(variantName);
 
   return {
     id: String(item.order_item_id || item.product_id || item.id || itemName),
@@ -38,8 +57,8 @@ function normalizeOrderProduct(item = {}) {
     name,
     price: Number(item.unit_price || item.product?.price || 0),
     quantity: Number(item.quantity || 1),
-    variant: item.variant?.variant_name || variantName || "",
-    size: "",
+    variant: item.variant_label || item.variantLabel || parsedVariant.variant,
+    size: item.size || item.size_label || item.sizeLabel || parsedVariant.size,
     image: item.product?.product_images?.[0]?.image_url || "",
   };
 }

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { bookingImages } from "../../assets/bookingImages";
 import { BOOKING_PAYMENT_METHODS } from "../../data/bookingData";
+import { previewAppointmentPricing } from "../../services/bookingService";
 import { formatVnd } from "../../utils/currency";
 
 const {
@@ -57,6 +58,7 @@ function AppointmentDetails({
   ownerInfo,
   selectedServices,
   quantities,
+  pricingByServiceId,
   onQuantityChange,
 }) {
   const petList = petInfos.length > 0 ? petInfos : selectedPets;
@@ -96,8 +98,13 @@ function AppointmentDetails({
       <div className="mt-5 space-y-3 md:space-y-4">
         {selectedServices.map((service) => {
           const quantity = quantities[service.id] || 1;
-          const weightSurcharge = getWeightSurcharge(service, petWeightValue) * quantity;
-          const serviceTotal = service.price * quantity + weightSurcharge;
+          const pricingLine = pricingByServiceId?.[String(service.serviceId || service.id)];
+          const weightSurcharge = pricingLine
+            ? Number(pricingLine.surcharge || 0) * quantity
+            : getWeightSurcharge(service, petWeightValue) * quantity;
+          const serviceTotal = pricingLine
+            ? Number(pricingLine.total || 0)
+            : service.price * quantity + weightSurcharge;
 
           return (
             <div key={service.id} className="flex items-start justify-between gap-3 rounded-2xl bg-[#f2f4f6] p-4 md:items-center md:p-5">
@@ -146,7 +153,17 @@ function Detail({ label, value, subValue, icon }) {
   );
 }
 
-function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surchargeTotal, total }) {
+function PaymentPanel({
+  paymentMode,
+  setPaymentMode,
+  onConfirm,
+  subtotal,
+  surchargeTotal,
+  discountTotal,
+  total,
+  pricingLoading,
+  pricingError,
+}) {
   const [couponCode, setCouponCode] = useState("");
   const [couponError, setCouponError] = useState("");
   const [paymentError, setPaymentError] = useState("");
@@ -284,7 +301,13 @@ function PaymentPanel({ paymentMode, setPaymentMode, onConfirm, subtotal, surcha
       <div className="my-5 space-y-3 rounded-2xl bg-[#f2f4f6] p-5 text-sm">
         <PriceRow label="Tạm tính" value={formatMoney(subtotal)} />
         <PriceRow label="Phụ thu" value={formatMoney(surchargeTotal)} />
-        <PriceRow label="Giảm giá" value="0đ" />
+        <PriceRow label="Giảm giá" value={formatMoney(discountTotal)} />
+        {pricingLoading && (
+          <p className="text-xs font-medium text-blue-900">Đang cập nhật phụ thu cân nặng...</p>
+        )}
+        {pricingError && (
+          <p className="text-xs font-medium text-amber-700">{pricingError}</p>
+        )}
       </div>
 
       <div className="mb-5 flex items-end justify-between gap-3 rounded-2xl bg-[#d5e4f3] p-5">
@@ -341,18 +364,89 @@ function BookingPaymentStep({
   const [quantities, setQuantities] = useState(() =>
     Object.fromEntries(selectedServices.map((service) => [service.id, 1])),
   );
+  const [pricingPreview, setPricingPreview] = useState(null);
+  const [pricingLoading, setPricingLoading] = useState(false);
+  const [pricingError, setPricingError] = useState("");
+
+  useEffect(() => {
+    setQuantities((current) => {
+      const next = { ...current };
+      selectedServices.forEach((service) => {
+        if (!next[service.id]) next[service.id] = 1;
+      });
+
+      Object.keys(next).forEach((serviceId) => {
+        if (!selectedServices.some((service) => service.id === serviceId)) {
+          delete next[serviceId];
+        }
+      });
+
+      return next;
+    });
+  }, [selectedServices]);
+
   const petWeightValue = getWeightValue(petInfo?.weight || selectedPet?.weight);
-  const subtotal = selectedServices.reduce((total, service) => {
+  const fallbackSubtotal = selectedServices.reduce((total, service) => {
     const quantity = quantities[service.id] || 1;
 
     return total + service.price * quantity;
   }, 0);
-  const surchargeTotal = selectedServices.reduce((total, service) => {
+  const fallbackSurchargeTotal = selectedServices.reduce((total, service) => {
     const quantity = quantities[service.id] || 1;
 
     return total + getWeightSurcharge(service, petWeightValue) * quantity;
   }, 0);
-  const total = subtotal + surchargeTotal;
+  const subtotal = Number(pricingPreview?.subtotal ?? fallbackSubtotal);
+  const surchargeTotal = Number(pricingPreview?.surcharge_amount ?? fallbackSurchargeTotal);
+  const discountTotal = Number(pricingPreview?.discount_amount ?? 0);
+  const total = Number(pricingPreview?.total ?? (fallbackSubtotal + fallbackSurchargeTotal));
+  const pricingByServiceId = useMemo(() => {
+    if (!Array.isArray(pricingPreview?.services)) return {};
+    return pricingPreview.services.reduce((result, item) => ({
+      ...result,
+      [String(item.service_id)]: item,
+    }), {});
+  }, [pricingPreview]);
+
+  useEffect(() => {
+    if (!selectedServices.length) {
+      setPricingPreview(null);
+      setPricingError("");
+      return undefined;
+    }
+
+    let active = true;
+    setPricingLoading(true);
+    setPricingError("");
+
+    previewAppointmentPricing({
+      pet_data: {
+        weight_kg: petWeightValue || undefined,
+      },
+      service_ids: selectedServices.map((service) => ({
+        service_id: service.serviceId || service.id,
+        quantity: quantities[service.id] || 1,
+      })),
+    })
+      .then((data) => {
+        if (!active) return;
+        setPricingPreview(data);
+        setPricingError(data?.voucher_error || "");
+      })
+      .catch((error) => {
+        if (!active) return;
+        setPricingPreview(null);
+        setPricingError(error?.message || "Không thể lấy phụ thu từ server, đang dùng giá tạm tính.");
+      })
+      .finally(() => {
+        if (active) setPricingLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [petWeightValue, quantities, selectedServices]);
+
   const handleQuantityChange = (serviceId, delta) => {
     setQuantities((current) => ({
       ...current,
@@ -376,6 +470,7 @@ function BookingPaymentStep({
           ownerInfo={ownerInfo}
           selectedServices={selectedServices}
           quantities={quantities}
+          pricingByServiceId={pricingByServiceId}
           onQuantityChange={handleQuantityChange}
         />
         <PaymentPanel
@@ -384,7 +479,10 @@ function BookingPaymentStep({
           onConfirm={handleConfirm}
           subtotal={subtotal}
           surchargeTotal={surchargeTotal}
+          discountTotal={discountTotal}
           total={total}
+          pricingLoading={pricingLoading}
+          pricingError={pricingError}
         />
       </div>
       <div className="mt-5 md:mt-6">

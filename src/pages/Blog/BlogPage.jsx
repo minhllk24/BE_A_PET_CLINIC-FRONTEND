@@ -296,12 +296,27 @@ export default function BlogPage() {
                 placeholder="Bạn đang tìm kiếm bài viết gì?"
                 className="min-w-0 flex-1 bg-transparent text-[16px] text-[#5F5F5F] outline-none placeholder:text-[#5F5F5F]"
               />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    setSearchQuery("");
+                    setVisibleCount(PAGE_SIZE);
+                    updateParams(category, "");
+                  }}
+                  className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E3F2FD] text-[28px] font-semibold leading-none text-[#0D47A1] transition-colors hover:bg-[#BBDEFB]"
+                  aria-label="Xóa tìm kiếm bài viết"
+                >
+                  ×
+                </button>
+              )}
               <button
                 type="submit"
                 className="flex h-10 w-10 items-center justify-center rounded-full text-[#0D47A1] transition-colors hover:bg-[#FFF176]"
                 aria-label="Tìm kiếm bài viết"
               >
-                <img src={productImages.searchIcon} alt="" className="h-6 w-6" />
+                <img src={productImages.searchIcon} alt="" className="h-7 w-7" />
               </button>
             </form>
             {searchQuery && (

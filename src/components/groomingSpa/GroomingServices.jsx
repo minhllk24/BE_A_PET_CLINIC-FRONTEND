@@ -112,7 +112,7 @@ function GroomingServices() {
   return (
     <section
       id="danh-sach-dich-vu"
-      className="flex w-full flex-col items-center gap-6 border-t border-[rgba(0,0,0,0.1)] pt-[28px]"
+      className="flex w-full flex-col items-center gap-6 border-[rgba(0,0,0,0.1)] pt-[28px]"
       style={{ height: 1651 }}
     >
       <div className="relative h-[162px] w-[1440px] shrink-0">

@@ -23,6 +23,7 @@ import {
 } from "../../data/blogData";
 import { FEATURED_PRODUCTS } from "../../data/shopData";
 import { getPostBySlug, getPostsPage } from "../../services/contentService";
+import { getProductsPage } from "../../services/productService";
 
 function SectionHeading({ children }) {
   return (
@@ -181,6 +182,8 @@ export default function BlogDetailPage() {
   }, [postId]);
   const [post, setPost] = useState(fallbackPost);
   const [relatedPosts, setRelatedPosts] = useState(ALL_BLOG_POSTS);
+  const [relatedProducts, setRelatedProducts] = useState(() => FEATURED_PRODUCTS.slice(0, 6));
+  const [productNotice, setProductNotice] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const section = BLOG_SECTIONS[post.section] || BLOG_SECTIONS.knowledge;
@@ -214,6 +217,29 @@ export default function BlogDetailPage() {
       active = false;
     };
   }, [fallbackPost, postId]);
+
+  useEffect(() => {
+    let active = true;
+    setProductNotice("");
+
+    getProductsPage({ sort: "best_selling", limit: 6, page: 1 })
+      .then((payload) => {
+        if (!active) return;
+        if (payload.products.length) {
+          setRelatedProducts(payload.products.slice(0, 6));
+          return;
+        }
+        setProductNotice("API sản phẩm liên quan chưa có dữ liệu, đang hiển thị sản phẩm mẫu.");
+      })
+      .catch((error) => {
+        if (!active) return;
+        setProductNotice(error?.message || "Không thể tải sản phẩm liên quan, đang hiển thị sản phẩm mẫu.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -251,8 +277,13 @@ export default function BlogDetailPage() {
 
           <section className="w-[1206px] pt-6">
             <SectionHeading>Sản phẩm liên quan</SectionHeading>
+            {productNotice && (
+              <p className="mt-4 rounded-xl bg-white px-5 py-3 text-sm font-medium text-[#0D47A1]">
+                {productNotice}
+              </p>
+            )}
             <div className="mt-6 flex gap-9">
-              {FEATURED_PRODUCTS.slice(0, 6).map((product) => (
+              {relatedProducts.map((product) => (
                 <ShoppingProductCard key={product.id} product={product} href="/product-details" />
               ))}
             </div>

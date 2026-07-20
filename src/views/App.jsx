@@ -4,6 +4,7 @@ import { NotificationProvider } from "../context/NotificationContext";
 import AppRoutes from "../routes/AppRoutes";
 import AuthModal from "../components/auth/AuthModal";
 import ScrollToTop from "../components/layout/ScrollToTop";
+import { DecisionModalProvider } from "../components/shared/DecisionModal";
 import "./App.css";
 
 function App() {
@@ -11,9 +12,11 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <NotificationProvider>
-          <ScrollToTop />
-          <AppRoutes />
-          <AuthModal />
+          <DecisionModalProvider>
+            <ScrollToTop />
+            <AppRoutes />
+            <AuthModal />
+          </DecisionModalProvider>
         </NotificationProvider>
       </CartProvider>
     </AuthProvider>

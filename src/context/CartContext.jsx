@@ -21,6 +21,14 @@ import {
 
 const CartContext = createContext(null);
 
+function buildCartItemKey(product = {}) {
+  return `${product.productId || product.product_id || product.id}:${product.variantId || product.variant_id || "default"}:${product.size || "default"}`;
+}
+
+function getCartItemOptionKey(item = {}) {
+  return `${item.productId || item.product_id || item.productId || item.id}:${item.variantId || item.variant_id || "default"}:${item.size || "default"}`;
+}
+
 export function CartProvider({ children }) {
   const { isAuthenticated } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -108,13 +116,64 @@ export function CartProvider({ children }) {
     }
   }, [cartItems, isAuthenticated, reloadCart]);
 
+  const updateCartOptions = useCallback((id, updates) => {
+    const currentItem = cartItems.find((item) => item.id === id);
+    if (!currentItem) return;
+
+    const nextItem = { ...currentItem, ...updates };
+    const nextOptionKey = getCartItemOptionKey(nextItem);
+    const existingItem = cartItems.find(
+      (item) => item.id !== id && getCartItemOptionKey(item) === nextOptionKey,
+    );
+
+    setCartItems((items) =>
+      existingItem
+        ? items
+            .filter((item) => item.id !== id)
+            .map((item) =>
+              item.id === existingItem.id
+                ? {
+                    ...item,
+                    qty: item.qty + currentItem.qty,
+                    selected: item.selected || currentItem.selected,
+                  }
+                : item,
+            )
+        : items.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  ...updates,
+                  id: item.cartItemId ? item.id : nextOptionKey,
+                }
+              : item,
+          ),
+    );
+    if (isAuthenticated && currentItem.cartItemId) {
+      const request = existingItem?.cartItemId
+        ? Promise.all([
+            updateCartItem(existingItem.cartItemId, {
+              quantity: existingItem.qty + currentItem.qty,
+              isSelected: existingItem.selected || currentItem.selected,
+            }),
+            deleteCartItem(currentItem.cartItemId),
+          ])
+        : updateCartItem(currentItem.cartItemId, updates);
+
+      request.catch((error) => {
+        setCartSyncError(error?.message || "Không thể cập nhật tùy chọn sản phẩm");
+        reloadCart();
+      });
+    }
+  }, [cartItems, isAuthenticated, reloadCart]);
+
   const addToCart = useCallback((product) => {
-    const localId = product.id || `${product.productId}:${product.variantId || "default"}:${product.size || "default"}`;
+    const localId = buildCartItemKey(product);
     setCartItems((items) => {
       const existing = items.find((i) => i.id === localId);
       if (existing) {
         return items.map((i) =>
-          i.id === localId ? { ...i, qty: i.qty + (product.qty || 1) } : i
+          i.id === localId ? { ...i, qty: i.qty + (product.qty || 1), selected: true } : i
         );
       }
       return [...items, { ...product, id: localId, qty: product.qty || 1, selected: true }];
@@ -227,6 +286,7 @@ export function CartProvider({ children }) {
       toggleCartItem,
       removeCartItem,
       updateCartQty,
+      updateCartOptions,
       addToCart,
     }),
     [
@@ -256,6 +316,7 @@ export function CartProvider({ children }) {
       toggleCartItem,
       removeCartItem,
       updateCartQty,
+      updateCartOptions,
       addToCart,
     ],
   );

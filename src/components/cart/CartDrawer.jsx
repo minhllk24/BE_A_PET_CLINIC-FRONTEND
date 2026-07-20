@@ -16,7 +16,7 @@ function CartDrawer() {
         onClick={closeCart}
         aria-label="Đóng giỏ hàng"
       />
-      <div className="pointer-events-auto absolute inset-0 lg:inset-x-0 lg:top-[88px] lg:mx-auto lg:max-w-page">
+      <div className="pointer-events-none absolute inset-0 lg:inset-x-0 lg:top-[88px] lg:mx-auto lg:max-w-page">
         <MyCartPanel onClose={closeCart} />
       </div>
     </div>

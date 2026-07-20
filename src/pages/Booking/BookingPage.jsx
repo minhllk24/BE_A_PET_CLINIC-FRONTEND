@@ -3,12 +3,14 @@ import NavBar from "../../components/Navbar";
 import Footer from "../../components/Footer/Footer";
 import BookingPaymentStep from "../../components/booking/BookingPaymentStep";
 import BookingSuccessModal from "../../components/booking/BookingSuccessModal";
+import { useDecisionModal } from "../../components/shared/DecisionModal";
 import { ChevronDown, MapPin } from "lucide-react";
 import {
   BOOKING_SERVICES,
   BOOKING_SERVICE_TYPES,
 } from "../../data/bookingData";
 import { bookingImages } from "../../assets/bookingImages";
+import { productImages } from "../../assets/productImages";
 import { formatVnd } from "../../utils/currency";
 
 import buddyImg from "../../assets/images/pets/buddy.jpg";
@@ -23,7 +25,6 @@ import { getMyPets, getPetSpecies } from "../../services/petService";
 
 const {
   serviceListIcon,
-  serviceInputSearchIcon,
   serviceSelectedCheck,
   informationStepCheck,
   informationSelectedPetPhoto,
@@ -118,6 +119,18 @@ const isPetInfoComplete = (petInfo) =>
   petInfo.species &&
   String(petInfo.weight).trim() &&
   petInfo.status;
+
+const isPetInfoTouched = (petInfo) =>
+  Boolean(
+    String(petInfo.name || "").trim() ||
+      petInfo.species ||
+      String(petInfo.breed || "").trim() ||
+      String(petInfo.age || "").trim() ||
+      String(petInfo.weight || "").trim() ||
+      petInfo.gender ||
+      petInfo.status ||
+      String(petInfo.notes || "").trim(),
+  );
 
 const getDateKey = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -407,9 +420,22 @@ function ServiceSelection({
   onNext,
 }) {
   const [validationAttempted, setValidationAttempted] = useState(false);
+  const [serviceSearch, setServiceSearch] = useState("");
   const visibleServices = useMemo(
-    () => services.filter((service) => !selectedServiceType || service.serviceTypeId === selectedServiceType),
-    [selectedServiceType, services],
+    () => {
+      const keyword = serviceSearch.trim().toLocaleLowerCase("vi");
+      return services.filter((service) => {
+        const matchesType = !selectedServiceType || service.serviceTypeId === selectedServiceType;
+        const matchesSearch =
+          !keyword ||
+          [service.name, service.desc]
+            .join(" ")
+            .toLocaleLowerCase("vi")
+            .includes(keyword);
+        return matchesType && matchesSearch;
+      });
+    },
+    [selectedServiceType, serviceSearch, services],
   );
   const total = useMemo(
     () => services.filter((item) => selectedServices.includes(item.id)).reduce((sum, item) => sum + item.price, 0),
@@ -515,13 +541,25 @@ function ServiceSelection({
           <h2 className="mb-5 flex items-center gap-2 text-xl font-bold text-blue-900">
             <AssetIcon src={serviceListIcon} /> Danh sách dịch vụ chi tiết
           </h2>
-          <div className="relative mb-6">
-            <img src={serviceInputSearchIcon} alt="" className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2" />
+          <div className="relative mb-6 flex h-12 items-center rounded-lg border border-slate-300 bg-white py-1 pl-4 pr-2 focus-within:border-blue-900">
             <input
-              type="search"
+              type="text"
+              value={serviceSearch}
+              onChange={(event) => setServiceSearch(event.target.value)}
               placeholder="Tìm kiếm dịch vụ..."
-              className="w-full rounded-lg border border-slate-300 py-3 pl-12 pr-5 text-base outline-none focus:border-blue-900"
+              className="min-w-0 flex-1 bg-transparent text-base outline-none"
             />
+            {serviceSearch && (
+              <button
+                type="button"
+                onClick={() => setServiceSearch("")}
+                className="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E3F2FD] text-[26px] font-semibold leading-none text-[#0D47A1] transition-colors hover:bg-[#BBDEFB]"
+                aria-label="Xóa tìm kiếm dịch vụ"
+              >
+                ×
+              </button>
+            )}
+            <img src={productImages.searchIcon} alt="" className="h-7 w-7 shrink-0" />
           </div>
           <div className="min-h-0 flex-1 space-y-[10px] overflow-y-auto pr-1 md:pr-2">
             {visibleServices.map((service) => {
@@ -903,14 +941,34 @@ function Field({
 }
 
 function PetSelectionModal({ pets, loading, error, selectedPets, onConfirm, onClose }) {
+  const { confirmCancel } = useDecisionModal();
   const [draftPets, setDraftPets] = useState(selectedPets);
+  const draftChanged = useMemo(() => {
+    const selectedIds = selectedPets.map((pet) => String(pet.id)).sort().join("|");
+    const draftIds = draftPets.map((pet) => String(pet.id)).sort().join("|");
+    return selectedIds !== draftIds;
+  }, [draftPets, selectedPets]);
 
   const togglePet = (pet) => {
     setDraftPets((current) =>
       current.some((item) => item.id === pet.id)
         ? current.filter((item) => item.id !== pet.id)
-        : [...current, pet],
+      : [...current, pet],
     );
+  };
+
+  const handleClose = () => {
+    if (!draftChanged) {
+      onClose();
+      return;
+    }
+
+    confirmCancel({
+      message: "Bạn chắc chắn muốn đóng lại?\nLựa chọn vừa thay đổi sẽ không được lưu",
+      cancelLabel: "Ở lại",
+      confirmLabel: "Hủy",
+      onConfirm: onClose,
+    });
   };
 
   return (
@@ -921,7 +979,7 @@ function PetSelectionModal({ pets, loading, error, selectedPets, onConfirm, onCl
             <h2 className="text-xl font-bold text-[#1b4f8a]">Chọn hồ sơ thú cưng</h2>
             <p className="text-xs font-medium text-slate-600">Chọn thú cưng muốn đặt lịch nhé</p>
           </div>
-          <button type="button" onClick={onClose} className="p-1" aria-label="Đóng">
+          <button type="button" onClick={handleClose} className="p-1" aria-label="Đóng">
             <img src={petPickerCloseIcon} alt="" className="h-4 w-4" />
           </button>
         </div>
@@ -1008,6 +1066,7 @@ function FlowButtons({ onBack, onNext }) {
 }
 
 function BookingPage() {
+  const { confirmCancel } = useDecisionModal();
   const { isAuthenticated, requireAuth, userProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedServiceType, setSelectedServiceType] = useState(DEFAULT_SERVICE_TYPE_ID);
@@ -1037,6 +1096,16 @@ function BookingPage() {
   });
   const [paymentMode, setPaymentMode] = useState("store");
   const [success, setSuccess] = useState(false);
+
+  const infoStepTouched =
+    selectedPets.length > 0 ||
+    petInfos.some(isPetInfoTouched) ||
+    Boolean(
+      ownerInfo.name.trim() ||
+        ownerInfo.phone.trim() ||
+        ownerInfo.email.trim() ||
+        ownerInfo.agreed,
+    );
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -1203,6 +1272,20 @@ function BookingPage() {
     }
   };
 
+  const handleInfoBack = () => {
+    if (!infoStepTouched) {
+      setStep(1);
+      return;
+    }
+
+    confirmCancel({
+      message: "Bạn chắc chắn muốn quay lại?\nCác thông tin vừa nhập sẽ không được lưu",
+      cancelLabel: "Ở lại",
+      confirmLabel: "Hủy",
+      onConfirm: () => setStep(1),
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans">
       <NavBar />
@@ -1239,7 +1322,7 @@ function BookingPage() {
               pets={pets}
               petsLoading={petsLoading}
               petsError={petsError}
-              onBack={() => setStep(1)}
+              onBack={handleInfoBack}
               onNext={() => setStep(3)}
             />
           )}

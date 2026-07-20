@@ -11,7 +11,6 @@ import {
   createAdoptionRequest,
   getAdoptionPets,
   getMyAdoptionRequests,
-  getRescueStations,
   normalizeAdoptionRequest,
 } from "../../services/rescueService";
 
@@ -110,8 +109,8 @@ function PartnerCard({ partner }) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 text-[16px] leading-6 text-[#4F606A]">
-          <p className="min-h-[48px] italic">{partner.address}</p>
+        <div className="flex min-w-0 flex-col gap-2 text-[16px] leading-6 text-[#4F606A]">
+          <p className="min-h-[48px] whitespace-normal break-words italic">{partner.address}</p>
           <div className="h-24">
             {description.map((line) => (
               <p key={line}>{line}</p>
@@ -183,7 +182,6 @@ export default function RescuePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedAdoptionPet, setSelectedAdoptionPet] = useState(null);
   const [rescuePets, setRescuePets] = useState(RESCUE_PETS);
-  const [partners, setPartners] = useState(RESCUE_PARTNERS);
   const [myRequests, setMyRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
@@ -194,11 +192,10 @@ export default function RescuePage() {
     setIsLoading(true);
     setLoadError("");
 
-    Promise.all([getAdoptionPets(), getRescueStations()])
-      .then(([apiPets, apiPartners]) => {
+    getAdoptionPets()
+      .then((apiPets) => {
         if (!active) return;
         if (apiPets.length) setRescuePets(apiPets);
-        if (apiPartners.length) setPartners(apiPartners);
       })
       .catch((error) => {
         if (!active) return;
@@ -283,7 +280,7 @@ export default function RescuePage() {
     <div className="min-h-screen bg-white">
       <CanvasLayout>
         <NavBar />
-        <main className="relative min-h-[1985px] overflow-hidden bg-[#E5F6FD] px-[120px] pb-[84px] pt-[34px]">
+        <main className="relative min-h-[1985px] overflow-hidden bg-[linear-gradient(180deg,#FFFFFF_0%,#E5F6FD_36%)] px-[120px] pb-[84px] pt-[34px]">
           <section className="relative flex h-[486px] items-start">
             <div className="w-[550px] pt-[34px]">
               <SectionLabel>Tìm một người bạn thân</SectionLabel>
@@ -418,7 +415,7 @@ export default function RescuePage() {
             <img src={rescueImages.yellowDoodle} alt="" className="absolute right-[170px] top-6 h-[74px] w-[124px]" />
 
             <div className="mt-9 grid w-[1200px] grid-cols-3 gap-8">
-              {partners.map((partner) => (
+              {RESCUE_PARTNERS.map((partner) => (
                 <PartnerCard key={partner.id} partner={partner} />
               ))}
             </div>

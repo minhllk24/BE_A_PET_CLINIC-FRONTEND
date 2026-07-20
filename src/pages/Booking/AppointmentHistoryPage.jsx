@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { appointmentImages } from "../../assets/appointmentImages";
 import WriteReviewForm from "../../components/product/WriteReviewForm";
+import { useDecisionModal } from "../../components/shared/DecisionModal";
 import {
   APPOINTMENT_FILTERS,
   getAppointmentActions,
@@ -401,6 +402,7 @@ function SearchAndSort({
   searchInput,
   onSearchInputChange,
   onSearch,
+  onClearSearch,
   sortOrder,
   onSortChange,
 }) {
@@ -419,12 +421,22 @@ function SearchAndSort({
           placeholder="Tìm kiếm theo Mã lịch hẹn, Thời gian, tên thú cưng hoặc dịch vụ"
           className="min-w-0 flex-1 bg-transparent text-[15px] text-[#5f5f5f] outline-none placeholder:text-[#5f5f5f]"
         />
+        {searchInput && (
+          <button
+            type="button"
+            onClick={onClearSearch}
+            className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E3F2FD] text-[28px] font-semibold leading-none text-[#0D47A1] transition-colors hover:bg-[#BBDEFB]"
+            aria-label="Xóa tìm kiếm lịch hẹn"
+          >
+            ×
+          </button>
+        )}
         <button
           type="submit"
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[#fff176]"
           aria-label="Tìm kiếm lịch hẹn"
         >
-          <img src={appointmentImages.searchIcon} alt="" className="h-5 w-5" />
+          <img src={appointmentImages.searchIcon} alt="" className="h-7 w-7" />
         </button>
       </label>
 
@@ -447,6 +459,7 @@ function SearchAndSort({
 }
 
 function AppointmentHistoryPage() {
+  const { confirmCancel, openDecisionModal, showSuccessModal } = useDecisionModal();
   const [appointments, setAppointments] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchInput, setSearchInput] = useState("");
@@ -533,76 +546,88 @@ function AppointmentHistoryPage() {
     }
 
     if (actionKey === "cancel") {
-      const confirmed = window.confirm("Bạn chắc chắn muốn hủy lịch hẹn này?");
-      if (!confirmed) return;
+      confirmCancel({
+        message: `Bạn chắc chắn muốn hủy lịch hẹn #${appointment.code}?\nHành động này không thể hoàn tác`,
+        confirmLabel: "Hủy",
+        onConfirm: async () => {
+          setActionLoadingId(appointment.id);
+          setActionMessage(null);
 
-      setActionLoadingId(appointment.id);
-      setActionMessage(null);
-
-      try {
-        await cancelAppointment(appointment.id);
-        setAppointments((current) =>
-          current.map((item) =>
-            item.id === appointment.id
-              ? {
-                  ...item,
-                  status: "cancelled",
-                  canCancel: false,
-                  canReschedule: false,
-                  canRebook: true,
-                }
-              : item,
-          ),
-        );
-        setActionMessage({ type: "success", text: "Đã hủy lịch hẹn thành công." });
-      } catch (error) {
-        setActionMessage({
-          type: "error",
-          text: error?.message || "Không thể hủy lịch hẹn lúc này. Vui lòng thử lại sau.",
-        });
-      } finally {
-        setActionLoadingId(null);
-      }
+          try {
+            await cancelAppointment(appointment.id);
+            setAppointments((current) =>
+              current.map((item) =>
+                item.id === appointment.id
+                  ? {
+                      ...item,
+                      status: "cancelled",
+                      canCancel: false,
+                      canReschedule: false,
+                      canRebook: true,
+                    }
+                  : item,
+              ),
+            );
+            setActionMessage({ type: "success", text: "Đã hủy lịch hẹn thành công." });
+            showSuccessModal({
+              message: "Đã hủy lịch hẹn thành công.\nBạn có thể tiếp tục hoặc quay về trang chủ",
+            });
+          } catch (error) {
+            setActionMessage({
+              type: "error",
+              text: error?.message || "Không thể hủy lịch hẹn lúc này. Vui lòng thử lại sau.",
+            });
+          } finally {
+            setActionLoadingId(null);
+          }
+        },
+      });
       return;
     }
 
     if (actionKey === "pay") {
-      const confirmed = window.confirm(
-        "Xác nhận thanh toán lịch hẹn tại phòng khám? Hệ thống sẽ giữ lịch và ghi nhận trạng thái chờ thanh toán tại quầy.",
-      );
-      if (!confirmed) return;
+      openDecisionModal({
+        type: "cancel",
+        title: "XÁC NHẬN",
+        message: "Xác nhận thanh toán lịch hẹn tại phòng khám?\nHệ thống sẽ ghi nhận trạng thái chờ thanh toán tại quầy",
+        confirmLabel: "Xác nhận",
+        onConfirm: async () => {
+          setActionLoadingId(appointment.id);
+          setActionMessage(null);
 
-      setActionLoadingId(appointment.id);
-      setActionMessage(null);
-
-      try {
-        await checkoutAppointment(appointment.id, { paymentMethod: "store" });
-        setAppointments((current) =>
-          current.map((item) =>
-            item.id === appointment.id
-              ? {
-                  ...item,
-                  status: "confirmed",
-                  paymentMethod: "store",
-                  paymentStatus: "waiting_store_payment",
-                  canCancel: true,
-                  canReschedule: true,
-                }
-              : item,
-          ),
-        );
-        setActionMessage({
-          type: "success",
-          text: "Đã xác nhận lịch hẹn. Bạn có thể thanh toán tại phòng khám khi đến sử dụng dịch vụ.",
-        });
-      } catch (error) {
-        setActionMessage({
-          type: "error",
-          text: error?.message || "Không thể xác nhận thanh toán lịch hẹn lúc này.",
-        });
-      } finally {
-        setActionLoadingId(null);
-      }
+          try {
+            await checkoutAppointment(appointment.id, { paymentMethod: "store" });
+            setAppointments((current) =>
+              current.map((item) =>
+                item.id === appointment.id
+                  ? {
+                      ...item,
+                      status: "confirmed",
+                      paymentMethod: "store",
+                      paymentStatus: "waiting_store_payment",
+                      canCancel: true,
+                      canReschedule: true,
+                    }
+                  : item,
+              ),
+            );
+            setActionMessage({
+              type: "success",
+              text: "Đã xác nhận lịch hẹn. Bạn có thể thanh toán tại phòng khám khi đến sử dụng dịch vụ.",
+            });
+            showSuccessModal({
+              message: "Đã xác nhận lịch hẹn thành công.\nBạn có thể tiếp tục hoặc quay về trang chủ",
+            });
+          } catch (error) {
+            setActionMessage({
+              type: "error",
+              text: error?.message || "Không thể xác nhận thanh toán lịch hẹn lúc này.",
+            });
+          } finally {
+            setActionLoadingId(null);
+          }
+        },
+      });
       return;
     }
 
@@ -686,6 +711,10 @@ function AppointmentHistoryPage() {
         searchInput={searchInput}
         onSearchInputChange={setSearchInput}
         onSearch={() => setSearchQuery(searchInput.trim())}
+        onClearSearch={() => {
+          setSearchInput("");
+          setSearchQuery("");
+        }}
         sortOrder={sortOrder}
         onSortChange={setSortOrder}
       />

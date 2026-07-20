@@ -1,20 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import ScaledCanvasLayout from "../components/layout/ScaledCanvasLayout";
-import Breadcrumb from "../components/layout/Breadcrumb";
-import Footer from "../components/Footer/Footer";
-import NavBar from "../components/Navbar";
-import ShoppingProductCard from "../components/product/ShoppingProductCard";
-import { productImages } from "../assets/productImages";
-import { useAuth } from "../context/AuthContext";
-import { getProductCategories, getProductsPage } from "../services/productService";
+import ScaledCanvasLayout from "../../components/layout/ScaledCanvasLayout";
+import Breadcrumb from "../../components/layout/Breadcrumb";
+import Footer from "../../components/Footer/Footer";
+import NavBar from "../../components/Navbar";
+import ShoppingProductCard from "../../components/product/ShoppingProductCard";
+import { productImages } from "../../assets/productImages";
+import { useAuth } from "../../context/AuthContext";
+import { getProductCategories, getProductsPage } from "../../services/productService";
 import {
   PRODUCT_CATEGORIES as CATEGORIES,
   PRODUCT_PRICE_RANGES as PRICE_RANGES,
   SHOP_PRODUCTS,
-} from "../data/shopData";
+} from "../../data/shopData";
 
 const PAGE_SIZE = 20;
+const MULTI_CATEGORY_FETCH_LIMIT = 100;
 
 function isPriceInRange(price, range) {
   if (!range) return false;
@@ -64,6 +65,14 @@ const toBackendSort = (sortOrder) => {
   if (sortOrder === "asc") return "price_asc";
   if (sortOrder === "desc") return "price_desc";
   return "newest";
+};
+
+const getNumericPrice = (product) => Number(String(product?.price ?? 0).replace(/[^\d.-]/g, "")) || 0;
+
+const sortProducts = (products, sortOrder) => {
+  if (sortOrder === "asc") return [...products].sort((a, b) => getNumericPrice(a) - getNumericPrice(b));
+  if (sortOrder === "desc") return [...products].sort((a, b) => getNumericPrice(b) - getNumericPrice(a));
+  return [...products].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 };
 
 const getFallbackProducts = ({ searchQuery, selectedCategories, selectedPrices, sortOrder }) => {
@@ -204,7 +213,7 @@ function SearchAndSort({ search, onSearchChange, onSearch, onClearSearch, sortOr
               onClearSearch();
               inputRef.current?.focus();
             }}
-            className="mr-1 flex h-8 w-8 items-center justify-center rounded-full text-[24px] leading-none text-[#5F5F5F] transition-colors hover:bg-[#E3F2FD] hover:text-[#0D47A1]"
+            className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#E3F2FD] text-[28px] font-semibold leading-none text-[#0D47A1] transition-colors hover:bg-[#BBDEFB]"
             aria-label="Xóa tìm kiếm"
           >
             ×
@@ -215,7 +224,7 @@ function SearchAndSort({ search, onSearchChange, onSearch, onClearSearch, sortOr
           className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-[#FFF176]"
           aria-label="Tìm kiếm sản phẩm"
         >
-          <img src={productImages.searchIcon} alt="" className="h-6 w-6" />
+          <img src={productImages.searchIcon} alt="" className="h-7 w-7" />
         </button>
       </label>
 
@@ -284,7 +293,7 @@ function LoadMore({ shown, total, hasMore, isLoading, onLoadMore }) {
           className="flex h-[42px] items-center gap-1 rounded-[4px] bg-[#FDD835] px-[22px] text-[15px] font-medium uppercase tracking-[0.46px] text-black shadow-elevation transition-colors hover:bg-[#FDD835] disabled:opacity-60"
         >
           {isLoading ? "Đang tải..." : "Xem thêm"}
-          {!isLoading && <img src={productImages.buttonChevron} alt="" className="h-[12px] w-[10px]" />}
+          {!isLoading}
         </button>
       )}
     </div>
@@ -326,10 +335,10 @@ export default function ProductPage() {
 
   const categoryOptions = useMemo(() => buildCategoryOptions(apiCategories), [apiCategories]);
 
-  const selectedCategoryId = useMemo(() => {
-    const selectedCategory = selectedCategories[0];
-    if (selectedCategory === undefined) return undefined;
-    return categoryOptions.find((category) => category.index === selectedCategory)?.categoryId;
+  const selectedCategoryIds = useMemo(() => {
+    return selectedCategories
+      .map((selectedCategory) => categoryOptions.find((category) => category.index === selectedCategory)?.categoryId)
+      .filter(Boolean);
   }, [categoryOptions, selectedCategories]);
 
   const loadProducts = useCallback(async (page = 1, append = false) => {
@@ -337,7 +346,8 @@ export default function ProductPage() {
     const params = {
       page,
       limit: PAGE_SIZE,
-      category_id: selectedCategoryId || undefined,
+      category_id: selectedCategoryIds[0] || undefined,
+      category_ids: selectedCategoryIds.length ? selectedCategoryIds.join(",") : undefined,
       filter: searchQuery.trim() || undefined,
       sort: toBackendSort(sortOrder),
       minPrice: range?.min,
@@ -352,6 +362,34 @@ export default function ProductPage() {
     setLoadError("");
 
     try {
+      if (selectedCategoryIds.length > 1) {
+        const categoryResults = await Promise.all(
+          selectedCategoryIds.map((categoryId) =>
+            getProductsPage({
+              ...params,
+              page: 1,
+              limit: MULTI_CATEGORY_FETCH_LIMIT,
+              category_id: categoryId,
+              category_ids: undefined,
+            }),
+          ),
+        );
+        const uniqueProducts = new Map();
+        categoryResults.forEach((result) => {
+          result.products.forEach((product) => {
+            uniqueProducts.set(String(product.id), product);
+          });
+        });
+        const mergedProducts = sortProducts([...uniqueProducts.values()], sortOrder);
+        const pageProducts = mergedProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+        setProducts((current) => (append ? [...current, ...pageProducts] : pageProducts));
+        setTotalProducts(mergedProducts.length);
+        setTotalPages(Math.max(1, Math.ceil(mergedProducts.length / PAGE_SIZE)));
+        setCurrentPage(page);
+        return;
+      }
+
       const result = await getProductsPage(params);
       setProducts((current) => (append ? [...current, ...result.products] : result.products));
       setTotalProducts(result.totalRows);
@@ -370,7 +408,7 @@ export default function ProductPage() {
       setIsLoading(false);
       setIsLoadingProducts(false);
     }
-  }, [searchQuery, selectedCategories, selectedCategoryId, selectedPrices, sortOrder]);
+  }, [searchQuery, selectedCategories, selectedCategoryIds, selectedPrices, sortOrder]);
 
   useEffect(() => {
     let active = true;
@@ -406,11 +444,7 @@ export default function ProductPage() {
   }, []);
 
   const togglePrice = useCallback((priceIndex) => {
-    setSelectedPrices((current) =>
-      current.includes(priceIndex)
-        ? current.filter((index) => index !== priceIndex)
-        : [...current, priceIndex],
-    );
+    setSelectedPrices((current) => (current.includes(priceIndex) ? [] : [priceIndex]));
   }, []);
 
   const clearSearch = useCallback(() => {

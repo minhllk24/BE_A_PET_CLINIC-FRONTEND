@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { productImages } from "../../assets/productImages";
 import WriteReviewForm from "../../components/product/WriteReviewForm";
+import { useDecisionModal } from "../../components/shared/DecisionModal";
 import {
   formatCurrency,
   formatOrderDate,
@@ -22,6 +23,15 @@ import { addCartItem } from "../../services/cartService";
 import { createProductReview } from "../../services/productService";
 
 const STATUS_STEPS = ["processing", "shipping", "delivered"];
+const EMPTY_ORDER_PRODUCT = {
+  id: "empty-product",
+  name: "",
+  price: 0,
+  quantity: 1,
+  variant: "",
+  size: "",
+  image: productImages.detailImage,
+};
 
 const shiftDate = (value, days) => {
   const date = new Date(value);
@@ -92,18 +102,20 @@ function OutlineButton({ children, className = "", ...props }) {
 }
 
 function ProductSummary({ product, large = false }) {
+  const safeProduct = product || EMPTY_ORDER_PRODUCT;
+
   return (
     <div className={`flex items-center gap-[10px] ${large ? "min-h-[100px] w-full" : "h-[100px] w-[372px]"}`}>
-      <img src={product.image || productImages.detailImage} alt={product.name} className="h-20 w-20 shrink-0 object-cover" />
+      <img src={safeProduct.image || productImages.detailImage} alt={safeProduct.name} className="h-20 w-20 shrink-0 object-cover" />
       <div className="flex min-w-0 flex-1 flex-col gap-[8px]">
-        <strong className={`${large ? "text-[20px]" : "text-[14px]"} line-clamp-2 text-[#0D47A1]`}>
-          {product.name}
+        <strong className={`${large ? "text-[20px]" : "text-[14px]"} block truncate text-[#0D47A1]`}>
+          {safeProduct.name}
         </strong>
-        <strong className="text-[14px] text-[#353535]">{formatCurrency(product.price)}</strong>
-        <div className="flex flex-wrap gap-x-6 text-[12px] text-[#353535]">
-          <span>Loại: {product.variant}</span>
-          <span>Kích cỡ: {product.size}</span>
-          <span>{large ? `x ${product.quantity}` : `Số lượng: ${product.quantity}`}</span>
+        <strong className="text-[14px] text-[#353535]">{formatCurrency(safeProduct.price)}</strong>
+        <div className="flex min-w-0 flex-nowrap items-center gap-x-4 text-[12px] text-[#353535]">
+          <span className="min-w-0 truncate">Loại: {safeProduct.variant || "Không có"}</span>
+          <span className="shrink-0">Kích cỡ: {safeProduct.size || "Không có"}</span>
+          <span className="shrink-0">Số lượng: {safeProduct.quantity}</span>
         </div>
       </div>
     </div>
@@ -185,7 +197,8 @@ function OrderCard({
   const [paymentExpired, setPaymentExpired] = useState(
     order.status === "awaiting_payment" && new Date(order.paymentExpiresAt).getTime() <= Date.now(),
   );
-  const status = ORDER_STATUS[order.status];
+  const status = ORDER_STATUS[order.status] || ORDER_STATUS.processing;
+  const products = Array.isArray(order.products) ? order.products : [];
   const openDetails = () => navigate(`/don-hang-cua-toi/${order.id}`);
 
   return (
@@ -204,9 +217,15 @@ function OrderCard({
             <strong>Mã đơn hàng: {order.id}</strong>
             <span>{formatOrderDate(order.orderedAt)}</span>
           </div>
-          <ProductSummary product={order.products[0]} />
-          {order.products.length > 1 && (
-            <span className="text-[12px]">+ {order.products.length - 1} sản phẩm</span>
+          {products.length ? (
+            <>
+              <ProductSummary product={products[0]} />
+              {products.length > 1 && (
+                <span className="text-[12px]">+ {products.length - 1} sản phẩm</span>
+              )}
+            </>
+          ) : (
+            <p className="py-8 text-[14px] text-[#667085]">Đơn hàng chưa có dữ liệu sản phẩm.</p>
           )}
         </div>
         <div className="flex w-[205px] flex-col items-center gap-[10px]">
@@ -388,6 +407,7 @@ function SearchAndSort({
 }
 
 export function MyOrdersPage() {
+  const { confirmCancel, showSuccessModal } = useDecisionModal();
   const [ordersData, setOrdersData] = useState([]);
   const [filter, setFilter] = useState("all");
   const [searchInput, setSearchInput] = useState("");
@@ -440,31 +460,37 @@ export function MyOrdersPage() {
   };
 
   const handleCancelOrder = async (order) => {
-    const confirmed = window.confirm("Bạn chắc chắn muốn hủy đơn hàng này?");
-    if (!confirmed) return;
+    confirmCancel({
+      message: `Bạn chắc chắn muốn hủy đơn hàng #${order.id}?\nHành động này không thể hoàn tác`,
+      confirmLabel: "Hủy",
+      onConfirm: async () => {
+        setActiveOrderId(order.id);
+        updateActionFeedback(order.id, "");
 
-    setActiveOrderId(order.id);
-    updateActionFeedback(order.id, "");
-
-    try {
-      await cancelOrder(order.id);
-      setOrdersData((current) =>
-        current.map((item) =>
-          item.id === order.id
-            ? {
-                ...item,
-                status: "cancelled",
-                order_status: "cancelled",
-              }
-            : item,
-        ),
-      );
-      updateActionFeedback(order.id, "Đã hủy đơn hàng thành công.");
-    } catch (error) {
-      updateActionFeedback(order.id, error?.message || "Không thể hủy đơn hàng lúc này.", "error");
-    } finally {
-      setActiveOrderId("");
-    }
+        try {
+          await cancelOrder(order.id);
+          setOrdersData((current) =>
+            current.map((item) =>
+              item.id === order.id
+                ? {
+                    ...item,
+                    status: "cancelled",
+                    order_status: "cancelled",
+                  }
+                : item,
+            ),
+          );
+          updateActionFeedback(order.id, "Đã hủy đơn hàng thành công.");
+          showSuccessModal({
+            message: "Đã hủy đơn hàng thành công.\nBạn có thể tiếp tục hoặc quay về trang chủ",
+          });
+        } catch (error) {
+          updateActionFeedback(order.id, error?.message || "Không thể hủy đơn hàng lúc này.", "error");
+        } finally {
+          setActiveOrderId("");
+        }
+      },
+    });
   };
 
   const handleRepayOrder = async (order) => {
@@ -588,7 +614,7 @@ export function MyOrdersPage() {
       const searchableText = [
         order.id,
         formatOrderDate(order.orderedAt),
-        ...order.products.map((product) => product.name),
+        ...(Array.isArray(order.products) ? order.products.map((product) => product.name) : []),
       ]
         .join(" ")
         .toLocaleLowerCase("vi");
@@ -740,6 +766,7 @@ function InvoiceModal({ order, onClose }) {
 }
 
 export function OrderDetailsPage() {
+  const { confirmCancel, showSuccessModal } = useDecisionModal();
   const { orderId } = useParams();
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [order, setOrder] = useState(null);
@@ -809,32 +836,38 @@ export function OrderDetailsPage() {
   };
 
   const handleCancel = async () => {
-    const confirmed = window.confirm("Bạn chắc chắn muốn hủy đơn hàng này?");
-    if (!confirmed) return;
+    confirmCancel({
+      message: `Bạn chắc chắn muốn hủy đơn hàng #${order.id}?\nHành động này không thể hoàn tác`,
+      confirmLabel: "Hủy",
+      onConfirm: async () => {
+        setActionLoading(true);
+        setActionMessage(null);
 
-    setActionLoading(true);
-    setActionMessage(null);
-
-    try {
-      await cancelOrder(order.id);
-      setOrder((current) =>
-        current
-          ? {
-              ...current,
-              status: "cancelled",
-              order_status: "cancelled",
-            }
-          : current,
-      );
-      setActionMessage({ type: "success", text: "Đã hủy đơn hàng thành công." });
-    } catch (error) {
-      setActionMessage({
-        type: "error",
-        text: error?.message || "Không thể hủy đơn hàng lúc này.",
-      });
-    } finally {
-      setActionLoading(false);
-    }
+        try {
+          await cancelOrder(order.id);
+          setOrder((current) =>
+            current
+              ? {
+                  ...current,
+                  status: "cancelled",
+                  order_status: "cancelled",
+                }
+              : current,
+          );
+          setActionMessage({ type: "success", text: "Đã hủy đơn hàng thành công." });
+          showSuccessModal({
+            message: "Đã hủy đơn hàng thành công.\nBạn có thể tiếp tục hoặc quay về trang chủ",
+          });
+        } catch (error) {
+          setActionMessage({
+            type: "error",
+            text: error?.message || "Không thể hủy đơn hàng lúc này.",
+          });
+        } finally {
+          setActionLoading(false);
+        }
+      },
+    });
   };
 
   const handleRepay = async () => {
@@ -954,6 +987,8 @@ export function OrderDetailsPage() {
   }
 
   const activeStep = STATUS_STEPS.indexOf(order.status);
+  const currentStatus = ORDER_STATUS[order.status] || ORDER_STATUS.processing;
+  const orderProducts = Array.isArray(order.products) ? order.products : [];
   const detailActions = [];
 
   if (order.status === "awaiting_payment") {
@@ -1014,8 +1049,8 @@ export function OrderDetailsPage() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-[32px] font-bold text-[#344054]">Mã đơn hàng: {order.id}</h1>
-            <span className={`mt-2 inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase ${ORDER_STATUS[order.status].badgeClass}`}>
-              {ORDER_STATUS[order.status].label}
+            <span className={`mt-2 inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase ${currentStatus.badgeClass}`}>
+              {currentStatus.label}
             </span>
           </div>
           <button onClick={() => setInvoiceOpen(true)} className="rounded border border-[#D0D5DD] px-4 py-2 text-[14px] font-bold text-[#667085]">📄Hóa đơn</button>
@@ -1061,7 +1096,15 @@ export function OrderDetailsPage() {
             </div>
           </div>
         )}
-        <div className="mt-7 space-y-5">{order.products.map((product) => <ProductSummary key={product.id} product={product} large />)}</div>
+        <div className="mt-7 space-y-5">
+          {orderProducts.length ? orderProducts.map((product) => (
+            <ProductSummary key={product.id} product={product} large />
+          )) : (
+            <p className="rounded-xl bg-[#F8FAFC] px-4 py-6 text-center text-[#667085]">
+              Đơn hàng chưa có dữ liệu sản phẩm.
+            </p>
+          )}
+        </div>
         <div className="mt-6 grid grid-cols-2 gap-12 border-y border-[#D0D5DD] py-6">
           <div><h3 className="text-[20px] font-medium text-[#0D47A1]">Phương thức thanh toán</h3><p className="mt-2 text-[14px] text-[#667085]">{order.paymentMethod}</p></div>
           <div><h3 className="text-[20px] font-medium text-[#0D47A1]">Vận chuyển</h3><p className="mt-2 text-[16px] text-[#0D47A1]">Người nhận</p><p className="text-[14px] text-[#667085]">{order.recipient.name} | {order.recipient.phone}</p><p className="mt-2 text-[16px] text-[#0D47A1]">Địa chỉ</p><p className="text-[14px] text-[#667085]">{order.recipient.address}</p></div>

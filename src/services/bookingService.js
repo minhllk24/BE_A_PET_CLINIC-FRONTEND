@@ -225,6 +225,11 @@ export async function bookAppointment(payload) {
   return assertSuccess(response);
 }
 
+export async function previewAppointmentPricing(payload) {
+  const response = await apiClient.post("/appointments/preview-pricing", payload);
+  return assertSuccess(response);
+}
+
 export async function getAppointmentHistory() {
   const response = await apiClient.get("/appointments/my-history");
   const data = assertSuccess(response);

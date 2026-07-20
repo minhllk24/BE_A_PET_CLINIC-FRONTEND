@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { useDecisionModal } from "../../components/shared/DecisionModal";
 import {
   createPet,
   deletePet,
@@ -68,6 +69,7 @@ const MedicalRecordCard = ({ fileName, size, onEdit, onDelete, onDownload }) => 
 function PetFormPage() {
   const { id: petId } = useParams();
   const navigate = useNavigate();
+  const { confirmCancel } = useDecisionModal();
   
   const isEdit = Boolean(petId && petId !== "new");
   
@@ -80,6 +82,7 @@ function PetFormPage() {
   const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMedicalModal, setShowMedicalModal] = useState(false);
+  const [formTouched, setFormTouched] = useState(false);
   
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showDeleteMedicalConfirm, setShowDeleteMedicalConfirm] = useState(false);
@@ -157,12 +160,33 @@ function PetFormPage() {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setFormTouched(true);
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const goBackToPetList = () => {
+    navigate("/thu-cung-cua-toi");
+  };
+
+  const handleLeaveForm = (event) => {
+    event?.preventDefault();
+
+    if (!formTouched) {
+      goBackToPetList();
+      return;
+    }
+
+    confirmCancel({
+      message: "Bạn chắc chắn muốn quay lại?\nCác thông tin vừa nhập sẽ không được lưu",
+      cancelLabel: "Ở lại",
+      confirmLabel: "Hủy",
+      onConfirm: goBackToPetList,
+    });
   };
 
   const handleConfirmDelete = async () => {
@@ -239,6 +263,30 @@ function PetFormPage() {
     setShowMedicalModal(true);
   };
 
+  const closeMedicalModal = () => {
+    setShowMedicalModal(false);
+  };
+
+  const handleCloseMedicalModal = () => {
+    const hasMedicalDraft =
+      newMedicalName.trim() ||
+      newMedicalDoctor.trim() ||
+      newMedicalDate ||
+      newMedicalNotes.trim();
+
+    if (!hasMedicalDraft) {
+      closeMedicalModal();
+      return;
+    }
+
+    confirmCancel({
+      message: "Bạn chắc chắn muốn đóng lại?\nCác thông tin vừa nhập sẽ không được lưu",
+      cancelLabel: "Ở lại",
+      confirmLabel: "Hủy",
+      onConfirm: closeMedicalModal,
+    });
+  };
+
   const handleSaveMedicalRecord = (e) => {
     e.preventDefault();
     if (!newMedicalName || !newMedicalDate) {
@@ -279,6 +327,7 @@ function PetFormPage() {
       setMedicalRecords([newRecord, ...medicalRecords]);
     }
 
+    setFormTouched(true);
     setShowMedicalModal(false);
     setNewMedicalName("");
     setNewMedicalDoctor("");
@@ -288,6 +337,7 @@ function PetFormPage() {
 
   const handleConfirmDeleteMedical = () => {
     setMedicalRecords(medicalRecords.filter(record => record.id !== medicalToDelete));
+    setFormTouched(true);
     setShowDeleteMedicalConfirm(false);
     setMedicalToDelete(null);
     if (showHistoryModal) {
@@ -304,7 +354,11 @@ function PetFormPage() {
   return (
     <div className="max-w-4xl mx-auto pb-10 pt-6 px-4 font-sans">
       <div className="flex items-center gap-3 mb-6">
-        <Link to="/thu-cung-cua-toi" className="text-slate-500 hover:text-slate-900 transition">
+        <Link
+          to="/thu-cung-cua-toi"
+          onClick={handleLeaveForm}
+          className="text-slate-500 hover:text-slate-900 transition"
+        >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
@@ -314,7 +368,12 @@ function PetFormPage() {
         </h1>
       </div>
 
-      <form key={pet ? pet.id : "new-pet-form"} className="space-y-6" onSubmit={handleSubmit}>
+      <form
+        key={pet ? pet.id : "new-pet-form"}
+        className="space-y-6"
+        onSubmit={handleSubmit}
+        onChange={() => setFormTouched(true)}
+      >
         {formError && (
           <div className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
             {formError}
@@ -524,7 +583,11 @@ function PetFormPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Link to="/thu-cung-cua-toi" className="text-sm font-medium text-slate-600 hover:text-slate-900 px-4 py-2 transition">
+            <Link
+              to="/thu-cung-cua-toi"
+              onClick={handleLeaveForm}
+              className="text-sm font-medium text-slate-600 hover:text-slate-900 px-4 py-2 transition"
+            >
               Hủy
             </Link>
             <button type="submit" disabled={saving} className="bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 px-6 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition shadow-sm disabled:cursor-not-allowed disabled:opacity-60">
@@ -543,7 +606,7 @@ function PetFormPage() {
               <h3 className="text-lg font-bold text-slate-900">
                 {medicalModalMode === 'edit' ? "Chỉnh sửa bệnh án" : "Thêm bệnh án mới"}
               </h3>
-              <button onClick={() => setShowMedicalModal(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+              <button type="button" onClick={handleCloseMedicalModal} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
             
             <form onSubmit={handleSaveMedicalRecord} className="space-y-4">
@@ -589,7 +652,7 @@ function PetFormPage() {
               </div>
 
               <div className="flex justify-end gap-4 mt-8 pt-4">
-                <button type="button" onClick={() => setShowMedicalModal(false)} className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+                <button type="button" onClick={handleCloseMedicalModal} className="text-sm font-medium text-slate-600 hover:text-slate-900 transition">
                   Hủy
                 </button>
                 <button type="submit" className="bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition shadow-sm">

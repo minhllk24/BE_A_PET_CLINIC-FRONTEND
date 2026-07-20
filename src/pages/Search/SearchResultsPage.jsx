@@ -1,19 +1,19 @@
 import { Filter, Heart, MessageCircle, Share2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import BlogCard from "../components/blog/BlogCard";
-import Footer from "../components/Footer/Footer";
-import NavBar from "../components/Navbar";
-import ShoppingProductCard from "../components/product/ShoppingProductCard";
+import BlogCard from "../../components/blog/BlogCard";
+import Footer from "../../components/Footer/Footer";
+import NavBar from "../../components/Navbar";
+import ShoppingProductCard from "../../components/product/ShoppingProductCard";
 import {
   SEARCH_DEMAND_TYPES,
   SEARCH_EMPTY_STATE,
   SEARCH_FILTER_GROUPS,
   SEARCH_SORT_OPTIONS,
   mockSearchApi,
-} from "../data/searchResultsData";
-import { searchAll } from "../services/searchService";
-import { formatVnd } from "../utils/currency";
+} from "../../data/searchResultsData";
+import { searchAll } from "../../services/searchService";
+import { formatVnd } from "../../utils/currency";
 
 const TYPE_IDS = SEARCH_DEMAND_TYPES.map((item) => item.id);
 const SORT_OPTIONS = Object.values(SEARCH_SORT_OPTIONS);
@@ -438,13 +438,13 @@ function EmptyResultsContent({ emptyState, onRetry }) {
           <button
             type="button"
             onClick={onRetry}
-            className="rounded-full border border-[#0D47A1] px-[33px] py-[13px] text-[14px] font-semibold leading-5 tracking-[0.28px] text-[#0D47A1] transition-colors hover:bg-[rgba(25,118,210,0.08)]"
+            className="rounded-full border border-[#FDD835] px-[33px] py-[13px] text-[14px] font-semibold leading-5 tracking-[0.28px] transition-colors hover:bg-[rgba(25,118,210,0.08)]"
           >
             {emptyState.retryLabel}
           </button>
           <Link
             to={emptyState.homeHref}
-            className="rounded-full bg-[#0D47A1] px-8 py-3 text-[14px] font-semibold leading-5 tracking-[0.28px] text-white shadow-[0_1px_1px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#083572]"
+            className="rounded-full bg-[#FDD835] px-8 py-3 text-[14px] font-semibold leading-5 tracking-[0.28px] shadow-[0_1px_1px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#083572]"
           >
             {emptyState.homeLabel}
           </Link>

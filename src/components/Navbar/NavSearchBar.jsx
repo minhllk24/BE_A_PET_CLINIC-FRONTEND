@@ -169,7 +169,7 @@ function NavSearchBar({ className = "" }) {
       />
       <input
         id="site-search-input"
-        type="search"
+        type="text"
         placeholder="Bạn muốn tìm gì nè?"
         value={term}
         onChange={(event) => {
@@ -177,11 +177,33 @@ function NavSearchBar({ className = "" }) {
           setIsSuggestOpen(event.target.value.trim().length > 0);
         }}
         onFocus={() => setIsSuggestOpen(term.trim().length > 0)}
-        className="input-search pl-10 pr-13 text-xs tracking-[0.4px] text-black/87"
+        className="input-search pl-10 pr-[50px] text-xs tracking-[0.4px] text-black/87"
         aria-label="Tìm kiếm"
         aria-expanded={shouldShowSuggestions}
         aria-controls="site-search-suggestions"
       />
+      {term && (
+        <button
+          type="button"
+          onClick={() => {
+            setTerm("");
+            setSearchSuggestions(EMPTY_SUGGESTIONS);
+            closeSuggestions();
+            document.getElementById("site-search-input")?.focus();
+          }}
+          className="focus-ring-brand absolute right-[30px] top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full bg-[#E3F2FD] text-[12px] font-semibold leading-none text-[#0D47A1] transition-colors hover:bg-[#BBDEFB]"
+          aria-label="Xóa tìm kiếm"
+        >
+          ×
+        </button>
+      )}
+      <button
+        type="submit"
+        className="focus-ring-brand absolute right-1 top-1/2 flex h-[25px] w-[25px] -translate-y-1/2 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[#fff176]"
+        aria-label="Tìm kiếm"
+      >
+        <img src={navbarImages.searchIcon} alt="" className="h-4 w-4" />
+      </button>
       {shouldShowSuggestions && (
         <SearchSuggestionDropdown
           query={term}
@@ -200,12 +222,6 @@ function NavSearchBar({ className = "" }) {
           }}
         />
       )}
-      {/* <img
-        src={navbarImages.searchIcon}
-        alt=""
-        className="pointer-events-none absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2 opacity-70 transition-opacity duration-micro group-focus-within:opacity-100"
-        aria-hidden
-      /> */}
     </form>
   );
 }

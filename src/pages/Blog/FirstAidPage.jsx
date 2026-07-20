@@ -3,11 +3,11 @@ import {
   ArrowRight,
   Lightbulb,
   PhoneCall,
-  Search,
   Siren,
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { blogImages } from "../../assets/blogImages";
+import { productImages } from "../../assets/productImages";
 import CanvasLayout from "../../components/layout/CanvasLayout";
 import Footer from "../../components/Footer/Footer";
 import NavBar from "../../components/Navbar";
@@ -184,9 +184,22 @@ export default function FirstAidPage() {
               </div>
             </div>
 
-            <label className="mt-10 flex h-14 w-full items-center rounded-full border border-[rgba(25,118,210,0.5)] bg-white px-6">
+            <label className="mt-10 flex h-14 w-full items-center rounded-full border border-[rgba(25,118,210,0.5)] bg-white py-2 pl-6 pr-2">
               <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm kiếm triệu chứng hoặc tình huống..." className="min-w-0 flex-1 bg-transparent text-[16px] outline-none" />
-              <Search className="h-6 w-6 text-[#0D47A1]" />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    setVisibleCount(PAGE_SIZE);
+                  }}
+                  className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E3F2FD] text-[28px] font-semibold leading-none text-[#0D47A1] transition-colors hover:bg-[#BBDEFB]"
+                  aria-label="Xóa tìm kiếm sơ cứu"
+                >
+                  ×
+                </button>
+              )}
+              <img src={productImages.searchIcon} alt="" className="h-7 w-7 shrink-0" />
             </label>
 
             {loadError && <p className="mt-4 text-[14px] text-[#D32F2F]">{loadError}</p>}

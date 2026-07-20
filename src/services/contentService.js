@@ -142,7 +142,14 @@ function normalizePostComment(comment = {}) {
 export function normalizeFirstAidGuide(guide = {}, index = 0) {
   const category = guide.category || {};
   const mediaImage = guide.media?.find?.((item) => item.media_type === "image")?.file_url;
-  const image = mediaImage || guide.steps?.find?.((step) => step.image_url)?.image_url || blogImages.postPlaceholder;
+  const stepImage = guide.steps?.find?.((step) => step.image_url)?.image_url;
+  const image =
+    guide.thumbnail_url ||
+    guide.cover_image_url ||
+    guide.image_url ||
+    mediaImage ||
+    stepImage ||
+    blogImages.postPlaceholder;
   const urgent = /hoc|nghet|kho tho|cap cuu|soc|ngo doc/i.test(slugify(`${guide.title} ${guide.situation_description}`));
   const steps = (guide.steps || []).map((step) => ({
     title: `Bước ${step.step_number}`,
@@ -218,8 +225,26 @@ export async function getFirstAidCategories() {
 export async function getFirstAidGuidesPage(params = {}) {
   const response = await apiClient.get("/first-aid/guides", { params });
   const payload = assertSuccess(response);
+  const rawGuides = payload.guides || [];
+  const guides = await Promise.all(
+    rawGuides.map(async (guide, index) => {
+      const normalizedGuide = normalizeFirstAidGuide(guide, index);
+      const needsDetailImage = normalizedGuide.image === blogImages.postPlaceholder && guide.slug;
+
+      if (!needsDetailImage) return normalizedGuide;
+
+      try {
+        const detailResponse = await apiClient.get(`/first-aid/guides/${guide.slug}`);
+        const detail = assertSuccess(detailResponse);
+        return normalizeFirstAidGuide({ ...guide, ...detail }, index);
+      } catch {
+        return normalizedGuide;
+      }
+    }),
+  );
+
   return {
-    guides: (payload.guides || []).map(normalizeFirstAidGuide),
+    guides,
     totalRows: Number(payload.totalRows || 0),
     totalPages: Number(payload.totalPages || 1),
   };

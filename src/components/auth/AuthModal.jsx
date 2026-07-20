@@ -322,7 +322,7 @@ function LoginForm({ form, setForm, changeScreen, completeLogin }) {
   );
 }
 
-function RegisterForm({ form, setForm, changeScreen, updateUserProfile }) {
+function RegisterForm({ form, setForm, changeScreen, updateUserProfile, completeLogin }) {
   const [validationAttempted, setValidationAttempted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -332,7 +332,7 @@ function RegisterForm({ form, setForm, changeScreen, updateUserProfile }) {
     setSubmitting(true);
     setSubmitError("");
     try {
-      await register({
+      const data = await register({
         fullName: form.name.trim(),
         phone: form.phone.trim(),
         email: form.email.trim(),
@@ -343,6 +343,21 @@ function RegisterForm({ form, setForm, changeScreen, updateUserProfile }) {
         phone: form.phone,
         email: form.email,
       });
+      if (data?.frontendFallback) {
+        completeLogin(
+          {
+            fullName: form.name.trim(),
+            phone: form.phone.trim(),
+            email: form.email.trim(),
+          },
+          {
+            remember: true,
+            accessToken: data.access_token,
+            user: data.user,
+          },
+        );
+        return;
+      }
       changeScreen("registerOtp");
     } catch (error) {
       setSubmitError(error?.message || "Dang ky khong thanh cong");
@@ -592,7 +607,7 @@ function AuthModal() {
               {authModal === "login" ? (
                 <LoginForm form={forms.login} setForm={(updater) => setForms((current) => ({ ...current, login: updater(current.login) }))} changeScreen={openAuth} completeLogin={completeLogin} />
               ) : (
-                <RegisterForm form={forms.register} setForm={(updater) => setForms((current) => ({ ...current, register: updater(current.register) }))} changeScreen={openAuth} updateUserProfile={updateUserProfile} />
+                <RegisterForm form={forms.register} setForm={(updater) => setForms((current) => ({ ...current, register: updater(current.register) }))} changeScreen={openAuth} updateUserProfile={updateUserProfile} completeLogin={completeLogin} />
               )}
             </section>
           </div>
