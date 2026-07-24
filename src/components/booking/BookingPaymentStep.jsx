@@ -28,25 +28,88 @@ const getWeightValue = (weight) => {
   return Number.isFinite(value) ? value : 0;
 };
 
-const getPetWeight = (...pets) => {
-  for (const pet of pets) {
-    const weight = pet?.weight ?? pet?.weightKg ?? pet?.weight_kg ?? pet?.raw?.weight_kg;
-    if (weight !== undefined && weight !== null && String(weight).trim() !== "") {
-      return weight;
-    }
-  }
+const getBookingPets = ({ petInfos = [], selectedPets = [], petInfo, selectedPet } = {}) => {
+  const primaryPets = petInfos.length > 0 ? petInfos : selectedPets;
+  const fallbackPets = [petInfo, selectedPet].filter(Boolean);
 
-  return "";
+  return (primaryPets.length > 0 ? primaryPets : fallbackPets).filter(Boolean);
 };
 
-const getWeightSurcharge = (service, petWeight) => {
-  if (!service.isWeightSurchargeApplied) return 0;
-  
-  const weight = Number(petWeight) || 0;
-  if (weight <= 5) return 0;
-  
-  const extraWeight = weight - 5;
-  return Math.ceil(extraWeight) * 10000;
+const getPetWeight = (pet) =>
+  pet?.weight ?? pet?.weightKg ?? pet?.weight_kg ?? pet?.raw?.weight_kg ?? "";
+
+const getPetId = (pet) => pet?.pet_id ?? pet?.id ?? pet?.raw?.pet_id ?? pet?.raw?.id;
+
+const isWeightSurchargeService = (service) =>
+  Boolean(service.isWeightSurchargeApplied || service.weightSurcharge);
+
+const getWeightSurchargeForPet = (service, petWeight) => {
+  if (!isWeightSurchargeService(service)) return 0;
+
+  const weight = getWeightValue(petWeight);
+  if (weight <= 0) return 0;
+
+  return Math.ceil(weight / 3) * 10000;
+};
+
+const getDistributedQuantity = (totalQuantity, petCount, petIndex) => {
+  const safePetCount = Math.max(petCount, 1);
+  const safeQuantity = Math.max(Number(totalQuantity) || safePetCount, safePetCount);
+  const baseQuantity = Math.floor(safeQuantity / safePetCount);
+  const extraQuantity = safeQuantity % safePetCount;
+
+  return baseQuantity + (petIndex < extraQuantity ? 1 : 0);
+};
+
+const normalizeServiceQuantity = (quantity, petCount) => {
+  const safePetCount = Math.max(petCount, 1);
+  const safeQuantity = Math.max(Number(quantity) || safePetCount, safePetCount);
+
+  return Math.ceil(safeQuantity / safePetCount) * safePetCount;
+};
+
+const getWeightSurchargeForPets = (service, pets, totalQuantity) => {
+  const petCount = Math.max(pets.length, 1);
+
+  return pets.reduce(
+    (sum, pet, petIndex) =>
+      sum +
+      getWeightSurchargeForPet(service, getPetWeight(pet)) *
+        getDistributedQuantity(totalQuantity, petCount, petIndex),
+    0,
+  );
+};
+
+const getPricingLineSurcharge = (line) =>
+  Number(line?.surcharge ?? line?.surcharge_amount ?? 0);
+
+const getPricingLineTotal = (line) =>
+  Number(line?.total ?? line?.total_price ?? line?.line_total ?? 0);
+
+const aggregatePricingPreviews = (previews) => {
+  const serviceMap = new Map();
+
+  previews.forEach((preview) => {
+    (preview?.services || []).forEach((line) => {
+      const key = String(line.service_id);
+      const current = serviceMap.get(key) || { ...line, surcharge: 0, total: 0 };
+
+      serviceMap.set(key, {
+        ...current,
+        surcharge: current.surcharge + getPricingLineSurcharge(line),
+        total: current.total + getPricingLineTotal(line),
+      });
+    });
+  });
+
+  return {
+    subtotal: previews.reduce((sum, item) => sum + Number(item?.subtotal || 0), 0),
+    surcharge_amount: previews.reduce((sum, item) => sum + Number(item?.surcharge_amount || 0), 0),
+    discount_amount: previews.reduce((sum, item) => sum + Number(item?.discount_amount || 0), 0),
+    total: previews.reduce((sum, item) => sum + Number(item?.total || 0), 0),
+    services: Array.from(serviceMap.values()),
+    voucher_error: previews.find((item) => item?.voucher_error)?.voucher_error || "",
+  };
 };
 
 function Card({ children, className = "" }) {
@@ -72,7 +135,8 @@ function AppointmentDetails({
   pricingByServiceId,
   onQuantityChange,
 }) {
-  const petList = petInfos.length > 0 ? petInfos : selectedPets;
+  const petList = getBookingPets({ petInfos, selectedPets, petInfo, selectedPet });
+  const petCount = Math.max(petList.length, 1);
   const petNames = petList
     .map((pet) => pet?.name)
     .filter(Boolean);
@@ -80,8 +144,15 @@ function AppointmentDetails({
     petNames.length > 1
       ? `${petNames[0]} +${petNames.length - 1} bé khác`
       : petNames[0] || petInfo?.name || selectedPet?.name || "Thú cưng khác";
-  const petWeight = getPetWeight(petInfo, selectedPet, selectedPets[0], petInfos[0]);
-  const petWeightValue = getWeightValue(petWeight);
+  const petWeights = petList
+    .map((pet) => getPetWeight(pet))
+    .filter((weight) => String(weight ?? "").trim());
+  const petWeightText =
+    petWeights.length > 1
+      ? `Cân nặng: ${petWeights.join("kg, ")}kg`
+      : petWeights[0]
+        ? `Cân nặng: ${petWeights[0]}kg`
+        : "";
 
   return (
     <Card className="p-5 md:p-8">
@@ -99,7 +170,7 @@ function AppointmentDetails({
         <Detail
           label="THÔNG TIN THÚ CƯNG"
           value={petName}
-          subValue={petWeight ? `Cân nặng: ${petWeight}` : ""}
+          subValue={petWeightText}
           icon={paymentPetIcon}
         />
         <Detail label="HỌ TÊN KHÁCH HÀNG" value={ownerInfo?.name || "Chưa cung cấp"} icon={paymentPersonIcon} />
@@ -108,13 +179,14 @@ function AppointmentDetails({
       <h2 className="mt-6 text-xl font-black text-blue-900">DỊCH VỤ ĐÃ CHỌN</h2>
       <div className="mt-5 space-y-3 md:space-y-4">
         {selectedServices.map((service) => {
-          const quantity = quantities[service.id] || 1;
+          const quantity = normalizeServiceQuantity(quantities[service.id], petCount);
           const pricingLine = pricingByServiceId?.[String(service.serviceId || service.id)];
+          const pricingLineTotal = getPricingLineTotal(pricingLine);
           const weightSurcharge = pricingLine
-            ? Number(pricingLine.surcharge || 0) * quantity
-            : getWeightSurcharge(service, petWeightValue) * quantity;
-          const serviceTotal = pricingLine
-            ? Number(pricingLine.total || 0)
+            ? getPricingLineSurcharge(pricingLine)
+            : getWeightSurchargeForPets(service, petList, quantity);
+          const serviceTotal = pricingLine && pricingLineTotal > 0
+            ? pricingLineTotal
             : service.price * quantity + weightSurcharge;
 
           return (
@@ -127,6 +199,11 @@ function AppointmentDetails({
                   <span className="min-w-8 px-2 text-center">{quantity}</span>
                   <button type="button" onClick={() => onQuantityChange(service.id, 1)} className="h-full px-3 hover:bg-blue-50">+</button>
                 </span>
+                {petCount > 1 && (
+                  <p className="mt-2 text-xs font-medium text-slate-500">
+                    Số lượng tối thiểu theo {petCount} thú cưng
+                  </p>
+                )}
               </div>
               <div className="shrink-0 text-right">
                 <p className="text-base font-black text-blue-900 md:text-lg">{formatMoney(serviceTotal)}</p>
@@ -372,8 +449,13 @@ function BookingPaymentStep({
   onBack,
   onConfirm,
 }) {
+  const bookingPets = useMemo(
+    () => getBookingPets({ petInfos, selectedPets, petInfo, selectedPet }),
+    [petInfo, petInfos, selectedPet, selectedPets],
+  );
+  const petCount = Math.max(bookingPets.length, 1);
   const [quantities, setQuantities] = useState(() =>
-    Object.fromEntries(selectedServices.map((service) => [service.id, 1])),
+    Object.fromEntries(selectedServices.map((service) => [service.id, petCount])),
   );
   const [pricingPreview, setPricingPreview] = useState(null);
   const [pricingLoading, setPricingLoading] = useState(false);
@@ -383,7 +465,7 @@ function BookingPaymentStep({
     setQuantities((current) => {
       const next = { ...current };
       selectedServices.forEach((service) => {
-        if (!next[service.id]) next[service.id] = 1;
+        next[service.id] = normalizeServiceQuantity(next[service.id], petCount);
       });
 
       Object.keys(next).forEach((serviceId) => {
@@ -394,18 +476,17 @@ function BookingPaymentStep({
 
       return next;
     });
-  }, [selectedServices]);
+  }, [petCount, selectedServices]);
 
-  const petWeightValue = getWeightValue(getPetWeight(petInfo, selectedPet, selectedPets[0], petInfos[0]));
   const fallbackSubtotal = selectedServices.reduce((total, service) => {
-    const quantity = quantities[service.id] || 1;
+    const quantity = normalizeServiceQuantity(quantities[service.id], petCount);
 
     return total + service.price * quantity;
   }, 0);
   const fallbackSurchargeTotal = selectedServices.reduce((total, service) => {
-    const quantity = quantities[service.id] || 1;
+    const quantity = normalizeServiceQuantity(quantities[service.id], petCount);
 
-    return total + getWeightSurcharge(service, petWeightValue) * quantity;
+    return total + getWeightSurchargeForPets(service, bookingPets, quantity);
   }, 0);
   const subtotal = Number(pricingPreview?.subtotal ?? fallbackSubtotal);
   const surchargeTotal = Number(pricingPreview?.surcharge_amount ?? fallbackSurchargeTotal);
@@ -430,20 +511,33 @@ function BookingPaymentStep({
     setPricingLoading(true);
     setPricingError("");
 
-    previewAppointmentPricing({
-      pet_id: selectedPet?.pet_id || selectedPet?.id || undefined,
-      pet_data: {
-        weight_kg: petWeightValue || undefined,
-      },
-      service_ids: selectedServices.map((service) => ({
-        service_id: service.serviceId || service.id,
-        quantity: quantities[service.id] || 1,
-      })),
-    })
+    Promise.all(
+      bookingPets.map((pet, petIndex) => {
+        const petId = getPetId(pet);
+        const validPetId = /^\d+$/.test(String(petId || "")) ? petId : undefined;
+        const petWeightValue = getWeightValue(getPetWeight(pet));
+
+        return previewAppointmentPricing({
+          pet_id: validPetId,
+          pet_data: {
+            weight_kg: petWeightValue || undefined,
+          },
+          service_ids: selectedServices.map((service) => ({
+            service_id: service.serviceId || service.id,
+            quantity: getDistributedQuantity(
+              normalizeServiceQuantity(quantities[service.id], petCount),
+              petCount,
+              petIndex,
+            ),
+          })),
+        });
+      }),
+    )
       .then((data) => {
         if (!active) return;
-        setPricingPreview(data);
-        setPricingError(data?.voucher_error || "");
+        const preview = aggregatePricingPreviews(data);
+        setPricingPreview(preview);
+        setPricingError(preview.voucher_error || "");
       })
       .catch((error) => {
         if (!active) return;
@@ -457,16 +551,26 @@ function BookingPaymentStep({
     return () => {
       active = false;
     };
-  }, [petWeightValue, quantities, selectedServices]);
+  }, [bookingPets, petCount, quantities, selectedServices]);
 
   const handleQuantityChange = (serviceId, delta) => {
     setQuantities((current) => ({
       ...current,
-      [serviceId]: Math.max(1, (current[serviceId] || 1) + delta),
+      [serviceId]: normalizeServiceQuantity(
+        normalizeServiceQuantity(current[serviceId], petCount) + delta * petCount,
+        petCount,
+      ),
     }));
   };
   const handleConfirm = () => {
-    onConfirm?.({ quantities });
+    const normalizedQuantities = Object.fromEntries(
+      selectedServices.map((service) => [
+        service.id,
+        normalizeServiceQuantity(quantities[service.id], petCount),
+      ]),
+    );
+
+    onConfirm?.({ quantities: normalizedQuantities });
   };
 
   return (

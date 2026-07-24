@@ -407,6 +407,8 @@ function ServiceSelection({
   setSelectedServiceType,
   selectedServices,
   setSelectedServices,
+  selectedPets = [],
+  petInfos = [],
   selectedDate,
   setSelectedDate,
   selectedSlot,
@@ -421,6 +423,7 @@ function ServiceSelection({
 }) {
   const [validationAttempted, setValidationAttempted] = useState(false);
   const [serviceSearch, setServiceSearch] = useState("");
+  const serviceQuantity = Math.max(selectedPets.length || petInfos.length || 1, 1);
   const visibleServices = useMemo(
     () => {
       const keyword = serviceSearch.trim().toLocaleLowerCase("vi");
@@ -438,8 +441,10 @@ function ServiceSelection({
     [selectedServiceType, serviceSearch, services],
   );
   const total = useMemo(
-    () => services.filter((item) => selectedServices.includes(item.id)).reduce((sum, item) => sum + item.price, 0),
-    [selectedServices, services],
+    () => services
+      .filter((item) => selectedServices.includes(item.id))
+      .reduce((sum, item) => sum + item.price * serviceQuantity, 0),
+    [selectedServices, serviceQuantity, services],
   );
 
   const toggleService = (id) => {
@@ -574,7 +579,10 @@ function ServiceSelection({
                   <div className="min-w-0">
                     <h3 className="text-sm font-bold text-slate-900 md:text-base">{service.name}</h3>
                     <p className="text-xs font-medium leading-4 text-slate-700 md:text-sm">{service.desc}</p>
-                    <p className="text-sm font-bold text-blue-900 md:text-base">{formatMoney(service.price)}</p>
+                    <p className="text-sm font-bold text-blue-900 md:text-base">
+                      {formatMoney(service.price)}
+                      {serviceQuantity > 1 ? ` x ${serviceQuantity}` : ""}
+                    </p>
                   </div>
                   <button
                     type="button"
@@ -1223,11 +1231,12 @@ function BookingPage() {
     }
 
     const firstPetInfo = petInfos[0] || {};
+    const serviceQuantity = Math.max(selectedPets.length || petInfos.length || 1, 1);
     const servicePayload = services
       .filter((service) => selectedServices.includes(service.id))
       .map((service) => ({
         service_id: service.serviceId || service.id,
-        quantity: quantities?.[service.id] || 1,
+        quantity: quantities?.[service.id] || serviceQuantity,
       }));
 
     setBookingSubmitting(true);
@@ -1298,6 +1307,8 @@ function BookingPage() {
               setSelectedServiceType={setSelectedServiceType}
               selectedServices={selectedServices}
               setSelectedServices={setSelectedServices}
+              selectedPets={selectedPets}
+              petInfos={petInfos}
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
               selectedSlot={selectedSlot}
