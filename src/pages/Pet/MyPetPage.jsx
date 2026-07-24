@@ -84,6 +84,14 @@ const calculateAge = (birthDateString) => {
   }
 };
 
+const formatAgeText = (value) => {
+  if (value === undefined || value === null || value === "") return "";
+  const text = String(value).trim();
+  if (!text) return "";
+  if (/[^\d.]/.test(text)) return text;
+  return `${text} tuổi`;
+};
+
 const GenderIcon = ({ gender }) => {
   const isMale = gender === 'Đực' || gender === '♂';
   const isFemale = gender === 'Cái' || gender === '♀';
@@ -353,7 +361,7 @@ function PetListPage() {
           const displayStatus = pet.healthStatus === "Khỏe mạnh" ? "Bình thường" : (pet.healthStatus || "Bình thường");
           const statusColor = getHealthStatusColor(displayStatus);
           const currentPetImage = pet.avatar || (pet.name ? petImages[pet.name] : null);
-          const displayAge = pet.birthDate ? calculateAge(pet.birthDate) : pet.age;
+          const displayAge = formatAgeText(pet.age) || (pet.birthDate ? calculateAge(pet.birthDate) : "");
           const displayCheckup = getLatestCheckupDate(pet);
 
           return (

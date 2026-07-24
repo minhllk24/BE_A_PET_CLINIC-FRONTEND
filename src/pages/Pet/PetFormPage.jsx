@@ -5,8 +5,6 @@ import {
   createPet,
   deletePet,
   getMyPets,
-  getPetBreeds,
-  getPetSpecies,
   updatePet,
 } from "../../services/petService";
 
@@ -22,6 +20,72 @@ const petImages = {
   Luna: lunaImg,
   Max: maxImg,
   Snow: snowImg,
+};
+
+const PET_SPECIES_OPTIONS = [
+  { value: "dog", label: "Chó" },
+  { value: "cat", label: "Mèo" },
+  { value: "other", label: "Khác" },
+];
+
+const getSpeciesInputValue = (pet = {}) => {
+  const rawValue = String(pet.speciesId || pet.species_id || "").toLowerCase();
+  if (PET_SPECIES_OPTIONS.some((option) => option.value === rawValue)) return rawValue;
+
+  const rawLabel = String(pet.species || pet.speciesName || pet.species_name || "").toLowerCase();
+  if (rawLabel.includes("chó") || rawLabel.includes("cho") || rawLabel.includes("dog")) return "dog";
+  if (rawLabel.includes("mèo") || rawLabel.includes("meo") || rawLabel.includes("cat")) return "cat";
+  return rawLabel || rawValue ? "other" : "";
+};
+
+const getAgeInputValue = (value) => {
+  if (value === undefined || value === null) return "";
+  const match = String(value).match(/\d+(\.\d+)?/);
+  return match ? match[0] : "";
+};
+
+const ACCEPTED_MEDICAL_FILE_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+const MAX_MEDICAL_FILE_SIZE = 10 * 1024 * 1024;
+
+const formatFileSize = (bytes = 0) => {
+  if (!bytes) return "0 KB";
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+};
+
+const createUploadedFile = (file) => ({
+  id: `${Date.now()}-${file.name}`,
+  name: file.name,
+  size: formatFileSize(file.size),
+  type: file.type,
+  fileUrl: URL.createObjectURL(file),
+});
+
+const getFileUrl = (file = {}) => file.url || file.fileUrl || "";
+
+const isImageFile = (file = {}) => {
+  const fileName = file.name || file.fileName || "";
+  return file.type?.startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(fileName);
+};
+
+const renderAttachmentPreview = (file, className = "h-10 w-10") => {
+  const fileUrl = getFileUrl(file);
+
+  if (isImageFile(file) && fileUrl) {
+    return (
+      <img
+        src={fileUrl}
+        alt=""
+        className={`${className} flex-shrink-0 rounded-xl border border-white bg-white object-cover shadow-sm`}
+      />
+    );
+  }
+
+  return (
+    <div className={`${className} flex-shrink-0 rounded-xl border border-blue-100 bg-white text-blue-500 flex items-center justify-center`}>
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+    </div>
+  );
 };
 
 const getLatestDate = (records) => {
@@ -74,10 +138,8 @@ function PetFormPage() {
   const isEdit = Boolean(petId && petId !== "new");
   
   const [allPets, setAllPets] = useState([]);
-  const [speciesOptions, setSpeciesOptions] = useState([]);
-  const [breedOptions, setBreedOptions] = useState([]);
   const [selectedSpeciesId, setSelectedSpeciesId] = useState("");
-  const [selectedBreedId, setSelectedBreedId] = useState("");
+  const [breedInput, setBreedInput] = useState("");
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -97,6 +159,7 @@ function PetFormPage() {
   const [newMedicalDoctor, setNewMedicalDoctor] = useState("");
   const [newMedicalDate, setNewMedicalDate] = useState("");
   const [newMedicalNotes, setNewMedicalNotes] = useState("");
+  const [newMedicalFile, setNewMedicalFile] = useState(null);
 
   const [avatarPreview, setAvatarPreview] = useState(null);
   const pet = isEdit ? allPets.find((p) => p.id === petId) : null;
@@ -105,17 +168,16 @@ function PetFormPage() {
   useEffect(() => {
     let active = true;
 
-    Promise.all([getMyPets(), getPetSpecies()])
-      .then(([pets, species]) => {
+    getMyPets()
+      .then((pets) => {
         if (!active) return;
         setAllPets(pets);
-        setSpeciesOptions(species);
 
         if (isEdit) {
           const currentPet = pets.find((p) => p.id === petId);
           if (currentPet) {
-            setSelectedSpeciesId(String(currentPet.speciesId || ""));
-            setSelectedBreedId(String(currentPet.breedId || ""));
+            setSelectedSpeciesId(getSpeciesInputValue(currentPet));
+            setBreedInput(currentPet.breed || currentPet.breedName || "");
             if (currentPet.avatar) {
               setAvatarPreview(currentPet.avatar);
             } else if (currentPet.name && petImages[currentPet.name]) {
@@ -136,26 +198,6 @@ function PetFormPage() {
       active = false;
     };
   }, [petId, isEdit]);
-
-  useEffect(() => {
-    let active = true;
-    if (!selectedSpeciesId) {
-      setBreedOptions([]);
-      return undefined;
-    }
-
-    getPetBreeds(selectedSpeciesId)
-      .then((breeds) => {
-        if (active) setBreedOptions(breeds);
-      })
-      .catch(() => {
-        if (active) setBreedOptions([]);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [selectedSpeciesId]);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -209,12 +251,15 @@ function PetFormPage() {
 
     const genderValue = formData.get("gender");
     const weightInput = formData.get("weight");
+    const ageInput = formData.get("age");
+    const selectedSpecies = PET_SPECIES_OPTIONS.find((option) => option.value === formData.get("speciesId"));
 
     const petData = {
       name: formData.get("name"),
-      speciesId: formData.get("speciesId"),
-      breedId: formData.get("breedId"),
-      age: formData.get("age") || "Chưa rõ", 
+      speciesId: selectedSpecies?.value || formData.get("speciesId"),
+      species: selectedSpecies?.label || "",
+      breed: formData.get("breed"),
+      age: ageInput || null, 
       gender: genderValue,
       weightKg: weightInput || null,
       medicalNotes: formData.get("medicalNotes") || "", 
@@ -240,6 +285,7 @@ function PetFormPage() {
 
   const handleOpenCreateMedical = () => {
     setNewMedicalName(""); setNewMedicalDoctor(""); setNewMedicalDate(""); setNewMedicalNotes("");
+    setNewMedicalFile(null);
     setMedicalModalMode('create');
     setEditingMedicalId(null);
     setShowMedicalModal(true);
@@ -256,6 +302,12 @@ function PetFormPage() {
     setNewMedicalDoctor(record.doctor || "");
     setNewMedicalDate(formattedDateForInput);
     setNewMedicalNotes(record.notes || "");
+    setNewMedicalFile(record.fileUrl ? {
+      id: record.fileUrl,
+      name: record.fileName || record.name || "Tài liệu đính kèm",
+      size: record.size || "PDF",
+      fileUrl: record.fileUrl,
+    } : null);
     
     setMedicalModalMode('edit');
     setEditingMedicalId(record.id);
@@ -302,12 +354,14 @@ function PetFormPage() {
         if (r.id === editingMedicalId) {
           return {
             ...r,
-            name: newMedicalName + ".pdf",
             date: formattedDate,
             condition: newMedicalName,
             doctor: newMedicalDoctor,
             notes: newMedicalNotes,
-            fileUrl: `${newMedicalName.replace(/\s+/g, '-')}.pdf`
+            name: newMedicalFile?.name || newMedicalName + ".pdf",
+            size: newMedicalFile?.size || r.size || "PDF",
+            fileUrl: newMedicalFile?.fileUrl || r.fileUrl || `${newMedicalName.replace(/\s+/g, '-')}.pdf`,
+            fileName: newMedicalFile?.name || r.fileName || r.name,
           };
         }
         return r;
@@ -316,13 +370,14 @@ function PetFormPage() {
     } else {
       const newRecord = {
         id: Date.now(),
-        name: newMedicalName + ".pdf",
-        size: "120 KB",
+        name: newMedicalFile?.name || newMedicalName + ".pdf",
+        size: newMedicalFile?.size || "PDF",
         date: formattedDate,
         condition: newMedicalName,
         doctor: newMedicalDoctor || "Chưa rõ",
         notes: newMedicalNotes || "Không có ghi chú y tế.",
-        fileUrl: `${newMedicalName.replace(/\s+/g, '-')}.pdf`
+        fileUrl: newMedicalFile?.fileUrl || `${newMedicalName.replace(/\s+/g, '-')}.pdf`,
+        fileName: newMedicalFile?.name || newMedicalName + ".pdf",
       };
       setMedicalRecords([newRecord, ...medicalRecords]);
     }
@@ -333,6 +388,7 @@ function PetFormPage() {
     setNewMedicalDoctor("");
     setNewMedicalDate("");
     setNewMedicalNotes("");
+    setNewMedicalFile(null);
   };
 
   const handleConfirmDeleteMedical = () => {
@@ -345,8 +401,40 @@ function PetFormPage() {
     }
   };
 
-  const handleDownloadFile = (fileName) => {
-    alert(`Đang tải xuống tệp: ${fileName}...`);
+  const handleMedicalFileChange = (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!ACCEPTED_MEDICAL_FILE_TYPES.includes(file.type)) {
+      alert("Chỉ hỗ trợ file PDF, JPG hoặc PNG.");
+      return;
+    }
+    if (file.size > MAX_MEDICAL_FILE_SIZE) {
+      alert("File không được vượt quá 10MB.");
+      return;
+    }
+    setNewMedicalFile(createUploadedFile(file));
+    setFormTouched(true);
+  };
+
+  const handleDownloadFile = (fileUrl, fileName = "Tài liệu đính kèm") => {
+    if (fileUrl) {
+      const link = document.createElement("a");
+      link.href = fileUrl;
+      link.download = fileName;
+      link.target = "_blank";
+      link.click();
+      return;
+    }
+    alert("Chưa có file để tải xuống.");
+  };
+
+  const handlePreviewFile = (fileUrl) => {
+    if (!fileUrl) {
+      alert("Chưa có file để xem trước.");
+      return;
+    }
+    window.open(fileUrl, "_blank", "noopener,noreferrer");
   };
 
   const defaultHealthStatus = pet?.healthStatus === 'Khỏe mạnh' ? 'Bình thường' : (pet?.healthStatus || "Bình thường");
@@ -421,33 +509,28 @@ function PetFormPage() {
                   value={selectedSpeciesId}
                   onChange={(event) => {
                     setSelectedSpeciesId(event.target.value);
-                    setSelectedBreedId("");
                   }}
                   className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
                 >
                   <option value="" disabled hidden>-- Chọn loài --</option>
-                  {speciesOptions.map((species) => (
-                    <option key={species.species_id} value={species.species_id}>
-                      {species.species_name}
+                  {PET_SPECIES_OPTIONS.map((species) => (
+                    <option key={species.value} value={species.value}>
+                      {species.label}
                     </option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Giống <span className="text-red-500">*</span></label>
-                <select
-                  name="breedId"
-                  value={selectedBreedId}
-                  onChange={(event) => setSelectedBreedId(event.target.value)}
-                  className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
-                >
-                  <option value="">-- Chọn giống --</option>
-                  {breedOptions.map((breed) => (
-                    <option key={breed.breed_id} value={breed.breed_id}>
-                      {breed.breed_name}
-                    </option>
-                  ))}
-                </select>
+                <input
+                  required
+                  type="text"
+                  name="breed"
+                  value={breedInput}
+                  onChange={(event) => setBreedInput(event.target.value)}
+                  placeholder="Nhập giống thú cưng..."
+                  className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                />
               </div>
             </div>
           </div>
@@ -486,7 +569,7 @@ function PetFormPage() {
                     fileName={record.name || record.condition} 
                     size={record.size || "PDF"} 
                     onEdit={() => handleOpenEditMedical(record)}
-                    onDownload={() => handleDownloadFile(record.fileUrl)}
+                    onDownload={() => handleDownloadFile(record.fileUrl, record.fileName || record.name)}
                     onDelete={() => {
                       setMedicalToDelete(record.id);
                       setShowDeleteMedicalConfirm(true);
@@ -517,8 +600,8 @@ function PetFormPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Ngày sinh / Tuổi <span className="text-red-500">*</span></label>
-              <input required type="text" name="age" defaultValue={pet?.age || ""} placeholder="VD: 06/05/2022 hoặc 2 tuổi" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
+              <label className="block text-sm font-medium text-slate-700 mb-2">Tuổi <span className="text-red-500">*</span></label>
+              <input required type="number" min="0" step="1" name="age" defaultValue={getAgeInputValue(pet?.age)} placeholder="Tuổi" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" />
             </div>
             
             <div>
@@ -639,16 +722,40 @@ function PetFormPage() {
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
                   Tài liệu đính kèm (Kết quả xét nghiệm, X-quang,...)
-                  <span className="text-[10px] font-normal text-slate-400">(0/1 file)</span>
+                  <span className="text-[10px] font-normal text-slate-400">({newMedicalFile ? 1 : 0}/1 file)</span>
                 </label>
-                <div className="border-2 border-dashed border-blue-200 bg-[#F0F7FF] rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 transition group relative">
-                  <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-2 transition-transform group-hover:scale-110">
-                    <img src={uploadIcon} alt="Upload" className="w-5 h-5 object-contain opacity-70" />
+                {newMedicalFile ? (
+                  <div className="flex items-center justify-between gap-4 rounded-xl border border-blue-100 bg-[#F0F7FF] p-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      {renderAttachmentPreview(newMedicalFile, "h-14 w-14")}
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-bold text-slate-800" title={newMedicalFile.name}>{newMedicalFile.name}</p>
+                        <p className="text-[10px] text-slate-500">{newMedicalFile.size}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-shrink-0 items-center gap-1">
+                      <button type="button" onClick={() => isImageFile(newMedicalFile) ? handlePreviewFile(newMedicalFile.fileUrl) : handleDownloadFile(newMedicalFile.fileUrl, newMedicalFile.name)} className="p-1.5 text-slate-500 transition hover:text-blue-600" title={isImageFile(newMedicalFile) ? "Xem trước ảnh" : "Tải xuống tệp"}>
+                        {isImageFile(newMedicalFile) ? (
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                        ) : (
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        )}
+                      </button>
+                      <button type="button" onClick={() => setNewMedicalFile(null)} className="p-1.5 text-slate-400 transition hover:text-red-500" title="Xóa tệp">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-sm font-medium text-slate-700">Kéo thả file hoặc <span className="text-blue-500">chọn tệp</span></p>
-                  <p className="text-xs text-slate-500 mt-1">Hỗ trợ PDF, JPG, PNG (Tối đa 10MB)</p>
-                  <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
-                </div>
+                ) : (
+                  <div className="border-2 border-dashed border-blue-200 bg-[#F0F7FF] rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 transition group relative">
+                    <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-2 transition-transform group-hover:scale-110">
+                      <img src={uploadIcon} alt="Upload" className="w-5 h-5 object-contain opacity-70" />
+                    </div>
+                    <p className="text-sm font-medium text-slate-700">Kéo thả file hoặc <span className="text-blue-500">chọn tệp</span></p>
+                    <p className="text-xs text-slate-500 mt-1">Hỗ trợ PDF, JPG, PNG (Tối đa 10MB)</p>
+                    <input type="file" accept=".pdf,image/jpeg,image/png" onChange={handleMedicalFileChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-4 mt-8 pt-4">
@@ -689,7 +796,7 @@ function PetFormPage() {
                             <button type="button" onClick={() => handleOpenEditMedical(item)} className="p-1.5 text-slate-400 hover:text-yellow-600 transition bg-slate-50 border border-slate-100 rounded-md" title="Chỉnh sửa bệnh án">
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                             </button>
-                            <button type="button" onClick={() => handleDownloadFile(item.fileUrl || item.name)} className="p-1.5 text-slate-400 hover:text-blue-600 transition bg-slate-50 border border-slate-100 rounded-md" title="Tải file đính kèm">
+                            <button type="button" onClick={() => handleDownloadFile(item.fileUrl, item.fileName || item.name)} className="p-1.5 text-slate-400 hover:text-blue-600 transition bg-slate-50 border border-slate-100 rounded-md" title="Tải file đính kèm">
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                             </button>
                             <button type="button" onClick={() => { setMedicalToDelete(item.id); setShowDeleteMedicalConfirm(true); }} className="text-slate-400 hover:text-red-600 transition p-1.5 bg-slate-50 border border-slate-100 rounded-md" title="Xóa bệnh án">

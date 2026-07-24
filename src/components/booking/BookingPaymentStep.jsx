@@ -28,6 +28,17 @@ const getWeightValue = (weight) => {
   return Number.isFinite(value) ? value : 0;
 };
 
+const getPetWeight = (...pets) => {
+  for (const pet of pets) {
+    const weight = pet?.weight ?? pet?.weightKg ?? pet?.weight_kg ?? pet?.raw?.weight_kg;
+    if (weight !== undefined && weight !== null && String(weight).trim() !== "") {
+      return weight;
+    }
+  }
+
+  return "";
+};
+
 const getWeightSurcharge = (service, petWeight) => {
   const surcharge = service.weightSurcharge;
 
@@ -69,7 +80,7 @@ function AppointmentDetails({
     petNames.length > 1
       ? `${petNames[0]} +${petNames.length - 1} bé khác`
       : petNames[0] || petInfo?.name || selectedPet?.name || "Thú cưng khác";
-  const petWeight = petInfo?.weight || selectedPet?.weight;
+  const petWeight = getPetWeight(petInfo, selectedPet, selectedPets[0], petInfos[0]);
   const petWeightValue = getWeightValue(petWeight);
 
   return (
@@ -385,7 +396,7 @@ function BookingPaymentStep({
     });
   }, [selectedServices]);
 
-  const petWeightValue = getWeightValue(petInfo?.weight || selectedPet?.weight);
+  const petWeightValue = getWeightValue(getPetWeight(petInfo, selectedPet, selectedPets[0], petInfos[0]));
   const fallbackSubtotal = selectedServices.reduce((total, service) => {
     const quantity = quantities[service.id] || 1;
 
@@ -420,6 +431,7 @@ function BookingPaymentStep({
     setPricingError("");
 
     previewAppointmentPricing({
+      pet_id: selectedPet?.pet_id || selectedPet?.id || undefined,
       pet_data: {
         weight_kg: petWeightValue || undefined,
       },

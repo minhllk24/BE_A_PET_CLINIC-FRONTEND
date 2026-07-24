@@ -161,7 +161,9 @@ function toPetPayload(pet = {}) {
   return {
     pet_name: pet.name || pet.pet_name,
     species_id: pet.speciesId || pet.species_id,
+    species_name: pet.species || pet.speciesName || pet.species_name || null,
     breed_id: pet.breedId || pet.breed_id || null,
+    breed_name: pet.breed || pet.breedName || pet.breed_name || null,
     gender: pet.gender || "unknown",
     birth_date: pet.birthDate || pet.birth_date || null,
     age: pet.age || null,

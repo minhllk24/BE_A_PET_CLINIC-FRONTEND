@@ -139,6 +139,62 @@ const calculateAge = (birthDateString) => {
   return days > 0 ? `${days} ngày` : "Mới sinh";
 };
 
+const formatAgeText = (value) => {
+  if (value === undefined || value === null || value === "") return "";
+  const text = String(value).trim();
+  if (!text) return "";
+  if (/[^\d.]/.test(text)) return text;
+  return `${text} tuổi`;
+};
+
+const ACCEPTED_UPLOAD_FILE_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+const MAX_UPLOAD_FILE_SIZE = 10 * 1024 * 1024;
+
+const formatFileSize = (bytes = 0) => {
+  if (!bytes) return "0 KB";
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+};
+
+const createUploadedFile = (file) => {
+  const url = URL.createObjectURL(file);
+  return {
+    id: `${Date.now()}-${file.name}`,
+    name: file.name,
+    size: formatFileSize(file.size),
+    type: file.type,
+    url,
+    fileUrl: url,
+  };
+};
+
+const getFileUrl = (file = {}) => file.url || file.fileUrl || "";
+
+const isImageFile = (file = {}) => {
+  const fileName = file.name || file.fileName || "";
+  return file.type?.startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(fileName);
+};
+
+const renderAttachmentPreview = (file, className = "h-10 w-10") => {
+  const fileUrl = getFileUrl(file);
+
+  if (isImageFile(file) && fileUrl) {
+    return (
+      <img
+        src={fileUrl}
+        alt=""
+        className={`${className} flex-shrink-0 rounded-xl border border-white bg-white object-cover shadow-sm`}
+      />
+    );
+  }
+
+  return (
+    <div className={`${className} flex-shrink-0 rounded-xl border border-slate-100 bg-white text-slate-500 shadow-sm flex items-center justify-center`}>
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    </div>
+  );
+};
+
 const getColorClass = (type) => {
   switch(type) {
     case 'blue': return "bg-[#60a5fa]"; 
@@ -230,6 +286,7 @@ function PetDetailPage() {
   const [newMedicalDoctor, setNewMedicalDoctor] = useState("");
   const [newMedicalDate, setNewMedicalDate] = useState("");
   const [newMedicalNotes, setNewMedicalNotes] = useState("");
+  const [newMedicalFile, setNewMedicalFile] = useState(null);
 
   const [noteToDeleteId, setNoteToDeleteId] = useState(null);
 
@@ -245,7 +302,7 @@ function PetDetailPage() {
   const [markedDeletions, setMarkedDeletions] = useState([]); 
 
   const currentPetImage = pet?.avatar || (pet?.name ? petImages[pet.name] : lunaImg);
-  const displayAge = pet?.birthDate ? calculateAge(pet.birthDate) : (pet?.age || "3 tuổi");
+  const displayAge = formatAgeText(pet?.age) || (pet?.birthDate ? calculateAge(pet.birthDate) : "3 tuổi");
 
   const year = calendarDate.getFullYear();
   const month = calendarDate.getMonth(); 
@@ -380,7 +437,7 @@ function PetDetailPage() {
         type: selectedColor,
         reminderType: selectedIcon,
       });
-      setEventsList((current) => [...current, savedEvent]);
+      setEventsList((current) => [...current, { ...savedEvent, files: existingFiles }]);
     } catch (error) {
       setEventsList((current) => [...current, newEvent]);
     }
@@ -469,7 +526,7 @@ function PetDetailPage() {
           type: selectedColor,
           reminderType: selectedIcon,
         });
-        setEventsList((current) => [...current, savedEvent]);
+        setEventsList((current) => [...current, { ...savedEvent, files: existingFiles }]);
       } catch (error) {
         setEventsList((current) => [...current, newEvent]);
       }
@@ -509,6 +566,7 @@ function PetDetailPage() {
   // Mở modal để tạo mới bệnh án
   const handleOpenCreateMedical = () => {
     setNewMedicalName(""); setNewMedicalDoctor(""); setNewMedicalDate(""); setNewMedicalNotes("");
+    setNewMedicalFile(null);
     setMedicalModalMode('create');
     setEditingMedicalId(null);
     setShowAddMedicalModal(true);
@@ -526,6 +584,13 @@ function PetDetailPage() {
     setNewMedicalDoctor(record.doctor || "");
     setNewMedicalDate(formattedDateForInput);
     setNewMedicalNotes(record.notes || "");
+    setNewMedicalFile(record.fileUrl ? {
+      id: record.fileUrl,
+      name: record.fileName || record.name || "Tài liệu đính kèm",
+      size: record.size || "PDF",
+      fileUrl: record.fileUrl,
+      url: record.fileUrl,
+    } : null);
     
     setMedicalModalMode('edit');
     setEditingMedicalId(record.id);
@@ -549,12 +614,14 @@ function PetDetailPage() {
         if (r.id === editingMedicalId) {
           return {
             ...r,
-            name: newMedicalName + ".pdf",
             date: formattedDate,
             condition: newMedicalName,
             doctor: newMedicalDoctor,
             notes: newMedicalNotes,
-            fileUrl: `${newMedicalName.replace(/\s+/g, '-')}.pdf`
+            name: newMedicalFile?.name || r.name || newMedicalName + ".pdf",
+            size: newMedicalFile?.size || r.size || "PDF",
+            fileUrl: newMedicalFile?.fileUrl || r.fileUrl || `${newMedicalName.replace(/\s+/g, '-')}.pdf`,
+            fileName: newMedicalFile?.name || r.fileName || r.name,
           };
         }
         return r;
@@ -566,7 +633,10 @@ function PetDetailPage() {
         condition: newMedicalName,
         doctor: newMedicalDoctor || "Chưa rõ",
         notes: newMedicalNotes || "Không có ghi chú y tế.",
-        fileUrl: `${newMedicalName.replace(/\s+/g, '-')}.pdf`
+        name: newMedicalFile?.name || newMedicalName + ".pdf",
+        size: newMedicalFile?.size || "PDF",
+        fileUrl: newMedicalFile?.fileUrl || `${newMedicalName.replace(/\s+/g, '-')}.pdf`,
+        fileName: newMedicalFile?.name || newMedicalName + ".pdf",
       };
       newList = [newRecord, ...medicalHistoryList];
     }
@@ -579,7 +649,7 @@ function PetDetailPage() {
           notes: newMedicalNotes,
         });
         newList = medicalHistoryList.map((record) =>
-          record.id === editingMedicalId ? { ...record, ...savedRecord } : record,
+          record.id === editingMedicalId ? { ...record, ...savedRecord, ...newList.find((item) => item.id === editingMedicalId) } : record,
         );
       } else {
         const savedRecord = await createMedicalRecord({
@@ -588,7 +658,7 @@ function PetDetailPage() {
           visitDate: newMedicalDate,
           notes: newMedicalNotes,
         });
-        newList = [savedRecord, ...medicalHistoryList];
+        newList = [{ ...savedRecord, ...newList[0] }, ...medicalHistoryList];
       }
     } catch (error) {
       // Giữ fallback local để người dùng vẫn thao tác được khi API chưa bật.
@@ -599,6 +669,7 @@ function PetDetailPage() {
     syncFallbackMedicalRecords(currentPetId, newList);
     
     setNewMedicalName(""); setNewMedicalDoctor(""); setNewMedicalDate(""); setNewMedicalNotes("");
+    setNewMedicalFile(null);
   };
 
   const handleDeleteMedicalRecordTrigger = (id) => {
@@ -625,8 +696,71 @@ function PetDetailPage() {
     });
   };
 
-  const handleDownloadFile = (fileName) => {
-    alert(`Đang tải xuống tệp: ${fileName}...`);
+  const handleMedicalFileChange = (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!ACCEPTED_UPLOAD_FILE_TYPES.includes(file.type)) {
+      alert("Chỉ hỗ trợ file PDF, JPG hoặc PNG.");
+      return;
+    }
+    if (file.size > MAX_UPLOAD_FILE_SIZE) {
+      alert("File không được vượt quá 10MB.");
+      return;
+    }
+    setNewMedicalFile(createUploadedFile(file));
+  };
+
+  const handleNoteFilesChange = (event) => {
+    const selectedFiles = Array.from(event.target.files || []);
+    event.target.value = "";
+    if (!selectedFiles.length) return;
+
+    const remainingSlots = MAX_FILES - calculateCurrentActiveFilesCount();
+    if (remainingSlots <= 0) {
+      alert(`Chỉ được tải tối đa ${MAX_FILES} file.`);
+      return;
+    }
+
+    const validFiles = [];
+    for (const file of selectedFiles.slice(0, remainingSlots)) {
+      if (!ACCEPTED_UPLOAD_FILE_TYPES.includes(file.type)) {
+        alert("Chỉ hỗ trợ file PDF, JPG hoặc PNG.");
+        continue;
+      }
+      if (file.size > MAX_UPLOAD_FILE_SIZE) {
+        alert("File không được vượt quá 10MB.");
+        continue;
+      }
+      validFiles.push(createUploadedFile(file));
+    }
+
+    if (selectedFiles.length > remainingSlots) {
+      alert(`Chỉ được tải tối đa ${MAX_FILES} file.`);
+    }
+    if (validFiles.length) {
+      setExistingFiles((current) => [...current, ...validFiles]);
+    }
+  };
+
+  const handleDownloadFile = (fileUrl, fileName = "Tài liệu đính kèm") => {
+    if (fileUrl) {
+      const link = document.createElement("a");
+      link.href = fileUrl;
+      link.download = fileName;
+      link.target = "_blank";
+      link.click();
+      return;
+    }
+    alert("Chưa có file để tải xuống.");
+  };
+
+  const handlePreviewFile = (fileUrl) => {
+    if (!fileUrl) {
+      alert("Chưa có file để xem trước.");
+      return;
+    }
+    window.open(fileUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleMarkFileDeletion = (fileId) => {
@@ -635,7 +769,60 @@ function PetDetailPage() {
   const handleUnmarkFileDeletion = (fileId) => {
     setMarkedDeletions(prev => prev.filter(id => id !== fileId));
   };
-  const calculateCurrentActiveFilesCount = () => existingFiles.length - markedDeletions.length;
+  const calculateCurrentActiveFilesCount = () => existingFiles.filter(file => !markedDeletions.includes(file.id)).length;
+
+  const renderNoteFileUploadArea = () => (
+    <div className="space-y-2">
+      {calculateCurrentActiveFilesCount() < MAX_FILES && (
+        <div className="w-full relative cursor-pointer border-2 border-[#e2e8f0] border-dashed rounded-xl bg-[#f8fafc] hover:border-blue-400 hover:bg-blue-50 transition p-4 flex flex-col items-center justify-center text-center group">
+          <div className="w-8 h-8 bg-slate-100 group-hover:bg-white rounded-full flex items-center justify-center mb-2 shadow-sm transition group-hover:scale-110">
+            <img src={uploadIcon} alt="Upload" className="w-4 h-4 object-contain opacity-70" />
+          </div>
+          <p className="text-xs font-bold text-slate-800">Nhấn để tải lên hoặc kéo thả</p>
+          <p className="text-[10px] text-slate-500 mt-1">PDF, JPG hoặc PNG (Tối đa 10MB)</p>
+          <input type="file" multiple accept=".pdf,image/jpeg,image/png" onChange={handleNoteFilesChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+        </div>
+      )}
+
+      {existingFiles.map((file) => {
+        const isMarkedDeleted = markedDeletions.includes(file.id);
+        return (
+          <div
+            key={file.id}
+            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+              isMarkedDeleted ? "border-red-100 bg-red-50/50 opacity-60" : "border-slate-100 bg-[#f8fafc]"
+            }`}
+          >
+            <div className="flex items-center gap-3 pr-2 flex-1 min-w-0">
+              {renderAttachmentPreview(file, "h-12 w-12")}
+              <div className="flex-1 truncate">
+                <p className={`text-xs font-bold truncate ${isMarkedDeleted ? 'text-red-700 line-through' : 'text-slate-800'}`} title={file.name}>{file.name}</p>
+                <p className="text-[10px] text-slate-500">{file.size}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 relative z-20 flex-shrink-0">
+              {isMarkedDeleted ? (
+                <button type="button" onClick={() => handleUnmarkFileDeletion(file.id)} className="text-[10px] font-bold text-blue-600 hover:text-blue-800 transition">Khôi phục</button>
+              ) : (
+                <>
+                  <button type="button" onClick={() => isImageFile(file) ? handlePreviewFile(file.url || file.fileUrl) : handleDownloadFile(file.url || file.fileUrl, file.name)} className="text-slate-500 hover:text-blue-600 transition p-1" title={isImageFile(file) ? "Xem trước ảnh" : "Tải xuống tệp"}>
+                    {isImageFile(file) ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    )}
+                  </button>
+                  <button type="button" onClick={() => handleMarkFileDeletion(file.id)} className="text-slate-400 hover:text-red-500 transition p-1" title="Xóa tệp khỏi ghi chú">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 
   const renderEventBadge = (event, index) => {
     const styles = {
@@ -783,7 +970,7 @@ function PetDetailPage() {
                       <p className="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1.5">
                         {item.condition}
                         <span className="text-slate-300 font-normal">|</span>
-                        <button type="button" onClick={() => handleDownloadFile(item.fileUrl)} className="text-slate-400 font-normal text-[10px] hover:text-blue-600 transition">
+                        <button type="button" onClick={() => handleDownloadFile(item.fileUrl, item.fileName || item.name || item.condition)} className="text-slate-400 font-normal text-[10px] hover:text-blue-600 transition">
                           Tải file chi tiết
                         </button>
                       </p>
@@ -971,15 +1158,9 @@ function PetDetailPage() {
 
               <div>
                 <label className="block text-[11px] font-bold text-slate-600 mb-1.5 flex items-center justify-between">
-                  Tệp đính kèm <span className="font-normal text-slate-400">(0/3 file)</span>
+                  Tệp đính kèm <span className="font-normal text-slate-400">({calculateCurrentActiveFilesCount()}/{MAX_FILES} file)</span>
                 </label>
-                <div className="w-full relative cursor-pointer border-2 border-[#e2e8f0] border-dashed rounded-xl bg-[#f8fafc] hover:border-blue-400 hover:bg-blue-50 transition p-4 flex flex-col items-center justify-center text-center group">
-                  <div className="w-8 h-8 bg-slate-100 group-hover:bg-white rounded-full flex items-center justify-center mb-2 shadow-sm transition group-hover:scale-110">
-                    <img src={uploadIcon} alt="Upload" className="w-4 h-4 object-contain opacity-70" />
-                  </div>
-                  <p className="text-xs font-bold text-slate-800">Nhấn để tải lên hoặc kéo thả</p>
-                  <input type="file" multiple max="3" className="absolute inset-0 opacity-0 cursor-pointer" />
-                </div>
+                {renderNoteFileUploadArea()}
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-6 relative z-20">
@@ -1102,17 +1283,19 @@ function PetDetailPage() {
                           <div className="space-y-2">
                             {activeEventDetail.files.map((file, i) => (
                               <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-[#f8fafc]">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-blue-500 border border-slate-100">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs font-bold text-slate-800">{file.name}</p>
+                                <div className="flex min-w-0 items-center gap-3">
+                                  {renderAttachmentPreview(file, "h-12 w-12")}
+                                  <div className="min-w-0">
+                                    <p className="truncate text-xs font-bold text-slate-800" title={file.name}>{file.name}</p>
                                     <p className="text-[10px] text-slate-500">{file.size}</p>
                                   </div>
                                 </div>
-                                <button type="button" onClick={() => handleDownloadFile(file.name)} className="text-slate-400 hover:text-blue-600 transition p-1" title="Tải xuống tệp">
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                <button type="button" onClick={() => isImageFile(file) ? handlePreviewFile(file.url || file.fileUrl) : handleDownloadFile(file.url || file.fileUrl, file.name)} className="text-slate-500 hover:text-blue-600 transition p-1" title={isImageFile(file) ? "Xem trước ảnh" : "Tải xuống tệp"}>
+                                  {isImageFile(file) ? (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                                  ) : (
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                  )}
                                 </button>
                               </div>
                             ))}
@@ -1133,7 +1316,7 @@ function PetDetailPage() {
                                 <p className="text-[10px] text-slate-500">{activeEventDetail.invoice.size}</p>
                               </div>
                             </div>
-                            <button type="button" onClick={() => handleDownloadFile(activeEventDetail.invoice.name)} className="text-slate-400 hover:text-slate-700 transition p-1" title="Tải hóa đơn">
+                            <button type="button" onClick={() => handleDownloadFile(activeEventDetail.invoice.url || activeEventDetail.invoice.fileUrl, activeEventDetail.invoice.name)} className="text-slate-400 hover:text-slate-700 transition p-1" title="Tải hóa đơn">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                             </button>
                           </div>
@@ -1248,57 +1431,7 @@ function PetDetailPage() {
                         Tệp đính kèm <span className="font-normal text-slate-400">({calculateCurrentActiveFilesCount()}/{MAX_FILES} file)</span>
                       </label>
 
-                      {calculateCurrentActiveFilesCount() === 0 ? (
-                        <div className="w-full relative cursor-pointer border-2 border-[#e2e8f0] border-dashed rounded-xl bg-[#f8fafc] hover:border-blue-400 hover:bg-blue-50 transition p-4 flex flex-col items-center justify-center text-center group">
-                          <div className="w-8 h-8 bg-slate-100 group-hover:bg-white rounded-full flex items-center justify-center mb-2 shadow-sm transition group-hover:scale-110">
-                            <img src={uploadIcon} alt="Upload" className="w-4 h-4 object-contain opacity-70" />
-                          </div>
-                          <p className="text-xs font-bold text-slate-800">Nhấn để tải lên hoặc kéo thả</p>
-                          <p className="text-[10px] text-slate-500 mt-1">PDF, JPG hoặc PNG (Tối đa 10MB)</p>
-                          <input type="file" multiple max={MAX_FILES} className="absolute inset-0 opacity-0 cursor-pointer" />
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {existingFiles.map((file) => {
-                            const isMarkedDeleted = markedDeletions.includes(file.id);
-                            return (
-                              <div 
-                                key={file.id} 
-                                className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
-                                  isMarkedDeleted ? "border-red-100 bg-red-50/50 opacity-60" : "border-slate-100 bg-[#f8fafc]"
-                                }`}
-                              >
-                                <div className="flex items-center gap-3 pr-2 flex-1">
-                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${isMarkedDeleted ? "bg-red-100 border-red-200 text-red-600": "bg-white border-slate-100 text-slate-500 shadow-sm"}`}>
-                                    {file.name.endsWith('.pdf') 
-                                      ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                      : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                    }
-                                  </div>
-                                  <div className="flex-1 truncate">
-                                    <p className={`text-xs font-bold truncate ${isMarkedDeleted ? 'text-red-700 line-through' : 'text-slate-800'}`} title={file.name}>{file.name}</p>
-                                    <p className="text-[10px] text-slate-500">{file.size}</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2 relative z-20">
-                                  {isMarkedDeleted ? (
-                                    <button type="button" onClick={() => handleUnmarkFileDeletion(file.id)} className="text-[10px] font-bold text-blue-600 hover:text-blue-800 transition">Khôi phục</button>
-                                  ) : (
-                                    <>
-                                      <button type="button" onClick={() => handleDownloadFile(file.name)} className="text-slate-400 hover:text-blue-600 transition p-1" title="Tải xuống tệp">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                      </button>
-                                      <button type="button" onClick={() => handleMarkFileDeletion(file.id)} className="text-slate-400 hover:text-red-500 transition p-1" title="Xóa tệp khỏi ghi chú">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                      </button>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                      {renderNoteFileUploadArea()}
                     </div>
                   </div>
 
@@ -1397,16 +1530,40 @@ function PetDetailPage() {
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
                   Tài liệu đính kèm (Kết quả xét nghiệm, X-quang,...)
-                  <span className="text-[10px] font-normal text-slate-400">(0/1 file)</span>
+                  <span className="text-[10px] font-normal text-slate-400">({newMedicalFile ? 1 : 0}/1 file)</span>
                 </label>
-                <div className="border-2 border-dashed border-blue-200 bg-[#F0F7FF] rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 transition group relative">
-                  <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-2 transition-transform group-hover:scale-110">
-                    <img src={uploadIcon} alt="Upload" className="w-5 h-5 object-contain opacity-70" />
+                {newMedicalFile ? (
+                  <div className="flex items-center justify-between gap-4 rounded-xl border border-blue-100 bg-[#F0F7FF] p-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      {renderAttachmentPreview(newMedicalFile, "h-14 w-14")}
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-bold text-slate-800" title={newMedicalFile.name}>{newMedicalFile.name}</p>
+                        <p className="text-[10px] text-slate-500">{newMedicalFile.size}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-shrink-0 items-center gap-1">
+                      <button type="button" onClick={() => isImageFile(newMedicalFile) ? handlePreviewFile(newMedicalFile.fileUrl) : handleDownloadFile(newMedicalFile.fileUrl, newMedicalFile.name)} className="p-1.5 text-slate-500 transition hover:text-blue-600" title={isImageFile(newMedicalFile) ? "Xem trước ảnh" : "Tải xuống tệp"}>
+                        {isImageFile(newMedicalFile) ? (
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                        ) : (
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        )}
+                      </button>
+                      <button type="button" onClick={() => setNewMedicalFile(null)} className="p-1.5 text-slate-400 transition hover:text-red-500" title="Xóa tệp">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-sm font-medium text-slate-700">Kéo thả file hoặc <span className="text-blue-500">chọn tệp</span></p>
-                  <p className="text-xs text-slate-500 mt-1">Hỗ trợ PDF, JPG, PNG (Tối đa 10MB)</p>
-                  <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
-                </div>
+                ) : (
+                  <div className="border-2 border-dashed border-blue-200 bg-[#F0F7FF] rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 transition group relative">
+                    <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-2 transition-transform group-hover:scale-110">
+                      <img src={uploadIcon} alt="Upload" className="w-5 h-5 object-contain opacity-70" />
+                    </div>
+                    <p className="text-sm font-medium text-slate-700">Kéo thả file hoặc <span className="text-blue-500">chọn tệp</span></p>
+                    <p className="text-xs text-slate-500 mt-1">Hỗ trợ PDF, JPG, PNG (Tối đa 10MB)</p>
+                    <input type="file" accept=".pdf,image/jpeg,image/png" onChange={handleMedicalFileChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-4 mt-8 pt-4">
@@ -1457,7 +1614,7 @@ function PetDetailPage() {
                             <button type="button" onClick={() => handleOpenEditMedical(item)} className="p-1.5 text-slate-400 hover:text-yellow-600 transition bg-slate-50 border border-slate-100 rounded-md" title="Chỉnh sửa bệnh án">
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                             </button>
-                            <button type="button" onClick={() => handleDownloadFile(item.fileUrl || item.name)} className="p-1.5 text-slate-400 hover:text-blue-600 transition bg-slate-50 border border-slate-100 rounded-md" title="Tải file đính kèm">
+                            <button type="button" onClick={() => handleDownloadFile(item.fileUrl, item.fileName || item.name || item.condition)} className="p-1.5 text-slate-400 hover:text-blue-600 transition bg-slate-50 border border-slate-100 rounded-md" title="Tải file đính kèm">
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                             </button>
                             <button type="button" onClick={() => handleDeleteMedicalRecordTrigger(item.id)} className="text-slate-400 hover:text-red-600 transition p-1.5 bg-slate-50 border border-slate-100 rounded-md" title="Xóa bệnh án">
