@@ -129,6 +129,7 @@ export function normalizeBookingService(service) {
     name: service.service_name,
     desc: service.description || "",
     price: Number(service.base_price || 0),
+    isWeightSurchargeApplied: Boolean(service.is_weight_surcharge_applied),
   };
 }
 

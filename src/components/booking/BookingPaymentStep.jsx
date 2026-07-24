@@ -40,13 +40,13 @@ const getPetWeight = (...pets) => {
 };
 
 const getWeightSurcharge = (service, petWeight) => {
-  const surcharge = service.weightSurcharge;
-
-  if (!surcharge || petWeight < surcharge.minWeight) {
-    return 0;
-  }
-
-  return surcharge.amount;
+  if (!service.isWeightSurchargeApplied) return 0;
+  
+  const weight = Number(petWeight) || 0;
+  if (weight <= 5) return 0;
+  
+  const extraWeight = weight - 5;
+  return Math.ceil(extraWeight) * 10000;
 };
 
 function Card({ children, className = "" }) {
