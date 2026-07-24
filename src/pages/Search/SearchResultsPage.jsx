@@ -76,6 +76,107 @@ function parseServicePrice(price) {
   return Number(numeric) || 0;
 }
 
+function normalizePriceValue(value) {
+  const price = Number(value) || 0;
+  return price > 0 && price < 1000 ? price * 1000 : price;
+}
+
+function getSearchItemPrice(item) {
+  return normalizePriceValue(item?.priceValue ?? item?.price ?? parseServicePrice(item?.price));
+}
+
+function isSearchPriceInRange(price, rangeId) {
+  if (rangeId === "20-50") return price >= 20000 && price < 50000;
+  if (rangeId === "50-100") return price >= 50000 && price < 100000;
+  if (rangeId === "100-200") return price >= 100000 && price < 200000;
+  if (rangeId === "200-plus") return price >= 200000;
+  return true;
+}
+
+function matchesAnySelected(value, selectedValues) {
+  return selectedValues.length === 0 || selectedValues.includes(value);
+}
+
+function getSelectedGroupValues(selectedFilters, groupId, allOptionId) {
+  const values = selectedFilters[groupId] || [];
+  return values.includes(allOptionId) ? [] : values;
+}
+
+function getProductCategoryId(product) {
+  return product?.categorySlug || product?.category || product?.categoryId;
+}
+
+function getArticleCategoryId(post) {
+  return post?.category || post?.categoryId || post?.categorySlug;
+}
+
+function getCommunityFilterId(post) {
+  const type = post?.type;
+  const map = {
+    "Khoảnh khắc": "moment",
+    "Hỏi đáp": "qa",
+    "Mẹo vặt": "tips",
+    "Kinh nghiệm": "experience",
+  };
+
+  return map[type] || post?.category || post?.tag;
+}
+
+function filterPriceItems(items, selectedPriceRanges) {
+  if (!selectedPriceRanges.length) return items;
+  return items.filter((item) => {
+    const price = getSearchItemPrice(item);
+    return selectedPriceRanges.some((rangeId) => isSearchPriceInRange(price, rangeId));
+  });
+}
+
+function buildSearchCounts(results) {
+  return {
+    service: results.services.length + results.otherServices.length,
+    shopping: results.products.length + results.suggestedProducts.length,
+    firstAid: results.firstAid.length,
+    knowledge: results.knowledge.length,
+    community: results.community.length,
+  };
+}
+
+function filterAppliesToType(groupId, activeType) {
+  return SEARCH_FILTER_GROUPS.find((group) => group.id === groupId)?.appliesTo.includes(activeType);
+}
+
+function applySearchFilters(results, selectedFilters, activeType) {
+  const selectedServiceGroups = filterAppliesToType("serviceGroups", activeType)
+    ? getSelectedGroupValues(selectedFilters, "serviceGroups", "all-services")
+    : [];
+  const selectedProductCategories = filterAppliesToType("productCategories", activeType)
+    ? getSelectedGroupValues(selectedFilters, "productCategories", "all-categories")
+    : [];
+  const selectedPriceRanges = filterAppliesToType("priceRanges", activeType)
+    ? selectedFilters.priceRanges || []
+    : [];
+  const selectedFirstAid = filterAppliesToType("firstAid", activeType)
+    ? getSelectedGroupValues(selectedFilters, "firstAid", "all-first-aid")
+    : [];
+  const selectedKnowledge = filterAppliesToType("knowledge", activeType)
+    ? getSelectedGroupValues(selectedFilters, "knowledge", "all-knowledge")
+    : [];
+  const selectedCommunity = filterAppliesToType("community", activeType)
+    ? getSelectedGroupValues(selectedFilters, "community", "all-community")
+    : [];
+  const filterService = (item) => matchesAnySelected(item.groupId, selectedServiceGroups);
+  const filterProduct = (item) => matchesAnySelected(getProductCategoryId(item), selectedProductCategories);
+
+  return {
+    services: filterPriceItems(results.services.filter(filterService), selectedPriceRanges),
+    otherServices: filterPriceItems(results.otherServices.filter(filterService), selectedPriceRanges),
+    products: filterPriceItems(results.products.filter(filterProduct), selectedPriceRanges),
+    suggestedProducts: filterPriceItems(results.suggestedProducts.filter(filterProduct), selectedPriceRanges),
+    firstAid: results.firstAid.filter((item) => matchesAnySelected(getArticleCategoryId(item), selectedFirstAid)),
+    knowledge: results.knowledge.filter((item) => matchesAnySelected(getArticleCategoryId(item), selectedKnowledge)),
+    community: results.community.filter((item) => matchesAnySelected(getCommunityFilterId(item), selectedCommunity)),
+  };
+}
+
 function SectionHeading({ children }) {
   return (
     <div className="flex w-full items-center gap-4">
@@ -125,6 +226,8 @@ function DemandTabs({ activeType, onChange }) {
 }
 
 function FilterGroup({ group, selectedValues, onToggle }) {
+  const allOptionId = group.options.find((option) => option.id.startsWith("all-"))?.id;
+
   return (
     <section className="w-full overflow-hidden rounded-[40px] border border-[rgba(25,118,210,0.5)] bg-white px-[30px] py-10">
       <div className="flex items-center gap-[17px]">
@@ -133,7 +236,9 @@ function FilterGroup({ group, selectedValues, onToggle }) {
       </div>
       <div className="mt-6 flex flex-col gap-4">
         {group.options.map((option) => {
-          const checked = selectedValues.includes(option.id);
+          const checked = option.id === allOptionId
+            ? selectedValues.length === 0
+            : selectedValues.includes(option.id);
           const label = option.count === null ? option.label : `${option.label} (${option.count})`;
 
           return (
@@ -503,7 +608,20 @@ export default function SearchResultsPage() {
     };
   }, [activeSort, activeType, query]);
 
-  const hasResults = searchResponse.total > 0;
+  const filteredSearchResponse = useMemo(() => {
+    const filteredResults = applySearchFilters(searchResponse.results, selectedFilters, activeType);
+    const counts = buildSearchCounts(filteredResults);
+    const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+
+    return {
+      ...searchResponse,
+      counts,
+      total,
+      results: filteredResults,
+    };
+  }, [activeType, searchResponse, selectedFilters]);
+
+  const hasResults = filteredSearchResponse.total > 0;
 
   const updateParams = (patch) => {
     const next = new URLSearchParams(searchParams);
@@ -535,10 +653,15 @@ export default function SearchResultsPage() {
 
   const handleFilterToggle = (groupId, optionId) => {
     setSelectedFilters((current) => {
+      const group = SEARCH_FILTER_GROUPS.find((item) => item.id === groupId);
+      const allOptionId = group?.options.find((option) => option.id.startsWith("all-"))?.id;
       const values = current[groupId] || [];
+      if (optionId === allOptionId) {
+        return { ...current, [groupId]: [] };
+      }
       const nextValues = values.includes(optionId)
         ? values.filter((value) => value !== optionId)
-        : [...values, optionId];
+        : [...values.filter((value) => value !== allOptionId), optionId];
       return { ...current, [groupId]: nextValues };
     });
   };
@@ -572,9 +695,9 @@ export default function SearchResultsPage() {
               query={query}
               activeType={activeType}
               activeSort={activeSort}
-              counts={searchResponse.counts}
-              total={searchResponse.total}
-              emptyState={searchResponse.emptyState}
+              counts={filteredSearchResponse.counts}
+              total={filteredSearchResponse.total}
+              emptyState={filteredSearchResponse.emptyState}
               onSortChange={handleSortChange}
               isEmpty={!hasResults}
             />
@@ -587,9 +710,9 @@ export default function SearchResultsPage() {
                 {loadError}
               </div>
             ) : hasResults ? (
-              <SearchResultsContent activeType={activeType} results={searchResponse.results} />
+              <SearchResultsContent activeType={activeType} results={filteredSearchResponse.results} />
             ) : (
-              <EmptyResultsContent emptyState={searchResponse.emptyState} onRetry={handleRetrySearch} />
+              <EmptyResultsContent emptyState={filteredSearchResponse.emptyState} onRetry={handleRetrySearch} />
             )}
           </section>
         </div>

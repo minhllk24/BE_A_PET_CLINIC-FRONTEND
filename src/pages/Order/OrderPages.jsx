@@ -21,6 +21,7 @@ import {
 } from "../../services/orderService";
 import { addCartItem } from "../../services/cartService";
 import { createProductReview } from "../../services/productService";
+import { useCart } from "../../context/CartContext";
 
 const STATUS_STEPS = ["processing", "shipping", "delivered"];
 const EMPTY_ORDER_PRODUCT = {
@@ -31,6 +32,32 @@ const EMPTY_ORDER_PRODUCT = {
   variant_name: "",
   image: productImages.detailImage,
 };
+
+const getOrderProductType = (product = {}) =>
+  (typeof product.variant === "string" && product.variant) ||
+  product.type ||
+  product.variant_name ||
+  product.variant?.variant_name ||
+  "Mặc định";
+
+const getOrderProductSize = (product = {}) =>
+  product.size || product.size_label || product.sizeLabel || "Mặc định";
+
+const buildCheckoutItemsFromOrder = (order) =>
+  (order?.products || [])
+    .filter((product) => product.productId)
+    .map((product) => ({
+      productId: product.productId,
+      variantId: product.variantId,
+      name: product.name,
+      price: product.price,
+      qty: product.quantity || 1,
+      quantity: product.quantity || 1,
+      type: getOrderProductType(product),
+      size: getOrderProductSize(product) === "Mặc định" ? "" : getOrderProductSize(product),
+      image: product.image,
+      selected: true,
+    }));
 
 const shiftDate = (value, days) => {
   const date = new Date(value);
@@ -102,6 +129,8 @@ function OutlineButton({ children, className = "", ...props }) {
 
 function ProductSummary({ product, large = false }) {
   const safeProduct = product || EMPTY_ORDER_PRODUCT;
+  const productType = getOrderProductType(safeProduct);
+  const productSize = getOrderProductSize(safeProduct);
 
   return (
     <div className={`flex items-center gap-[10px] ${large ? "min-h-[100px] w-full" : "h-[100px] w-[372px]"}`}>
@@ -112,7 +141,8 @@ function ProductSummary({ product, large = false }) {
         </strong>
         <strong className="text-[14px] text-[#353535]">{formatCurrency(safeProduct.price)}</strong>
         <div className="flex min-w-0 flex-nowrap items-center gap-x-4 text-[12px] text-[#353535]">
-          <span className="min-w-0 truncate">Biến thể: {safeProduct.variant_name || safeProduct.variant?.variant_name || "Không có"}</span>
+          <span className="min-w-0 truncate">Loại: {productType}</span>
+          <span className="min-w-0 truncate">Kích cỡ: {productSize}</span>
           <span className="shrink-0">Số lượng: {safeProduct.quantity}</span>
         </div>
       </div>
@@ -128,6 +158,7 @@ function OrderActions({
   onReview,
   onReorder,
   isActionLoading,
+  paymentExpired = false,
 }) {
   const stopAndRun = (callback) => (event) => {
     event.stopPropagation();
@@ -136,7 +167,7 @@ function OrderActions({
 
   if (order.status === "awaiting_payment") {
     return (
-      <YellowButton onClick={stopAndRun(onRepay)} disabled={isActionLoading}>
+      <YellowButton onClick={stopAndRun(onRepay)} disabled={isActionLoading || paymentExpired}>
         Thanh toán
       </YellowButton>
     );
@@ -244,6 +275,7 @@ function OrderCard({
             onReview={() => onReview(order)}
             onReorder={() => onReorder(order)}
             isActionLoading={isActionLoading}
+            paymentExpired={paymentExpired}
           />
         </div>
       </div>
@@ -406,6 +438,7 @@ function SearchAndSort({
 
 export function MyOrdersPage() {
   const { confirmCancel, showSuccessModal } = useDecisionModal();
+  const { replaceCartItemsForCheckout } = useCart();
   const [ordersData, setOrdersData] = useState([]);
   const [filter, setFilter] = useState("all");
   const [searchInput, setSearchInput] = useState("");
@@ -428,7 +461,7 @@ export function MyOrdersPage() {
   };
 
   const handleReorder = async (order) => {
-    const validItems = order.products.filter((product) => product.productId);
+    const validItems = buildCheckoutItemsFromOrder(order);
     if (!validItems.length) {
       updateActionFeedback(order.id, "Không thể đặt lại vì đơn hàng này không còn dữ liệu sản phẩm hợp lệ.", "error");
       return;
@@ -438,18 +471,20 @@ export function MyOrdersPage() {
     updateActionFeedback(order.id, "");
 
     try {
-      await Promise.all(
+      replaceCartItemsForCheckout(validItems);
+      Promise.all(
         validItems.map((product) =>
           addCartItem({
             productId: product.productId,
             variantId: product.variantId,
-            qty: product.quantity,
+            qty: product.qty,
+            size: product.size,
           }),
         ),
-      );
+      ).catch(() => {});
 
-      updateActionFeedback(order.id, "Đã thêm lại sản phẩm vào giỏ hàng.");
-      navigate("/gio-hang");
+      updateActionFeedback(order.id, "Đã chuyển sang thanh toán với sản phẩm của đơn cũ.");
+      navigate("/checkout");
     } catch (error) {
       updateActionFeedback(order.id, error?.message || "Không thể thêm lại sản phẩm vào giỏ hàng.", "error");
     } finally {
@@ -765,6 +800,7 @@ function InvoiceModal({ order, onClose }) {
 
 export function OrderDetailsPage() {
   const { confirmCancel, showSuccessModal } = useDecisionModal();
+  const { replaceCartItemsForCheckout } = useCart();
   const { orderId } = useParams();
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [order, setOrder] = useState(null);
@@ -775,6 +811,7 @@ export function OrderDetailsPage() {
   const [reviewableProducts, setReviewableProducts] = useState([]);
   const [reviewEligibilityLoading, setReviewEligibilityLoading] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [paymentExpired, setPaymentExpired] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -801,8 +838,22 @@ export function OrderDetailsPage() {
     };
   }, [orderId]);
 
+  useEffect(() => {
+    if (order?.status !== "awaiting_payment") {
+      setPaymentExpired(false);
+      return undefined;
+    }
+
+    const updateExpired = () => {
+      setPaymentExpired(new Date(order.paymentExpiresAt).getTime() <= Date.now());
+    };
+    updateExpired();
+    const intervalId = window.setInterval(updateExpired, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [order?.paymentExpiresAt, order?.status]);
+
   const handleReorder = async () => {
-    const validItems = (order?.products || []).filter((product) => product.productId);
+    const validItems = buildCheckoutItemsFromOrder(order);
     if (!validItems.length) {
       setActionMessage({ type: "error", text: "Không thể đặt lại vì đơn hàng này không còn dữ liệu sản phẩm hợp lệ." });
       return;
@@ -812,17 +863,19 @@ export function OrderDetailsPage() {
     setActionMessage(null);
 
     try {
-      await Promise.all(
+      replaceCartItemsForCheckout(validItems);
+      Promise.all(
         validItems.map((product) =>
           addCartItem({
             productId: product.productId,
             variantId: product.variantId,
-            qty: product.quantity,
+            qty: product.qty,
+            size: product.size,
           }),
         ),
-      );
-      setActionMessage({ type: "success", text: "Đã thêm lại sản phẩm vào giỏ hàng." });
-      navigate("/gio-hang");
+      ).catch(() => {});
+      setActionMessage({ type: "success", text: "Đã chuyển sang thanh toán với sản phẩm của đơn cũ." });
+      navigate("/checkout");
     } catch (error) {
       setActionMessage({
         type: "error",
@@ -869,6 +922,11 @@ export function OrderDetailsPage() {
   };
 
   const handleRepay = async () => {
+    if (paymentExpired) {
+      setActionMessage({ type: "error", text: "Đơn hàng đã hết thời gian thanh toán." });
+      return;
+    }
+
     setActionLoading(true);
     setActionMessage(null);
 
@@ -995,6 +1053,7 @@ export function OrderDetailsPage() {
       label: "Thanh toán",
       onClick: handleRepay,
       variant: "yellow",
+      disabled: paymentExpired,
     });
   } else if (order.status === "processing") {
     detailActions.push({
@@ -1109,8 +1168,8 @@ export function OrderDetailsPage() {
         </div>
         <div className="grid grid-cols-2 gap-12 py-6">
           <div><h3 className="text-[20px] font-medium">Cần hỗ trợ</h3>
-            <p className="mt-3 text-[#667085]">ⓘ Liên hệ ↗</p>
-            <p className="mt-3 text-[#667085]">📦Chính sách đổi trả ↗</p>
+            <Link to="/lien-he" className="mt-3 block text-[#667085] transition hover:text-[#0D47A1]">ⓘ Liên hệ ↗</Link>
+            <Link to="/policies/doi-tra-hang" className="mt-3 block text-[#667085] transition hover:text-[#0D47A1]">📦Chính sách đổi trả ↗</Link>
           </div>
           <div>
             <h3 className="text-[20px] font-medium text-[#0D47A1]">Tóm tắt đơn hàng</h3>
@@ -1125,7 +1184,7 @@ export function OrderDetailsPage() {
                 <YellowButton
                   key={action.key}
                   onClick={action.onClick}
-                  disabled={actionLoading}
+                  disabled={actionLoading || action.disabled}
                 >
                   {action.label}
                 </YellowButton>
@@ -1133,7 +1192,7 @@ export function OrderDetailsPage() {
                 <OutlineButton
                   key={action.key}
                   onClick={action.onClick}
-                  disabled={actionLoading}
+                  disabled={actionLoading || action.disabled}
                   className={action.variant === "danger" ? "border-[#C62828] text-[#C62828]" : ""}
                 >
                   {action.label}

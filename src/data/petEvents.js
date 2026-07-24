@@ -1,8 +1,9 @@
 export const INITIAL_PET_EVENTS = [
-  { id: 1, day: 3, title: "Uống thuốc", type: "green", icon: "medical", time: "08:00 SA", files: [] },
+  { id: 1, day: 3, dateKey: "2026-07-03", title: "Uống thuốc", type: "green", icon: "medical", time: "08:00 SA", files: [] },
   {
     id: 2,
     day: 9,
+    dateKey: "2026-07-09",
     title: "Khám định kỳ",
     type: "yellow",
     icon: "medical",
@@ -12,6 +13,6 @@ export const INITIAL_PET_EVENTS = [
       { id: "f2", name: "XetNghiemMau.png", size: "1.5 MB" },
     ],
   },
-  { id: 3, day: 9, title: "Cắt móng", type: "blue", icon: "scissors", time: "02:30 CH", files: [] },
-  { id: 4, day: 15, title: "Tiêm dại", type: "red", icon: "vaccine", time: "10:00 SA", files: [] },
+  { id: 3, day: 9, dateKey: "2026-07-09", title: "Cắt móng", type: "blue", icon: "scissors", time: "02:30 CH", files: [] },
+  { id: 4, day: 15, dateKey: "2026-07-15", title: "Tiêm dại", type: "red", icon: "vaccine", time: "10:00 SA", files: [] },
 ];

@@ -5,13 +5,15 @@ import { MOCK_PETS } from "../../data/mockPets";
 import { INITIAL_PET_EVENTS } from "../../data/petEvents";
 import {
   createMedicalRecord,
-  createReminder,
+  createHealthDiary,
+  deleteHealthDiary,
   deleteMedicalRecord,
   deleteReminder,
   getHealthDiariesByPet,
   getMedicalRecordsByPet,
   getPetDetails,
   getRemindersByPet,
+  updateHealthDiary,
   updateMedicalRecord,
 } from "../../services/petService";
 
@@ -165,6 +167,7 @@ const createUploadedFile = (file) => {
     type: file.type,
     url,
     fileUrl: url,
+    file,
   };
 };
 
@@ -174,6 +177,8 @@ const isImageFile = (file = {}) => {
   const fileName = file.name || file.fileName || "";
   return file.type?.startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(fileName);
 };
+
+const getUploadFiles = (files = []) => files.map((item) => item.file).filter(Boolean);
 
 const renderAttachmentPreview = (file, className = "h-10 w-10") => {
   const fileUrl = getFileUrl(file);
@@ -246,9 +251,14 @@ const getEventDateParts = (event) => {
 
   return {
     day: Number(event?.day),
-    month: 9,
-    year: 2023,
+    month: 6,
+    year: 2026,
   };
+};
+
+const toDateKey = (date) => {
+  if (!date || Number.isNaN(date.getTime())) return "";
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 };
 
 const isEventInDate = (event, day, month, year) => {
@@ -265,7 +275,7 @@ function PetDetailPage() {
   const [petLoadError, setPetLoadError] = useState("");
   
   // 3. KHỞI TẠO STATES
-  const [calendarDate, setCalendarDate] = useState(new Date(2023, 9, 9)); 
+  const [calendarDate, setCalendarDate] = useState(() => new Date()); 
   const [eventsList, setEventsList] = useState(INITIAL_PET_EVENTS); 
   const [medicalHistoryList, setMedicalHistoryList] = useState(() => getFallbackPet(currentPetId)?.medicalRecords || []);
 
@@ -307,6 +317,10 @@ function PetDetailPage() {
   const year = calendarDate.getFullYear();
   const month = calendarDate.getMonth(); 
   const selectedDay = calendarDate.getDate();
+  const today = new Date();
+  const todayDay = today.getDate();
+  const todayMonth = today.getMonth();
+  const todayYear = today.getFullYear();
 
   useEffect(() => {
     let active = true;
@@ -383,7 +397,7 @@ function PetDetailPage() {
     const dayEvents = eventsList.filter(ev => isEventInDate(ev, i, month, year));
     calendarDays.push({ 
       date: i, 
-      isCurrent: i === selectedDay, 
+      isCurrent: i === todayDay && month === todayMonth && year === todayYear, 
       events: dayEvents.length > 0 ? dayEvents : null
     });
   }
@@ -416,10 +430,12 @@ function PetDetailPage() {
       return;
     }
     const targetDay = new Date(noteDate).getDate();
+    const targetDateKey = noteDate;
     const formattedTime = noteTime ? formatTimeToSACH(noteTime) : "--:--"; 
     const newEvent = {
       id: Date.now(), 
       day: targetDay,
+      dateKey: targetDateKey,
       title: noteContent,
       time: formattedTime,
       type: selectedColor, 
@@ -427,17 +443,17 @@ function PetDetailPage() {
       files: existingFiles 
     };
     try {
-      const savedEvent = await createReminder({
+      const savedEvent = await createHealthDiary({
         petId: currentPetId,
-        remindDate: noteDate,
+        entryDate: noteDate,
+        entryTime: noteTime || null,
         title: noteContent,
-        notes: noteContent,
-        time: formattedTime,
+        content: noteContent,
         icon: selectedIcon,
         type: selectedColor,
-        reminderType: selectedIcon,
+        files: getUploadFiles(existingFiles),
       });
-      setEventsList((current) => [...current, { ...savedEvent, files: existingFiles }]);
+      setEventsList((current) => [...current, { ...savedEvent, files: savedEvent.files?.length ? savedEvent.files : existingFiles }]);
     } catch (error) {
       setEventsList((current) => [...current, newEvent]);
     }
@@ -488,18 +504,41 @@ function PetDetailPage() {
     }
 
     const targetDay = selectedDateObj.getDate();
+    const targetDateKey = toDateKey(selectedDateObj);
     const formattedTime = noteTime ? formatTimeToSACH(noteTime) : "--:--"; 
 
     if (dayModalMode === 'edit' && editingNoteId) {
+      const finalFiles = existingFiles.filter(file => !markedDeletions.includes(file.id));
+      if (activeEventDetail?.sourceType === "diary") {
+        try {
+          const savedEvent = await updateHealthDiary(editingNoteId, {
+            petId: currentPetId,
+            entryDate: targetDateKey,
+            entryTime: noteTime || null,
+            title: noteContent,
+            content: noteContent,
+            icon: selectedIcon,
+            type: selectedColor,
+            files: getUploadFiles(finalFiles),
+          });
+          setEventsList((current) => current.map((event) =>
+            event.id === editingNoteId ? { ...event, ...savedEvent, files: savedEvent.files?.length ? savedEvent.files : finalFiles } : event,
+          ));
+          setDayModalMode('view');
+          return;
+        } catch (error) {
+          // Nếu API lỗi, tiếp tục cập nhật local để UI không bị kẹt.
+        }
+      }
       setEventsList(prev => prev.map(ev => {
         if (ev.id === editingNoteId) {
-          const finalFiles = existingFiles.filter(file => !markedDeletions.includes(file.id));
           return {
             ...ev,
             title: noteContent,
             time: formattedTime,
             type: selectedColor,
             icon: selectedIcon,
+            dateKey: ev.dateKey || targetDateKey,
             files: finalFiles 
           };
         }
@@ -509,6 +548,7 @@ function PetDetailPage() {
       const newEvent = {
         id: Date.now(), 
         day: targetDay,
+        dateKey: targetDateKey,
         title: noteContent,
         time: formattedTime,
         type: selectedColor, 
@@ -516,17 +556,17 @@ function PetDetailPage() {
         files: existingFiles 
       };
       try {
-        const savedEvent = await createReminder({
+        const savedEvent = await createHealthDiary({
           petId: currentPetId,
-          remindDate: selectedDateObj.toISOString().slice(0, 10),
+          entryDate: targetDateKey,
+          entryTime: noteTime || null,
           title: noteContent,
-          notes: noteContent,
-          time: formattedTime,
+          content: noteContent,
           icon: selectedIcon,
           type: selectedColor,
-          reminderType: selectedIcon,
+          files: getUploadFiles(existingFiles),
         });
-        setEventsList((current) => [...current, { ...savedEvent, files: existingFiles }]);
+        setEventsList((current) => [...current, { ...savedEvent, files: savedEvent.files?.length ? savedEvent.files : existingFiles }]);
       } catch (error) {
         setEventsList((current) => [...current, newEvent]);
       }
@@ -545,7 +585,13 @@ function PetDetailPage() {
 
   const handleConfirmDeleteNote = async (targetId = noteToDeleteId) => {
     const targetEvent = eventsList.find((event) => event.id === targetId);
-    if (targetEvent?.sourceType === "reminder") {
+    if (targetEvent?.sourceType === "diary") {
+      try {
+        await deleteHealthDiary(targetId);
+      } catch (error) {
+        // API lỗi thì vẫn xóa khỏi fallback local để UI không bị kẹt.
+      }
+    } else if (targetEvent?.sourceType === "reminder") {
       try {
         await deleteReminder(targetId);
       } catch (error) {
@@ -647,9 +693,10 @@ function PetDetailPage() {
           condition: newMedicalName,
           visitDate: newMedicalDate,
           notes: newMedicalNotes,
+          attachments: newMedicalFile?.file ? [newMedicalFile.file] : [],
         });
         newList = medicalHistoryList.map((record) =>
-          record.id === editingMedicalId ? { ...record, ...savedRecord, ...newList.find((item) => item.id === editingMedicalId) } : record,
+          record.id === editingMedicalId ? { ...record, ...newList.find((item) => item.id === editingMedicalId), ...savedRecord } : record,
         );
       } else {
         const savedRecord = await createMedicalRecord({
@@ -657,8 +704,9 @@ function PetDetailPage() {
           condition: newMedicalName,
           visitDate: newMedicalDate,
           notes: newMedicalNotes,
+          attachments: newMedicalFile?.file ? [newMedicalFile.file] : [],
         });
-        newList = [{ ...savedRecord, ...newList[0] }, ...medicalHistoryList];
+        newList = [{ ...newList[0], ...savedRecord }, ...medicalHistoryList];
       }
     } catch (error) {
       // Giữ fallback local để người dùng vẫn thao tác được khi API chưa bật.
@@ -920,7 +968,7 @@ function PetDetailPage() {
                     <svg className="w-3.5 h-3.5 text-yellow-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                   </div>
                   <p className="text-[10px] text-slate-500 font-medium mb-0.5 uppercase tracking-wide">Tiêm phòng tiếp</p>
-                  <p className="text-xs font-bold text-slate-900">15/11/2023</p>
+                  <p className="text-xs font-bold text-slate-900">15/07/2026</p>
                 </div>
               </div>
               <div className="p-3 bg-slate-50/50 border-t border-slate-100">

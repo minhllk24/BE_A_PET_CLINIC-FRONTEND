@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { appointmentImages } from "../../assets/appointmentImages";
 import WriteReviewForm from "../../components/product/WriteReviewForm";
 import { useDecisionModal } from "../../components/shared/DecisionModal";
@@ -460,6 +461,7 @@ function SearchAndSort({
 
 function AppointmentHistoryPage() {
   const { confirmCancel, openDecisionModal, showSuccessModal } = useDecisionModal();
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchInput, setSearchInput] = useState("");
@@ -637,7 +639,26 @@ function AppointmentHistoryPage() {
     }
 
     if (actionKey === "rebook") {
-      window.location.href = "/dat-lich";
+      const rebookServices = appointment.services?.length
+        ? appointment.services
+        : appointment.service?.id
+          ? [{
+              id: appointment.service.id,
+              serviceId: appointment.service.id,
+              name: appointment.service.name,
+              serviceTypeId: appointment.service.serviceTypeId,
+              quantity: 1,
+            }]
+          : [];
+      navigate("/dat-lich", {
+        state: {
+          rebookAppointment: {
+            serviceTypeId: rebookServices[0]?.serviceTypeId,
+            services: rebookServices,
+            sourceAppointmentId: appointment.id,
+          },
+        },
+      });
       return;
     }
 

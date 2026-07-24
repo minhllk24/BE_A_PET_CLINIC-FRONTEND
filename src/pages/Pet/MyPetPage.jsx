@@ -20,6 +20,16 @@ const petImages = {
   Snow: snowImg,
 };
 
+const readStoredPets = () => {
+  try {
+    const stored = localStorage.getItem("petsData");
+    const pets = stored ? JSON.parse(stored) : [];
+    return Array.isArray(pets) ? pets : [];
+  } catch (error) {
+    return [];
+  }
+};
+
 const getHealthStatusColor = (status) => {
   const safeStatus = status === "Khỏe mạnh" ? "Bình thường" : status;
   switch (safeStatus) {
@@ -247,7 +257,8 @@ function PetListPage() {
       })
       .catch((error) => {
         if (!active) return;
-        setPets(MOCK_PETS);
+        const storedPets = readStoredPets();
+        setPets(storedPets.length ? storedPets : MOCK_PETS);
         setLoadError(error?.message || "Không thể tải hồ sơ thú cưng, đang hiển thị dữ liệu mẫu.");
       })
       .finally(() => {

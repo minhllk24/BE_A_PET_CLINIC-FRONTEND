@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useDecisionModal } from "../../components/shared/DecisionModal";
 import {
+  createMedicalRecord,
   createPet,
   deletePet,
   getMyPets,
@@ -59,6 +60,7 @@ const createUploadedFile = (file) => ({
   size: formatFileSize(file.size),
   type: file.type,
   fileUrl: URL.createObjectURL(file),
+  file,
 });
 
 const getFileUrl = (file = {}) => file.url || file.fileUrl || "";
@@ -101,6 +103,50 @@ const getLatestDate = (records) => {
   });
   
   return sorted[0].date;
+};
+
+const readStoredPets = () => {
+  try {
+    const stored = localStorage.getItem("petsData");
+    const pets = stored ? JSON.parse(stored) : [];
+    return Array.isArray(pets) ? pets : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const saveStoredPets = (pets) => {
+  localStorage.setItem("petsData", JSON.stringify(pets));
+};
+
+const buildLocalPet = (petData, existingPet) => ({
+  ...existingPet,
+  id: existingPet?.id || `pet_${Date.now()}`,
+  pet_id: existingPet?.pet_id,
+  name: petData.name,
+  speciesId: petData.speciesId,
+  species: petData.species,
+  breed: petData.breed,
+  age: petData.age,
+  gender: petData.gender === "male" ? "Đực" : petData.gender === "female" ? "Cái" : petData.gender,
+  weight: petData.weightKg ? `${petData.weightKg} kg` : "",
+  weightKg: petData.weightKg,
+  healthStatus: petData.healthStatus,
+  medicalNotes: petData.medicalNotes,
+  avatar: petData.avatar,
+  medicalRecords: petData.medicalRecords || existingPet?.medicalRecords || [],
+});
+
+const upsertLocalPet = (petId, petData) => {
+  const storedPets = readStoredPets();
+  const existingPet = storedPets.find((item) => item.id === petId || String(item.pet_id) === String(petId));
+  const nextPet = buildLocalPet(petData, existingPet);
+  const nextPets = existingPet
+    ? storedPets.map((item) => (item.id === existingPet.id ? nextPet : item))
+    : [nextPet, ...storedPets];
+
+  saveStoredPets(nextPets);
+  return nextPet;
 };
 
 const MedicalRecordCard = ({ fileName, size, onEdit, onDelete, onDownload }) => (
@@ -191,7 +237,22 @@ function PetFormPage() {
         }
       })
       .catch((error) => {
-        if (active) setFormError(error?.message || "Không thể tải hồ sơ thú cưng");
+        if (!active) return;
+        const storedPets = readStoredPets();
+        setAllPets(storedPets);
+
+        if (isEdit) {
+          const currentPet = storedPets.find((p) => p.id === petId || String(p.pet_id) === String(petId));
+          if (currentPet) {
+            setSelectedSpeciesId(getSpeciesInputValue(currentPet));
+            setBreedInput(currentPet.breed || currentPet.breedName || "");
+            setAvatarPreview(currentPet.avatar || (currentPet.name && petImages[currentPet.name]) || null);
+            setMedicalRecords(currentPet.medicalRecords || []);
+            return;
+          }
+        }
+
+        setFormError(error?.message || "Không thể tải hồ sơ thú cưng");
       });
 
     return () => {
@@ -265,19 +326,44 @@ function PetFormPage() {
       medicalNotes: formData.get("medicalNotes") || "", 
       healthStatus: formData.get("healthStatus"), 
       avatar: avatarPreview, 
+      medicalRecords,
     };
 
     try {
       setSaving(true);
       setFormError("");
+      let savedPet;
       if (isEdit) {
-        await updatePet(petId, petData);
+        savedPet = await updatePet(petId, petData);
       } else {
-        await createPet(petData);
+        savedPet = await createPet(petData);
       }
+
+      const backendPetId = savedPet.id || petId;
+      const localRecordsToPersist = medicalRecords.filter((record) =>
+        record.file || typeof record.id === "number" || /^\d{12,}$/.test(String(record.id)),
+      );
+      const savedRecordResults = await Promise.allSettled(localRecordsToPersist.map((record) =>
+        createMedicalRecord({
+          petId: backendPetId,
+          condition: record.condition,
+          visitDate: record.visitDate || record.date?.split("/").reverse().join("-"),
+          notes: record.notes,
+          attachments: record.file ? [record.file] : [],
+        }),
+      ));
+      const persistedRecords = savedRecordResults
+        .filter((result) => result.status === "fulfilled")
+        .map((result) => result.value);
+      const finalRecords = persistedRecords.length
+        ? [...persistedRecords, ...medicalRecords.filter((record) => !localRecordsToPersist.includes(record))]
+        : medicalRecords;
+
+      upsertLocalPet(isEdit ? petId : savedPet.id, { ...petData, ...savedPet, medicalRecords: finalRecords });
       navigate("/thu-cung-cua-toi");
     } catch (error) {
-      setFormError(error?.message || "Không thể lưu hồ sơ");
+      upsertLocalPet(isEdit ? petId : null, petData);
+      navigate("/thu-cung-cua-toi");
     } finally {
       setSaving(false);
     }

@@ -93,6 +93,22 @@ const getFallbackProducts = ({ searchQuery, selectedCategories, selectedPrices, 
   return filtered;
 };
 
+const getSelectedPriceRanges = (selectedPrices) =>
+  selectedPrices.map((priceIndex) => PRICE_RANGES[priceIndex]).filter(Boolean);
+
+const buildFetchSpecs = ({ selectedCategoryIds, selectedPrices }) => {
+  const categoryIds = selectedCategoryIds.length ? selectedCategoryIds : [undefined];
+  const ranges = getSelectedPriceRanges(selectedPrices);
+  const priceRanges = ranges.length ? ranges : [null];
+
+  return categoryIds.flatMap((categoryId) =>
+    priceRanges.map((range) => ({
+      categoryId,
+      range,
+    })),
+  );
+};
+
 function FilterHeading({ children }) {
   return (
     <div className="flex items-center gap-[17px]">
@@ -342,7 +358,7 @@ export default function ProductPage() {
   }, [categoryOptions, selectedCategories]);
 
   const loadProducts = useCallback(async (page = 1, append = false) => {
-    const range = selectedPrices.length > 0 ? PRICE_RANGES[selectedPrices[0]] : null;
+    const fetchSpecs = buildFetchSpecs({ selectedCategoryIds, selectedPrices });
     const params = {
       page,
       limit: PAGE_SIZE,
@@ -350,8 +366,6 @@ export default function ProductPage() {
       category_ids: selectedCategoryIds.length ? selectedCategoryIds.join(",") : undefined,
       filter: searchQuery.trim() || undefined,
       sort: toBackendSort(sortOrder),
-      minPrice: range?.min,
-      maxPrice: Number.isFinite(range?.max) ? range.max : undefined,
     };
 
     if (append) {
@@ -362,20 +376,22 @@ export default function ProductPage() {
     setLoadError("");
 
     try {
-      if (selectedCategoryIds.length > 1) {
-        const categoryResults = await Promise.all(
-          selectedCategoryIds.map((categoryId) =>
+      if (fetchSpecs.length > 1) {
+        const fetchResults = await Promise.all(
+          fetchSpecs.map(({ categoryId, range }) =>
             getProductsPage({
               ...params,
               page: 1,
               limit: MULTI_CATEGORY_FETCH_LIMIT,
               category_id: categoryId,
               category_ids: undefined,
+              minPrice: range?.min,
+              maxPrice: Number.isFinite(range?.max) ? range.max : undefined,
             }),
           ),
         );
         const uniqueProducts = new Map();
-        categoryResults.forEach((result) => {
+        fetchResults.forEach((result) => {
           result.products.forEach((product) => {
             uniqueProducts.set(String(product.id), product);
           });
@@ -390,7 +406,14 @@ export default function ProductPage() {
         return;
       }
 
-      const result = await getProductsPage(params);
+      const onlySpec = fetchSpecs[0] || {};
+      const result = await getProductsPage({
+        ...params,
+        category_id: onlySpec.categoryId,
+        category_ids: undefined,
+        minPrice: onlySpec.range?.min,
+        maxPrice: Number.isFinite(onlySpec.range?.max) ? onlySpec.range.max : undefined,
+      });
       setProducts((current) => (append ? [...current, ...result.products] : result.products));
       setTotalProducts(result.totalRows);
       setTotalPages(result.totalPages || 1);
@@ -444,7 +467,11 @@ export default function ProductPage() {
   }, []);
 
   const togglePrice = useCallback((priceIndex) => {
-    setSelectedPrices((current) => (current.includes(priceIndex) ? [] : [priceIndex]));
+    setSelectedPrices((current) =>
+      current.includes(priceIndex)
+        ? current.filter((index) => index !== priceIndex)
+        : [...current, priceIndex],
+    );
   }, []);
 
   const clearSearch = useCallback(() => {

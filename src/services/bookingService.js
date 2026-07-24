@@ -73,10 +73,29 @@ function getAppointmentServiceSummary(appointment) {
   };
 }
 
+function getAppointmentServices(appointment) {
+  const appointmentServices = appointment.appointment_services || appointment.services || [];
+  return appointmentServices
+    .map((item) => {
+      const service = item.service || {};
+      const serviceId = item.service_id || service.service_id || item.id;
+      if (!serviceId) return null;
+      return {
+        id: String(serviceId),
+        serviceId: String(serviceId),
+        name: service.service_name || item.service_name || item.name || "",
+        serviceTypeId: inferServiceType(service),
+        quantity: Number(item.quantity || 1),
+      };
+    })
+    .filter(Boolean);
+}
+
 export function normalizeAppointmentHistoryItem(appointment = {}) {
   const startTime = formatTime(appointment.start_time);
   const dateText = formatDateText(appointment.appointment_date);
   const service = getAppointmentServiceSummary(appointment);
+  const services = getAppointmentServices(appointment);
   const status = normalizeAppointmentStatus(appointment);
   const pet = appointment.pet || {};
   const speciesName = pet.species?.species_name || appointment.pet_species_snapshot || "";
@@ -117,6 +136,7 @@ export function normalizeAppointmentHistoryItem(appointment = {}) {
       time: startTime,
       timeRange: appointment.end_time ? `${startTime} - ${formatTime(appointment.end_time)}` : startTime,
     },
+    services,
   };
 }
 

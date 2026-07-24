@@ -194,6 +194,16 @@ export function CartProvider({ children }) {
     }
   }, [isAuthenticated, reloadCart]);
 
+  const replaceCartItemsForCheckout = useCallback((products = []) => {
+    const nextItems = products.map((product) => ({
+      ...product,
+      id: buildCartItemKey(product),
+      qty: product.qty || product.quantity || 1,
+      selected: true,
+    }));
+    setCartItems(nextItems);
+  }, []);
+
   const openCart = useCallback(() => {
     setIsCheckoutOpen(false);
     setIsOrderSuccessOpen(false);
@@ -294,6 +304,7 @@ export function CartProvider({ children }) {
       updateCartQty,
       updateCartOptions,
       addToCart,
+      replaceCartItemsForCheckout,
     }),
     [
       isCartOpen,
@@ -324,6 +335,7 @@ export function CartProvider({ children }) {
       updateCartQty,
       updateCartOptions,
       addToCart,
+      replaceCartItemsForCheckout,
     ],
   );
 

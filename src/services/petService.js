@@ -76,6 +76,7 @@ export function normalizeMedicalRecord(record = {}) {
     doctor: record.doctor?.full_name || record.doctor || "Chưa rõ",
     notes: record.notes || record.treatment_note || record.diagnosis || record.symptoms || "Không có ghi chú y tế.",
     fileUrl: attachment?.file_url || record.fileUrl || "",
+    fileName: attachment?.file_name || record.fileName || record.name,
     sourceType: record.source_type,
   };
 }
@@ -87,12 +88,15 @@ export function normalizeHealthDiary(diary = {}) {
         id: String(attachment.attachment_id || attachment.id || attachment.file_url),
         name: attachment.file_name || "Tệp đính kèm",
         url: attachment.file_url,
+        fileUrl: attachment.file_url,
+        size: attachment.file_size_kb ? `${attachment.file_size_kb} KB` : "",
+        type: attachment.file_type,
       }))
     : diary.files || [];
 
   return {
     ...diary,
-    id: String(diary.diary_id || diary.id || Date.now()),
+    id: String(diary.diary_entry_id || diary.diary_id || diary.id || Date.now()),
     sourceType: diary.sourceType || "diary",
     dateKey: Number.isNaN(entryDate.getTime()) ? diary.dateKey : entryDate.toISOString().slice(0, 10),
     day: Number.isNaN(entryDate.getTime()) ? diary.day : entryDate.getDate(),
@@ -117,7 +121,7 @@ export function normalizeReminder(reminder = {}) {
     time: reminder.time || "--:--",
     type: reminder.color_code || reminder.type || "yellow",
     icon: reminder.icon_code || reminder.icon || "paw",
-    notes: reminder.notes || "",
+    notes: reminder.notes || reminder.note || "",
     status: reminder.status || "pending",
     files: [],
   };
@@ -196,7 +200,7 @@ export async function getMedicalRecordsByPet(petId) {
 }
 
 function toMedicalRecordPayload(record = {}) {
-  return {
+  const payload = {
     pet_id: record.petId || record.pet_id,
     record_name: record.condition || record.record_name || record.name,
     visit_date: record.visitDate || record.visit_date,
@@ -204,15 +208,35 @@ function toMedicalRecordPayload(record = {}) {
     treatment_note: record.notes || record.treatment_note || "",
     symptoms: record.symptoms || "",
   };
+
+  const files = [
+    ...(Array.isArray(record.attachments) ? record.attachments : []),
+    ...(Array.isArray(record.files) ? record.files : []),
+  ].filter((item) => item instanceof File);
+
+  if (!files.length) return payload;
+
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) formData.append(key, value);
+  });
+  files.forEach((file) => formData.append("attachments", file));
+  return formData;
 }
 
 export async function createMedicalRecord(record) {
-  const response = await apiClient.post("/medical-records", toMedicalRecordPayload(record));
+  const payload = toMedicalRecordPayload(record);
+  const response = await apiClient.post("/medical-records", payload, payload instanceof FormData ? {
+    headers: { "Content-Type": "multipart/form-data" },
+  } : undefined);
   return normalizeMedicalRecord(assertSuccess(response));
 }
 
 export async function updateMedicalRecord(recordId, record) {
-  const response = await apiClient.put(`/medical-records/${recordId}`, toMedicalRecordPayload(record));
+  const payload = toMedicalRecordPayload(record);
+  const response = await apiClient.put(`/medical-records/${recordId}`, payload, payload instanceof FormData ? {
+    headers: { "Content-Type": "multipart/form-data" },
+  } : undefined);
   return normalizeMedicalRecord(assertSuccess(response));
 }
 
@@ -234,7 +258,15 @@ export async function getRemindersByPet(petId) {
 }
 
 export async function createHealthDiary(diary) {
-  const response = await apiClient.post("/health-diaries", {
+  const payload = toHealthDiaryPayload(diary);
+  const response = await apiClient.post("/health-diaries", payload, payload instanceof FormData ? {
+    headers: { "Content-Type": "multipart/form-data" },
+  } : undefined);
+  return normalizeHealthDiary(assertSuccess(response));
+}
+
+function toHealthDiaryPayload(diary = {}) {
+  const payload = {
     pet_id: diary.petId || diary.pet_id,
     entry_date: diary.entryDate || diary.entry_date,
     entry_time: diary.entryTime || diary.entry_time || null,
@@ -242,8 +274,34 @@ export async function createHealthDiary(diary) {
     color_code: diary.type || diary.color_code || null,
     title: diary.title || "Ghi chú",
     content: diary.content || diary.title || "",
+  };
+
+  const files = [
+    ...(Array.isArray(diary.attachments) ? diary.attachments : []),
+    ...(Array.isArray(diary.files) ? diary.files : []),
+  ].filter((item) => item instanceof File);
+
+  if (!files.length) return payload;
+
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) formData.append(key, value);
   });
+  files.forEach((file) => formData.append("attachments", file));
+  return formData;
+}
+
+export async function updateHealthDiary(diaryId, diary) {
+  const payload = toHealthDiaryPayload(diary);
+  const response = await apiClient.put(`/health-diaries/${diaryId}`, payload, payload instanceof FormData ? {
+    headers: { "Content-Type": "multipart/form-data" },
+  } : undefined);
   return normalizeHealthDiary(assertSuccess(response));
+}
+
+export async function deleteHealthDiary(diaryId) {
+  const response = await apiClient.delete(`/health-diaries/${diaryId}`);
+  return assertSuccess(response);
 }
 
 export async function createReminder(reminder) {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import NavBar from "../../components/Navbar";
 import Footer from "../../components/Footer/Footer";
 import BookingPaymentStep from "../../components/booking/BookingPaymentStep";
@@ -1076,6 +1077,8 @@ function FlowButtons({ onBack, onNext }) {
 function BookingPage() {
   const { confirmCancel } = useDecisionModal();
   const { isAuthenticated, requireAuth, userProfile } = useAuth();
+  const location = useLocation();
+  const rebookAppointment = location.state?.rebookAppointment;
   const [step, setStep] = useState(1);
   const [selectedServiceType, setSelectedServiceType] = useState(DEFAULT_SERVICE_TYPE_ID);
   const [selectedServices, setSelectedServices] = useState([]);
@@ -1185,6 +1188,30 @@ function BookingPage() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!rebookAppointment?.services?.length) return;
+
+    const requestedServices = rebookAppointment.services;
+    const matchedServices = requestedServices
+      .map((requestedService) =>
+        services.find((service) =>
+          String(service.serviceId || service.id) === String(requestedService.serviceId || requestedService.id) ||
+          (requestedService.name && service.name === requestedService.name),
+        ),
+      )
+      .filter(Boolean);
+
+    if (!matchedServices.length) {
+      if (rebookAppointment.serviceTypeId) setSelectedServiceType(rebookAppointment.serviceTypeId);
+      return;
+    }
+
+    const nextServiceType = matchedServices[0].serviceTypeId || rebookAppointment.serviceTypeId || DEFAULT_SERVICE_TYPE_ID;
+    setSelectedServiceType(nextServiceType);
+    setSelectedServices(matchedServices.map((service) => service.id));
+    setStep(1);
+  }, [rebookAppointment, services]);
 
   useEffect(() => {
     if (!selectedDate || !ownerInfo.branch) {
