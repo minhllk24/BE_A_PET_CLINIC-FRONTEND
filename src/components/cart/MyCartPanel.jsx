@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { cartImages } from "../../assets/cartImages";
 import { useDecisionModal } from "../shared/DecisionModal";
 import { useCart } from "../../context/CartContext";
@@ -22,6 +23,7 @@ function normalizeVariantOption(variant) {
 function CartItemRow({ item }) {
   const { toggleCartItem, removeCartItem, updateCartQty, updateCartOptions } = useCart();
   const { confirmDelete, showSuccessModal } = useDecisionModal();
+  const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
   const [loadedVariants, setLoadedVariants] = useState([]);
   const variantOptions = (Array.isArray(item.variants) && item.variants.length ? item.variants : loadedVariants).map(normalizeVariantOption);
@@ -78,16 +80,40 @@ function CartItemRow({ item }) {
     updateCartOptions(item.id, { size: event.target.value });
   };
 
+  const handleOpenProduct = () => {
+    if (!item.productId) return;
+    navigate(`/product-details/${item.productId}`);
+  };
+
+  const handleOpenProductByKeyboard = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleOpenProduct();
+    }
+  };
+
+  const stopCardNavigation = (event) => {
+    event.stopPropagation();
+  };
+
   return (
     <div
       className={`relative flex min-h-[118px] w-full shrink-0 items-center gap-[10px] border-b border-solid border-[#e0e0e0] px-[6px] py-[10px] transition-all duration-200 lg:my-[10px] lg:min-h-[132px] lg:w-full lg:px-[10px] lg:py-[14px] ${
         deleting ? "translate-x-full opacity-0" : "translate-x-0 opacity-100"
       }`}
+      role={item.productId ? "link" : undefined}
+      tabIndex={item.productId ? 0 : undefined}
+      onClick={handleOpenProduct}
+      onKeyDown={handleOpenProductByKeyboard}
+      aria-label={item.productId ? `Xem chi tiết ${item.name}` : undefined}
     >
       {/* Checkbox */}
       <button
         type="button"
-        onClick={() => toggleCartItem(item.id)}
+        onClick={(event) => {
+          stopCardNavigation(event);
+          toggleCartItem(item.id);
+        }}
         className="flex h-[40px] w-6 shrink-0 cursor-pointer items-center justify-center transition-transform duration-micro hover:scale-110 focus-ring-brand"
         aria-label={item.selected ? "Bỏ chọn sản phẩm" : "Chọn sản phẩm"}
         aria-pressed={item.selected}
@@ -123,7 +149,10 @@ function CartItemRow({ item }) {
           </p>
           <button
             type="button"
-            onClick={handleDelete}
+            onClick={(event) => {
+              stopCardNavigation(event);
+              handleDelete();
+            }}
             className="group relative h-[15px] w-[14px] shrink-0 transition-all duration-micro hover:scale-110 focus-ring-brand lg:h-5 lg:w-[17px]"
             aria-label="Xóa sản phẩm"
           >
@@ -143,7 +172,10 @@ function CartItemRow({ item }) {
           <div className="flex h-5 w-14 shrink-0 items-center justify-between rounded border border-solid border-[#353535] px-2 font-['Josefin_Sans'] text-[20px] font-medium leading-normal lg:h-[27px] lg:w-[78px] lg:px-[16px] lg:py-[5px]">
             <button
               type="button"
-              onClick={() => updateCartQty(item.id, -1)}
+              onClick={(event) => {
+                stopCardNavigation(event);
+                updateCartQty(item.id, -1);
+              }}
               className="flex h-5 w-3 shrink-0 items-center justify-center text-[20px] leading-5 text-[#353535] transition-colors duration-micro hover:text-[#0d47a1] active:scale-90 focus-ring-brand lg:h-6 lg:w-6"
               aria-label="Giảm số lượng"
             >
@@ -152,7 +184,10 @@ function CartItemRow({ item }) {
             <span className="shrink-0 text-[13px] leading-5 text-[#353535] lg:text-[20px]">{item.qty}</span>
             <button
               type="button"
-              onClick={() => updateCartQty(item.id, 1)}
+              onClick={(event) => {
+                stopCardNavigation(event);
+                updateCartQty(item.id, 1);
+              }}
               className="flex h-5 w-3 shrink-0 items-center justify-center text-[20px] leading-5 text-[#353535] transition-colors duration-micro hover:text-[#0d47a1] active:scale-90 focus-ring-brand lg:h-6 lg:w-6"
               aria-label="Tăng số lượng"
             >
@@ -163,13 +198,14 @@ function CartItemRow({ item }) {
 
         <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 font-['Roboto'] text-[10px] leading-[1.66] tracking-[0.4px] text-[#353535] lg:gap-x-6 lg:text-[12px]">
           <div className="flex items-center gap-[5px] lg:gap-[8px]">
-            <span>Biến thể:</span>
+            <span>Loại:</span>
             {variantOptions.length > 1 ? (
               <select
                 value={String(selectedVariant?.id ?? item.variantId ?? "")}
                 onChange={handleVariantChange}
+                onClick={stopCardNavigation}
                 className="h-[22px] max-w-[86px] rounded border border-[#c7c7c7] bg-white px-1 text-[10px] text-[#353535] outline-none transition-colors focus:border-[#0d47a1] lg:max-w-[112px] lg:text-[12px]"
-                aria-label="Chọn biến thể sản phẩm"
+                aria-label="Chọn loại sản phẩm"
               >
                 {variantOptions.map((variant) => (
                   <option key={variant.id ?? variant.name} value={String(variant.id ?? "")}>
@@ -179,6 +215,26 @@ function CartItemRow({ item }) {
               </select>
             ) : (
               <span>{item.type || selectedVariant?.name || "Mặc định"}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-[5px] lg:gap-[8px]">
+            <span>Kích cỡ:</span>
+            {sizeOptions.length > 1 ? (
+              <select
+                value={item.size || ""}
+                onChange={handleSizeChange}
+                onClick={stopCardNavigation}
+                className="h-[22px] max-w-[86px] rounded border border-[#c7c7c7] bg-white px-1 text-[10px] text-[#353535] outline-none transition-colors focus:border-[#0d47a1] lg:max-w-[112px] lg:text-[12px]"
+                aria-label="Chọn kích cỡ sản phẩm"
+              >
+                {sizeOptions.map((size) => (
+                  <option key={size} value={size}>
+                    {size || "Mặc định"}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span>{item.size || sizeOptions[0] || "Mặc định"}</span>
             )}
           </div>
         </div>

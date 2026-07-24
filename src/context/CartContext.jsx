@@ -6,6 +6,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useLocation } from "react-router-dom";
 import CartDrawer from "../components/cart/CartDrawer";
 import BankTransferModal from "../components/checkout/BankTransferModal";
 import CheckoutOverlay from "../components/checkout/CheckoutOverlay";
@@ -31,6 +32,7 @@ function getCartItemOptionKey(item = {}) {
 
 export function CartProvider({ children }) {
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isOrderSuccessOpen, setIsOrderSuccessOpen] = useState(false);
@@ -68,6 +70,10 @@ export function CartProvider({ children }) {
 
     reloadCart();
   }, [isAuthenticated, reloadCart]);
+
+  useEffect(() => {
+    setIsCartOpen(false);
+  }, [location.pathname]);
 
   const toggleCartItem = useCallback((id) => {
     const currentItem = cartItems.find((item) => item.id === id);

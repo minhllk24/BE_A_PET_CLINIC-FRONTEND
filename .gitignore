@@ -24,6 +24,7 @@ dist-ssr
 .idea
 .agents/
 .tmp-chrome-cdp/
+.tmp-chrome-cdp-9223/
 .DS_Store
 *.suo
 *.ntvs*

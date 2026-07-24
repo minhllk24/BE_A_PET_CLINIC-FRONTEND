@@ -10,15 +10,15 @@ import "./App.css";
 function App() {
   return (
     <AuthProvider>
-      <CartProvider>
-        <NotificationProvider>
-          <DecisionModalProvider>
+      <DecisionModalProvider>
+        <CartProvider>
+          <NotificationProvider>
             <ScrollToTop />
             <AppRoutes />
             <AuthModal />
-          </DecisionModalProvider>
-        </NotificationProvider>
-      </CartProvider>
+          </NotificationProvider>
+        </CartProvider>
+      </DecisionModalProvider>
     </AuthProvider>
   );
 }

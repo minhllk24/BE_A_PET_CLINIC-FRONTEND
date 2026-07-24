@@ -568,16 +568,6 @@ function ShoppingCheckout({ onBack }) {
         />
       )}
       <div className="mx-auto flex w-full max-w-[1280px] flex-col items-center px-6 py-6">
-        <div className="flex w-full flex-col gap-5">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex items-center gap-3 self-start rounded bg-secondary-light px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition hover:bg-secondary"
-          >
-            <img src={checkoutImages.backArrow} alt="" className="size-3" />
-            Quay lại
-          </button>
-
           <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
             <div className="flex w-full flex-col gap-7">
               {isGuest && <GuestLoginBanner />}
@@ -605,6 +595,15 @@ function ShoppingCheckout({ onBack }) {
                 </div>
               </div>
             </aside>
+                    <div className="flex w-full flex-col gap-5">
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex items-center gap-3 self-start rounded bg-secondary-light px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition hover:bg-secondary"
+          >
+            <img src={checkoutImages.backArrow} alt="" className="size-3" />
+            Quay lại
+          </button>
           </div>
         </div>
       </div>

@@ -384,7 +384,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
           </nav> */}
 
           {/* Product layout */}
-          <div className="absolute left-[120px] top-[76px] flex h-[622px] w-[1200px] items-start overflow-visible">
+          <div className="absolute left-[120px] top-[20px] flex h-[622px] w-[1200px] items-start overflow-visible">
             <div className="ml-[-18px] flex h-[644px] w-[1218px] items-start gap-[71px]">
               {/* Left: image gallery */}
               <div className="flex w-[626px] gap-[24px] pl-[15px] pt-[8.5px]">
@@ -473,7 +473,7 @@ export default function ProductDetailsPage({ showWriteReview = false }) {
                     <div className="h-px w-[494px] bg-[#D7D7D7]" />
 
                     {/* Type selection */}
-                    <div className="flex items-center gap-[24px]">
+                    <div className="flex items-center gap-[24px] pb-7">
                       <span className="font-['Roboto'] text-[20px] font-medium leading-[32px] tracking-[0.15px] text-[#1D2939]">Loại</span>
                       <div className="flex gap-[24px]">
                         {(product.variants ?? []).map((variant, i) => (
